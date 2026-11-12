@@ -26,14 +26,14 @@ what stands between that and dogfluencers.agency going live.
 
 ## 2. Creator CRM (Supabase) and the WordPress import
 
-- [ ] Create Supabase project "Dogfluencers", Ireland (eu-west-1), beside Vercel's `dub1`.
-- [ ] Put the four Supabase values and `CRON_SECRET` in `.env` and Vercel.
-- [ ] `npx tsx --env-file=.env scripts/db-migrate.ts`
-- [ ] `npx tsx --env-file=.env scripts/add-admin.ts <email>` for each team member.
+- [x] Create Supabase project "Dogfluencers", Ireland (eu-west-1), beside Vercel's `dub1`.
+- [x] Put the four Supabase values and `CRON_SECRET` in `.env` and Vercel (12 Nov; `CRM_EMAIL_ALLOWLIST` on production too).
+- [x] `npx tsx --env-file=.env scripts/db-migrate.ts`
+- [x] Admins added (12 Nov): Zac, Nicola, Jonathan. Each should change the shared starting password.
 - [x] Import script written for the dog export (12 Nov): one CRM dog per dog,
       sizes estimated from breed. Dry run: 1,337 creators, 1,824 dogs.
-- [ ] Read the dry-run report together (`~/ShipStudio/dog-private/import-out/`),
-      especially the ~100 households whose dogs didn't line up, then `--commit`.
+- [x] Imported 12 Nov: 1,337 creators, 1,824 dogs. The ~100 households flagged in
+      `~/ShipStudio/dog-private/import-out/import-report.json` have their original answers in team notes.
 - [ ] Paste the three Dogfluencers email templates in `supabase/templates/` into
       Supabase > Authentication > Emails (subjects are in each file's first line).
 - [ ] Supabase > Authentication > URL Configuration: Site URL and Redirect URLs.
