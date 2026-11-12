@@ -5,7 +5,7 @@
  * Built November 2026.
  *
  * Values marked TODO(confirm) are working assumptions awaiting sign-off from
- * the business. Service claims (7 day delivery, 100 dog gifting drops,
+ * the business. Service claims (12 day delivery, gifting drops of up to 1,000 dogs,
  * unlimited edits, content ownership) are carried over from the WordPress
  * site the business already publishes.
  */
@@ -61,8 +61,8 @@ const config: AgencyConfig = {
       'treats, health, accessories and everything else that ends up in a dog’s life.',
     heroHeadline: 'The fastest way to get your pet product *seen.*',
     heroDescription:
-      'We get your product to real dogs with engaged followings, a hundred at a time if you want, and ' +
-      'turn what their owners make into content you own. Briefed, filmed and delivered in seven days.',
+      'We get your product to real dogs with engaged followings, up to a thousand at a time if you want, and ' +
+      'turn what their owners make into content you own. Briefed, filmed and delivered in 12 days.',
   },
 
   ctas: {
@@ -164,8 +164,8 @@ const config: AgencyConfig = {
       height: 630,
     },
     description:
-      'Dog influencer marketing for pet brands: mass gifting to 100 dogs at a time, UGC and ad ' +
-      'content delivered in 7 days, and creator campaigns with real dog owners.',
+      'Dog influencer marketing for pet brands: mass gifting to up to 1,000 dogs at a time, UGC and ad ' +
+      'content delivered in 12 days, and creator campaigns with real dog owners.',
     primaryKeywords: [
       'dog influencer agency',
       'pet influencer marketing',

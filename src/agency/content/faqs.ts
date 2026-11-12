@@ -20,7 +20,7 @@ export const faqs: Faq[] = [
   {
     question: 'How quickly do we get content?',
     answer:
-      'Within 7 days of the product reaching the dogs. Edits are unlimited, so the clock is on the first delivery, not on getting it right.',
+      'Within 12 days of the product reaching the dogs. Edits are unlimited, so the clock is on the first delivery, not on getting it right.',
     category: 'Content',
     order: 2,
     status: 'approved',

@@ -1,10 +1,8 @@
 /**
  * The work: content dog creators have made for clients.
  *
- * Placeholder until the business confirms each piece: the brand, the service
- * it was made under, and usage rights. Videos are the creators' full edits, supplied
- * in November 2026 (Poppy's Picnic and Zesty Paws products).
- * TODO(confirm): both brands as clients, and usage rights for each frame.
+ * Approved by the business on 12 November 2026 (Poppy's Picnic and Zesty Paws).
+ * Videos are the creators' full edits, supplied in November 2026.
  * TODO(asset): the 9:16 clips these frames come from.
  */
 import type { WorkItem } from '../../system/types/content';
@@ -19,7 +17,7 @@ const post = (id: string, brand: string, caption: string, file: string, alt: str
   // Full-length videos with their sound: the work section plays the whole
   // piece, muted until a viewer turns sound on.
   video: clip ? { src: `/video/full/${file}.mp4${start ? `#t=${start}` : ''}`, poster: `/video/${file}.jpg`, alt } : { poster: `/images/dogs/${file}.jpg`, alt },
-  status: 'placeholder',
+  status: 'approved',
 });
 
 export const work: WorkItem[] = [

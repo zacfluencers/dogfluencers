@@ -46,7 +46,7 @@ const orderedServices = agency.enabledServices
     primaryCta={agency.ctas.primary}
     secondaryCta={agency.ctas.secondary}
     media={heroReel.slice(0, 3).map((clip) => clip.video)}
-    card={{ title: 'Content delivered', body: 'Within 7 days' }}
+    card={{ title: 'Content delivered', body: 'Within 12 days' }}
     brands={brands}
     brandsLabel="Trusted by pet brands"
   />
@@ -57,8 +57,8 @@ const orderedServices = agency.enabledServices
     description="Volume, content you own or paid reach. It starts with the same conversation about what your product needs."
     services={orderedServices}
     facts={{
-      'mass-gifting': 'Up to 100 dogs',
-      ugc: '7 day delivery',
+      'mass-gifting': 'Up to 1,000 dogs',
+      ugc: '12 day delivery',
       'creator-campaigns': 'Paid posts',
       'product-launches': 'All in one',
     }}
@@ -73,7 +73,7 @@ const orderedServices = agency.enabledServices
 
   <Steps
     eyebrow="How it works"
-    heading="From brief to content in a week"
+    heading="From brief to content in 12 days"
     description="Choose your dogs, set the brief, and approve what comes back. Edits are unlimited until it is right."
     steps={brandJourney}
     cta={agency.ctas.primary}

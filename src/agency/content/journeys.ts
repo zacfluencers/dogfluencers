@@ -19,8 +19,8 @@ export const brandJourney: ProcessStep[] = [
   },
   {
     number: '04',
-    title: 'Content within 7 days',
-    description: 'Product reaches the dogs, owners film, and finished content comes back to you within a week.',
+    title: 'Content within 12 days',
+    description: 'Product reaches the dogs, owners film, and finished content comes back to you within 12 days.',
   },
   {
     number: '05',

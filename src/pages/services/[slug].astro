@@ -35,8 +35,8 @@ const extra: Record<string, [typeof clips.beagle, typeof clips.beagle]> = {
   'product-launches': [clips.labPatio, clips.goldenBed],
 };
 const cards: Record<string, { title: string; body: string }> = {
-  'mass-gifting': { title: 'Up to 100 dogs', body: 'In a single drop' },
-  ugc: { title: 'Content in 7 days', body: 'With unlimited edits' },
+  'mass-gifting': { title: 'Up to 1,000 dogs', body: 'In a single drop' },
+  ugc: { title: 'Content in 12 days', body: 'With unlimited edits' },
   'creator-campaigns': { title: 'Paid posts', body: 'From creators you approve' },
   'product-launches': { title: 'All in one', body: 'Gifting, UGC and paid' },
 };
@@ -74,10 +74,10 @@ const ctaHeadings: Record<string, string> = {
 type DealContent = { heading: string; description: string; stats: { value: string; label: string }[]; footLabel: string; requirements: string[] };
 const deals: Record<string, DealContent> = {
   'mass-gifting': {
-    heading: 'One drop, a hundred *dogs.*',
+    heading: 'One drop, up to a thousand *dogs.*',
     description: 'Every dog matched to what you make, and every owner opted in before anything ships.',
     stats: [
-      { value: '100', label: 'Dogs in a single drop' },
+      { value: '1,000', label: 'Dogs in a single drop' },
       { value: '100%', label: 'Owners opted in before anything ships' },
       { value: '0', label: 'Parcels for you to coordinate' },
     ],
@@ -86,9 +86,9 @@ const deals: Record<string, DealContent> = {
   },
   ugc: {
     heading: 'Content you own *outright.*',
-    description: 'Briefed, filmed and delivered in a week, and yours for organic and paid with no renewal.',
+    description: 'Briefed, filmed and delivered in 12 days, and yours for organic and paid with no renewal.',
     stats: [
-      { value: '7', label: 'Days from product to content' },
+      { value: '12', label: 'Days from product to content' },
       { value: '∞', label: 'Rounds of edits' },
       { value: '100%', label: 'Yours to use, for life' },
     ],

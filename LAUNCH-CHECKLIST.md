@@ -78,6 +78,8 @@ and Supabase's confirm-email, set-up-login and reset-password emails.
 
 ## 5. Confirmations needed from the client
 
+- [ ] Old blog posts say content in seven days and 100-dog drops; the terms define a gift drop as up to 100 dogs. Update to match the packages (12 days, up to 1,000), or leave?
+
 Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
 
 - [ ] **Poppy's Picnic and Zesty Paws**: confirmed clients, and usage rights for the
@@ -105,7 +107,7 @@ Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
 
 ## 7. Go live
 
-- [ ] Remove the `PUBLIC_SHOW_PLACEHOLDERS` flag from production builds (never set it there).
+- [ ] **Remove `PUBLIC_SHOW_PLACEHOLDERS` from Production** (on since 12 Nov for client feedback), so launch strips unconfirmed content.
 - [ ] Add dogfluencers.agency and www to the Vercel project; point DNS (apex A to
       Vercel, www CNAME), keeping MX, SPF and Resend records.
 - [ ] Update Supabase Site URL and Redirect URLs to the real domain.

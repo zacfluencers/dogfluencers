@@ -1,7 +1,7 @@
 ---
 /**
  * The perks as a bento grid. Each tile pairs one short claim with a small
- * piece of product-style UI that shows it: a day track, a hundred dots, a
+ * piece of product-style UI that shows it: a day track, a field of dots, a
  * revision stack, a usage-rights card. Mostly cream; one orange and one
  * night tile for contrast.
  */
@@ -15,7 +15,7 @@ interface Props {
   band?: 'paper' | 'soft';
 }
 const { eyebrow, heading, description, band = 'paper' } = Astro.props;
-const days = [1, 2, 3, 4, 5, 6, 7];
+const days = Array.from({ length: 12 }, (_, i) => i + 1);
 ---
 
 <section class:list={['band', `band-${band}`]}>
@@ -26,17 +26,17 @@ const days = [1, 2, 3, 4, 5, 6, 7];
         <div class="dtrack" aria-hidden="true" data-play>
           <div class="dtrack-ends">
             <span><span class="d-small d-muted block">Day 1</span><span class="d-ui">Product arrives</span></span>
-            <span class="text-right"><span class="d-small d-muted block">Day 7</span><span class="d-ui">Content delivered</span></span>
+            <span class="text-right"><span class="d-small d-muted block">Day 12</span><span class="d-ui">Content delivered</span></span>
           </div>
           <ol class="dtrack-bar">
             {days.map((d) => (
-              <li class:list={[d === 1 && 'is-start', d === 7 && 'is-end']} style={`--i: ${d - 1}`}><span class="d-small">{d}</span></li>
+              <li class:list={[d === 1 && 'is-start', d === days.length && 'is-end']} style={`--i: ${d - 1}`}><span class="d-small">{d}</span></li>
             ))}
           </ol>
           <p class="dtrack-mid d-small d-muted">Filming, editing and your review</p>
         </div>
         <div>
-          <h3 class="d-h2">7 day delivery</h3>
+          <h3 class="d-h2">12 day delivery</h3>
           <p class="d-body d-muted mt-2">From product arriving to finished content in your inbox.</p>
         </div>
       </li>
@@ -46,7 +46,7 @@ const days = [1, 2, 3, 4, 5, 6, 7];
           {Array.from({ length: 100 }, (_, i) => <i class:list={[i % 9 === 4 && 'is-on']} style={`--i: ${i}`}></i>)}
         </div>
         <div>
-          <h3 class="d-h2">100 dogs</h3>
+          <h3 class="d-h2">1,000 dogs</h3>
           <p class="d-body mt-2">In a single gifting drop, each one matched to your product.</p>
         </div>
       </li>
@@ -110,7 +110,7 @@ const days = [1, 2, 3, 4, 5, 6, 7];
      day bars, the middle stretch named beneath. */
   .dtrack { display: grid; gap: 1.25rem; padding: clamp(1.25rem, 2.2vw, 1.75rem); border-radius: var(--radius-md); background: #fff; }
   .dtrack-ends { display: flex; justify-content: space-between; gap: 1rem; }
-  .dtrack-bar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.375rem; margin: 0; padding: 0; list-style: none; }
+  .dtrack-bar { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.25rem; margin: 0; padding: 0; list-style: none; }
   .dtrack-bar li { display: grid; gap: 0.6rem; justify-items: center; color: var(--night-muted); }
   .dtrack-bar li::before { content: ''; width: 100%; height: 0.625rem; border-radius: 999px; background: rgb(26 20 18 / 0.1); }
   .dtrack-bar li.is-start::before { background: var(--night); }
@@ -118,7 +118,7 @@ const days = [1, 2, 3, 4, 5, 6, 7];
   .dtrack-bar li.is-end { color: var(--night); font-weight: 700; }
   .dtrack-mid { margin: 0; text-align: center; }
 
-  /* A hundred dots */
+  /* A field of dots */
   .ddots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 5px; max-width: 18rem; }
   .ddots i { aspect-ratio: 1; border-radius: 999px; background: rgb(249 234 208 / 0.4); }
   .ddots i.is-on { background: var(--cream); }
@@ -141,9 +141,9 @@ const days = [1, 2, 3, 4, 5, 6, 7];
   :global(.dtasks-paw) { width: 0.85rem; height: 0.85rem; color: var(--orange); }
 
   /* Storytelling, once each, when the tile scrolls in (DogMotion sets
-     .is-in). The week fills day by day; a hundred dots light up; the drafts
+     .is-in). The track fills day by day; the dots light up; the drafts
      stack until the third is approved; the rights tick in; the jobs land. */
-  :global(html[data-motion]) .dtrack-bar li::before { transform-origin: left; scale: 0 1; transition: scale 420ms var(--ease-out) calc(var(--i) * 170ms + 150ms); }
+  :global(html[data-motion]) .dtrack-bar li::before { transform-origin: left; scale: 0 1; transition: scale 420ms var(--ease-out) calc(var(--i) * 100ms + 150ms); }
   :global(html[data-motion]) .dtrack.is-in .dtrack-bar li::before { scale: 1 1; }
   :global(html[data-motion]) .dtrack-bar li.is-end span { transition: color 300ms ease 1400ms; color: var(--night-muted); }
   :global(html[data-motion]) .dtrack.is-in .dtrack-bar li.is-end span { color: var(--night); }

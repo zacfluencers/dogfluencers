@@ -39,8 +39,9 @@ make one public.
 testimonials or awards. If content is missing, use `<ContentRequired>`
 (review-mode only) rather than filling the gap.
 
-Today: work posts naming Poppy's Picnic and Zesty Paws, the network stats (TBC)
-and the case studies are placeholders awaiting confirmation. The six partner
+Today: the work posts (Poppy's Picnic, Zesty Paws) were approved on 12 November
+2026, and "Dogs in the network" shows 1,800+ from the CRM (1,824 dogs, 1,337
+owners). The other three stats (TBC) and the case studies are placeholders. The six partner
 brands in the logo strip are approved with a TODO to confirm. Usage rights for
 the creator videos and photos are to be confirmed. Search for `TODO(confirm)`.
 
@@ -104,6 +105,15 @@ Every paw is the logo paw (`components/ui/Paw.astro`).
   requirement pills, CTA), on For Creators, For Brands and each service page.
   On phones the figures become compact rows.
 - `ServiceRows` (/services/): sticky pill nav plus one rounded panel per service.
+- `Pricing`: transparent packages on the Mass Gifting and UGC pages, as one
+  white panel split by hairlines (Stripe-like), each column with a scale bar
+  (its leading figure against the biggest package), price + VAT, ticked
+  inclusions with bold figures and its own button. Prices match the group's
+  published packages: gifting £2,850 to £8,500 (150 to 1,000 dogs), UGC £1,440 to
+  £7,200 (10 to 100 videos, 12 day delivery). The site's claims follow them:
+  drops of up to 1,000 dogs, content in 12 days. The old blog posts (seven
+  days, 100 dogs) and the terms' gift-drop definition (up to 100) are left for
+  the client to decide.
 - `WorkPosts`: full creator videos with an optional sound button, no text under
   them. `Bento`, `Steps`, `Feature`, `ListSplit`, `Categories`, `CampaignCards`,
   `Pricing`, `StatRow`, `Faq`, `CtaBand`.
@@ -219,9 +229,11 @@ recipient is `contact.enquiries` in `src/agency/config.ts` (to confirm).
 GitHub `zacfluencers/dogfluencers` (private) → Vercel project `dogfluencers`
 (connected 12 November 2026). Push to `main` deploys production at
 `dogfluencers.vercel.app`, public by the client's choice before launch; any other
-branch gets a preview. `PUBLIC_SHOW_PLACEHOLDERS=true` is set for Preview only,
-so previews show unconfirmed content and production never does. Never set it on
-Production. dogfluencers.agency still points at the old WordPress site.
+branch gets a preview. **Until launch, `PUBLIC_SHOW_PLACEHOLDERS=true` is set on
+Production as well as Preview**, at the client's request (12 November 2026), so
+the whole site, placeholders included, is live for feedback. **Remove it from
+Production before dogfluencers.agency points here**, so launch strips whatever is
+still unconfirmed. dogfluencers.agency still points at the old WordPress site.
 
 `LAUNCH-CHECKLIST.md` lists everything before go-live.
 

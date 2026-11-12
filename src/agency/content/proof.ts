@@ -32,10 +32,12 @@ export const brands: Brand[] = [
 ];
 
 export const statistics: Statistic[] = [
-  { label: 'Dogs in the network', value: 'TBC', context: 'Awaiting a verified figure from the platform.', status: 'placeholder' },
-  { label: 'Products gifted', value: 'TBC', context: 'Awaiting a verified total.', status: 'placeholder' },
-  { label: 'Pieces of content made', value: 'TBC', context: 'Awaiting a verified total.', status: 'placeholder' },
-  { label: 'Brands worked with', value: 'TBC', context: 'Awaiting a verified count.', status: 'placeholder' },
+  // From the creator CRM on 12 November 2026: 1,824 dogs across 1,337 owners.
+  { label: 'Dogs in the network', value: '1,800+', context: 'With more than 1,300 owners.', status: 'approved' },
+  // TODO(confirm): verified totals. Shown as TBC while the live site is in review mode.
+  { label: 'Products gifted', value: 'TBC', status: 'placeholder' },
+  { label: 'Pieces of content made', value: 'TBC', status: 'placeholder' },
+  { label: 'Brands worked with', value: 'TBC', status: 'placeholder' },
 ];
 
 export const testimonials: Testimonial[] = [

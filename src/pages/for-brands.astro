@@ -39,7 +39,7 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'For Brands' }];
   seo={{
     title: 'For pet brands',
     description:
-      'How pet brands run dog creator campaigns with us: gifting to 100 dogs at a time, UGC and ad content in 7 days, paid creator posts, and reporting you can put in front of your team.',
+      'How pet brands run dog creator campaigns with us: gifting to up to 1,000 dogs at a time, UGC and ad content in 12 days, paid creator posts, and reporting you can put in front of your team.',
   }}
   schemas={[breadcrumbSchema(agency, breadcrumbs)]}
 >
@@ -58,8 +58,8 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'For Brands' }];
     heading="Less admin. More dog *content.*"
     description="You approve the dogs and the content. We handle everything in between."
     stats={[
-      { value: '7', label: 'Days from product to content' },
-      { value: '100', label: 'Dogs in a single drop' },
+      { value: '12', label: 'Days from product to content' },
+      { value: '1,000', label: 'Dogs in a single drop' },
       { value: '∞', label: 'Rounds of edits' },
       { value: '100%', label: 'Yours to use, for life' },
     ]}
@@ -80,7 +80,7 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'For Brands' }];
       { title: 'Matched on the dog', body: 'Breed, size, age, diet and lifestyle, as well as audience. Not follower count alone.' },
       { title: 'We do the work', body: 'Sourcing, outreach, dispatch, briefing, chasing and edits. You approve; we handle the rest.' },
       { title: 'Approval before contact', body: 'You see and approve the creator list before we approach anyone.' },
-      { title: 'Content you own', body: 'UGC delivered in 7 days, unlimited edits, and lifetime ownership included.' },
+      { title: 'Content you own', body: 'UGC delivered in 12 days, unlimited edits, and lifetime ownership included.' },
     ]}
   />
 
@@ -88,13 +88,13 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'For Brands' }];
     eyebrow="Services"
     heading="What we run"
     services={orderedServices}
-    facts={{ 'mass-gifting': 'Up to 100 dogs', ugc: '7 day delivery', 'creator-campaigns': 'Paid posts', 'product-launches': 'All in one' }}
+    facts={{ 'mass-gifting': 'Up to 1,000 dogs', ugc: '12 day delivery', 'creator-campaigns': 'Paid posts', 'product-launches': 'All in one' }}
     link={{ label: 'Service detail', href: '/services/' }}
   />
 
   <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
 
-  <Steps band="cream" eyebrow="How it works" heading="From brief to content in a week" steps={brandJourney} cta={agency.ctas.primary} />
+  <Steps band="cream" eyebrow="How it works" heading="From brief to content in 12 days" steps={brandJourney} cta={agency.ctas.primary} />
 
   <CampaignCards eyebrow="Case studies" heading="Campaigns" campaigns={campaigns.slice(0, 3)} link={{ label: 'All campaigns', href: '/campaigns/' }} />
 
