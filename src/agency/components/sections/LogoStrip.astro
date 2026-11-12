@@ -1,0 +1,30 @@
+---
+/**
+ * The partner logos as a quiet strip: a label, then the row, above a
+ * hairline. The same treatment as the hero's foot.
+ */
+import LogoMarks from '../../../system/components/sections/LogoMarks.astro';
+import type { Brand } from '../../../system/types/content';
+
+interface Props { label?: string; brands: Brand[] }
+const { label = 'Trusted by pet brands', brands } = Astro.props;
+---
+
+{brands.length > 0 && (
+  <section class="band-paper dlogos-band">
+    <div class="wrap">
+      <div class="dlogos reveal-rise">
+        <p class="d-ui d-muted">{label}</p>
+        <div class="dlogos-row"><LogoMarks brands={brands} /></div>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .dlogos-band { padding-bottom: clamp(3rem, 6vw, 4.5rem); }
+  .dlogos { display: grid; gap: 1.5rem; padding-top: 2rem; border-top: 1px solid var(--hairline); }
+  .dlogos-row { opacity: 0.7; }
+  .dlogos-row :global(.logo-row) { --logo-unit: clamp(2.25rem, 3vw, 2.75rem); }
+  @media (min-width: 64rem) { .dlogos { grid-template-columns: auto 1fr; align-items: center; gap: 3rem; } }
+</style>

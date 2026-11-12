@@ -1,0 +1,46 @@
+---
+/**
+ * The work: rounded 9:16 videos and nothing else. The brand and caption
+ * stay in the content (they describe the piece for the team and for the
+ * video's accessible name) but are not printed under the tiles.
+ */
+import type { WorkItem } from '../../../system/types/content';
+import SectionHead from './SectionHead.astro';
+import Media from '../ui/Media.astro';
+import ClipToggle from '../ui/ClipToggle.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  items: WorkItem[];
+  band?: 'paper' | 'cream' | 'soft' | 'night';
+  arrow?: boolean;
+}
+const { eyebrow, heading, description, items, band = 'night', arrow = false } = Astro.props;
+---
+
+{items.length > 0 && (
+  <section class:list={['band', `band-${band}`]}>
+    <div class="wrap">
+      <div class="dwork-head">
+        <SectionHead eyebrow={eyebrow} heading={heading} description={description} arrow={arrow} />
+        <ClipToggle class="dwork-toggle" />
+      </div>
+      <ul class="dwork" data-reveal-group>
+        {items.map((item) => (
+          <li class="lift">
+            <Media video={item.video} label="Dog content, 9:16" sound />
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .dwork { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .dwork-head { position: relative; }
+  :global(.dwork-toggle) { position: absolute; right: 0; top: 0; }
+  @media (min-width: 64rem) { .dwork { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--grid-gap); } }
+</style>

@@ -1,0 +1,26 @@
+---
+/** A small pill label with an orange dot. Replaces the eyebrow. */
+interface Props { as?: string; class?: string }
+const { as = 'p', class: className = '' } = Astro.props;
+const El = as as 'p';
+---
+
+<El class:list={['dchip d-ui', className]}><span class="dchip-dot" aria-hidden="true"></span><slot /></El>
+
+<style>
+  .dchip {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.4rem 0.8rem 0.4rem 0.65rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    color: var(--ink);
+    background: color-mix(in srgb, var(--ground) 70%, transparent);
+  }
+  .dchip-dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; background: var(--orange); }
+  :global(.band-orange) .dchip-dot { background: var(--night); }
+</style>

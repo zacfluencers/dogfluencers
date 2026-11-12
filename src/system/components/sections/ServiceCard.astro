@@ -1,0 +1,140 @@
+---
+import type { Service } from '../../types/content';
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import TextLink from '../global/TextLink.astro';
+import { hasVisual } from '../../lib/video';
+
+interface Props {
+  service: Service;
+  featured?: boolean;
+  /** Show the service's example clip above the title. */
+  media?: boolean;
+}
+const { service, featured = false, media = false } = Astro.props;
+
+// A card without a clip shows the missing-media hatch in review mode and no
+// tile at all at launch, rather than an empty box.
+const video = service.video;
+const showMedia = media && (hasVisual(video) || SHOW_PLACEHOLDERS);
+---
+
+<!--
+  Subgrid: the rows (media, title, description, link) are shared with the
+  other cards in the same grid row, so a longer description in one column
+  doesn't knock the links out of line. Outside a grid it falls back to an
+  ordinary stack. Feature lists live on the service page, not the card: four
+  lists side by side was the densest block on the site.
+
+  The clip plays while the card is on screen; ServiceGrid runs it and owns
+  the pause control.
+-->
+<article
+  class:list={[
+    'service-card group relative grid grid-rows-subgrid content-start gap-y-5',
+    showMedia ? 'row-span-4' : 'row-span-3',
+    featured && 'lg:col-span-2',
+  ]}
+  data-service-card={showMedia ? '' : undefined}
+>
+  {
+    showMedia && (
+      <div class="service-media" aria-hidden={video?.alt ? undefined : 'true'}>
+        {video?.src ? (
+          <video
+            muted
+            loop
+            playsinline
+            preload="metadata"
+            poster={video.poster}
+            aria-label={video.alt || undefined}
+            data-service-video
+            data-fade-in
+          >
+            {/* Without a poster, #t asks Safari to paint the first frame as one. */}
+            <source src={video.poster ? video.src : `${video.src}#t=0.001`} type="video/mp4" />
+          </video>
+        ) : video?.poster ? (
+          <img src={video.poster} alt={video.alt} loading="lazy" decoding="async" />
+        ) : (
+          <div class="service-media-fallback">
+            <span class="type-eyebrow muted">Service video, 9:16</span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  <h3 class:list={['border-t border-[var(--hairline-strong)] pt-6', featured ? 'type-display-m' : 'type-heading']}>
+    <a href={`/services/${service.slug}/`} class="block">
+      <span class="absolute inset-0" aria-hidden="true"></span>
+      {service.title}
+    </a>
+  </h3>
+
+  <p class="type-body muted">{service.shortDescription}</p>
+
+
+  <!-- relative: lifts the real link above the card's overlay link so it can be hovered and focused. -->
+  <div class:list={['relative self-end pt-2', showMedia ? 'row-start-4' : 'row-start-3']}>
+    <TextLink href={`/services/${service.slug}/`}>View service</TextLink>
+  </div>
+</article>
+
+<style>
+  /* Portrait, cropped from the 9:16 source so four fit a row without the
+     section turning into a wall of video. */
+  .service-media {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  /* At rest the clip sits back, dimmed into the section ground, so the grid
+     stays quiet beside the hero reel. Hovering or focusing a card brings its
+     clip up and leans in slightly; on touch screens the card crossing the
+     middle of the viewport does (`data-active`, set by ServiceGrid). */
+  .service-media:has(video, img) {
+    background: var(--ground);
+  }
+  .service-media :is(video, img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.75;
+    transition:
+      opacity var(--duration) var(--ease-out),
+      transform var(--duration-reveal) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .service-card:hover :is(video, img) {
+      opacity: 1;
+      transform: scale(1.04);
+    }
+  }
+  .service-card:focus-within :is(video, img),
+  .service-card[data-active] :is(video, img) {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .service-media :is(video, img) {
+      transform: none !important;
+    }
+  }
+  /* Same diagonal hatch as Media: unmistakably a gap, never mistaken for design. */
+  .service-media-fallback {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: var(--space-3);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 11px,
+      var(--hairline) 11px,
+      var(--hairline) 12px
+    );
+  }
+</style>
+

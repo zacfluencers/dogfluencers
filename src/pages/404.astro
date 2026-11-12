@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { agency } from '../agency/config';
+
+import PageHead from '../agency/components/sections/PageHead.astro';
+---
+
+<BaseLayout seo={{ title: 'Page not found', noIndex: true }}>
+  <PageHead
+    heading="This page does not *exist.*"
+    description="The link may be out of date, or the page may have moved. Everything on the site is one step from the menu above."
+    primaryCta={{ label: 'Back to home', href: '/' }}
+    secondaryCta={agency.ctas.primary}
+  />
+  <div class="pb-[var(--band-y)]"></div>
+</BaseLayout>

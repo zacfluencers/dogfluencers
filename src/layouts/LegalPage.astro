@@ -1,0 +1,59 @@
+---
+/**
+ * Legal page shell. Lives in the layouts layer, not the system layer, because
+ * it wires agency configuration into system components — `src/system` never
+ * imports from `src/agency`.
+ *
+ * Until copy exists the page is noindex and kept out of the sitemap, so footer
+ * links resolve rather than 404 while nothing unapproved gets indexed. Pass
+ * `body` to render the real copy; the notice disappears once you do.
+ */
+import { agency } from '../agency/config';
+import type { RichTextBlock } from '../system/types/content';
+import BaseLayout from './BaseLayout.astro';
+import Container from '../system/components/global/Container.astro';
+import Section from '../system/components/global/Section.astro';
+import PageHead from '../agency/components/sections/PageHead.astro';
+import RichText from '../system/components/global/RichText.astro';
+import ContentRequired from '../system/components/dev/ContentRequired.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  body?: RichTextBlock[];
+  /** "15 October 2026": shown above the copy, as the documents state it. */
+  updated?: string;
+  requires?: string[];
+}
+const { title, description, body, updated, requires = [] } = Astro.props;
+const hasCopy = Boolean(body && body.length > 0);
+---
+
+<BaseLayout seo={{ title, description, noIndex: !hasCopy }}>
+  <PageHead
+    breadcrumbs={[{ label: 'Home', href: '/' }, { label: title }]}
+    heading={title}
+    description={hasCopy ? description : undefined}
+  />
+
+  <Section spacing="none" class="pb-[var(--band-y)]">
+    <Container width="text">
+      {
+        hasCopy ? (
+          <>
+            {updated && <p class="type-eyebrow muted mb-10">Last updated {updated}</p>}
+            <RichText blocks={body!} />
+          </>
+        ) : (
+          <div class="flex flex-col gap-8">
+            <ContentRequired title={title} items={requires} />
+            <p class="type-body muted">
+              This policy is not published yet. For anything urgent, email{' '}
+              <a href={`mailto:${agency.contact.email}`} class="link-underline">{agency.contact.email}</a>.
+            </p>
+          </div>
+        )
+      }
+    </Container>
+  </Section>
+</BaseLayout>

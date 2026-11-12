@@ -1,0 +1,25 @@
+---
+/**
+ * Standalone text link.
+ *
+ * No trailing arrow: the underline already says it is a link, and a glyph
+ * bolted onto every link is chrome rather than information.
+ */
+interface Props {
+  href: string;
+  event?: string;
+  external?: boolean;
+  class?: string;
+}
+const { href, event, external = false, class: className = '' } = Astro.props;
+---
+
+<a
+  href={href}
+  data-event={event}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+  class:list={['type-eyebrow -my-2 inline-block py-2', className]}
+>
+  <span class="link-underline"><slot /></span>
+</a>

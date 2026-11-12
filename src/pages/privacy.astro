@@ -1,0 +1,11 @@
+---
+import LegalPage from '../layouts/LegalPage.astro';
+import { privacyPolicy } from '../agency/content/legal';
+---
+
+<LegalPage
+  title="Privacy policy"
+  description="How Fluencers Group LTD collects, uses and protects personal information through Dogfluencers."
+  body={privacyPolicy.body}
+  updated={privacyPolicy.updated}
+/>

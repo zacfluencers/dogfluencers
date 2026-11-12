@@ -1,0 +1,304 @@
+---
+/**
+ * The fields for one step of the creator form, shared by the join form and
+ * the creator's profile page. Core steps are laid out here; agency steps are
+ * generated from their field definitions.
+ */
+import type { CrmConfig, FieldDef } from '../../crm/types';
+import { GENDERS, YES_NO } from '../../crm/options';
+import { detailName, itemIndexes, itemName, type FieldErrors } from '../../crm/validation';
+import { HONEYPOT } from '../../crm/server';
+import FormField from './FormField.astro';
+
+interface Props {
+  step: string;
+  config: CrmConfig;
+  values?: Record<string, string | string[]>;
+  errors?: FieldErrors;
+  /** The join form asks for an email and password; the profile does not. */
+  mode?: 'join' | 'profile';
+}
+const { step, config, values = {}, errors = {}, mode = 'join' } = Astro.props;
+
+const v = (name: string) => values[name];
+const e = (name: string) => errors[name];
+const agencyStep = config.steps.find((s) => s.id === step);
+
+const agencyType = (f: FieldDef) => f.type;
+const repeat = agencyStep?.repeat;
+const indexes = repeat ? itemIndexes(values, repeat.key) : [];
+// Answers filled in by the team or an import, for the creator to check.
+const estimated = (index: number | string) => {
+  const list = repeat ? values[itemName(repeat.key, index, '_estimated')] : undefined;
+  return new Set(Array.isArray(list) ? list : list ? [list] : []);
+};
+---
+
+{
+  step === 'account' && (
+    <div class="grid gap-6">
+      <div class="grid gap-6 sm:grid-cols-2">
+        <FormField name="first_name" label="First name" required autocomplete="given-name" value={v('first_name')} error={e('first_name')} />
+        <FormField name="last_name" label="Last name" required autocomplete="family-name" value={v('last_name')} error={e('last_name')} />
+      </div>
+      {mode === 'join' && (
+        <>
+          <FormField name="email" label="Email" type="email" required autocomplete="email" inputmode="email" value={v('email')} error={e('email')} />
+          <FormField
+            name="password"
+            label="Create a password"
+            type="password"
+            required
+            autocomplete="new-password"
+            hint="At least 8 characters, with a letter and a number."
+            error={e('password')}
+          />
+          {/* Spam trap: hidden from people and assistive tech, filled by bots. */}
+          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+            <label>
+              Company website
+              <input name={HONEYPOT} type="text" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+{
+  step === 'about' && (
+    <div class="grid gap-6">
+      <div class="grid gap-6 sm:grid-cols-2">
+        <FormField name="phone" label="Phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="07700 900123" value={v('phone')} error={e('phone')} />
+        <FormField name="date_of_birth" label="Date of birth" type="date" required autocomplete="bday" value={v('date_of_birth')} error={e('date_of_birth')} hint={`You need to be ${config.minAge} or older.`} />
+      </div>
+      <FormField name="gender" label="Gender" type="select" required options={GENDERS} value={v('gender')} error={e('gender')} />
+      <FormField name="address_line_1" label="Address line 1" required autocomplete="address-line1" value={v('address_line_1')} error={e('address_line_1')} hint="Where products should be sent." />
+      <FormField name="address_line_2" label="Address line 2" autocomplete="address-line2" value={v('address_line_2')} error={e('address_line_2')} />
+      <div class="grid gap-6 sm:grid-cols-2">
+        <FormField name="town" label="Town or city" required autocomplete="address-level2" value={v('town')} error={e('town')} />
+        <FormField name="county" label="County" autocomplete="address-level1" value={v('county')} error={e('county')} />
+        <FormField name="postcode" label="Postcode" required autocomplete="postal-code" value={v('postcode')} error={e('postcode')} />
+        <FormField name="country" label="Country" type="select" required options={config.countries} empty="Choose a country" value={v('country') ?? config.countries[0]?.value} error={e('country')} />
+      </div>
+    </div>
+  )
+}
+
+{
+  agencyStep && repeat && (
+    <div class="crm-repeat" data-repeat data-max={repeat.max} data-item={repeat.item} data-single={indexes.length === 1 ? '' : undefined}>
+      <div class="crm-repeat-list" data-repeat-list>
+        {indexes.map((index, n) => (
+          <div class="crm-item" role="group" aria-labelledby={`item-${repeat.key}-${index}`} data-repeat-item data-index={index}>
+            <div class="crm-item-head">
+              <h3 class="type-heading" id={`item-${repeat.key}-${index}`} data-item-title>{repeat.item} {n + 1}</h3>
+              <button type="button" class="type-caption link-underline crm-item-remove" data-remove>Remove</button>
+            </div>
+            <div class="grid gap-6">
+              {agencyStep.fields.map((field) => {
+                const name = itemName(repeat.key, index, field.key);
+                return (
+                  <FormField
+                    name={name}
+                    label={field.label}
+                    type={agencyType(field)}
+                    options={'options' in field ? field.options : undefined}
+                    required={field.required}
+                    hint={estimated(index).has(field.key) ? 'We filled this in for you. Please check it’s right.' : field.hint}
+                    max={'max' in field ? field.max : undefined}
+                    value={v(name)}
+                    error={e(name)}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* A blank item for "add another", numbered by the script. */}
+      <template data-repeat-template>
+        <div class="crm-item" role="group" aria-labelledby={`item-${repeat.key}-__i__`} data-repeat-item data-index="__i__">
+          <div class="crm-item-head">
+            <h3 class="type-heading" id={`item-${repeat.key}-__i__`} data-item-title>{repeat.item}</h3>
+            <button type="button" class="type-caption link-underline crm-item-remove" data-remove>Remove</button>
+          </div>
+          <div class="grid gap-6">
+            {agencyStep.fields.map((field) => (
+              <FormField
+                name={itemName(repeat.key, '__i__', field.key)}
+                label={field.label}
+                type={agencyType(field)}
+                options={'options' in field ? field.options : undefined}
+                required={field.required}
+                hint={field.hint}
+                max={'max' in field ? field.max : undefined}
+              />
+            ))}
+          </div>
+        </div>
+      </template>
+      <button type="button" class="crm-repeat-add" data-add hidden>
+        <span aria-hidden="true">+</span> {repeat.add}
+      </button>
+    </div>
+  )
+}
+
+{
+  agencyStep && !repeat && (
+    <div class="grid gap-6">
+      {agencyStep.fields.map((field) => {
+        const name = detailName(field.key);
+        return (
+          <FormField
+            name={name}
+            label={field.label}
+            type={agencyType(field)}
+            options={'options' in field ? field.options : undefined}
+            required={field.required}
+            hint={field.hint}
+            max={'max' in field ? field.max : undefined}
+            value={v(name)}
+            error={e(name)}
+          />
+        );
+      })}
+    </div>
+  )
+}
+
+{
+  step === 'sizes' && (
+    <div class="grid gap-6">
+      <div class="grid gap-6 sm:grid-cols-2">
+        <FormField name="clothing_size" label="Top size" type="select" options={config.clothingSizes} empty="Choose a size" value={v('clothing_size')} error={e('clothing_size')} />
+        <FormField name="trouser_size" label="Bottoms size" type="select" options={config.clothingSizes} empty="Choose a size" value={v('trouser_size')} error={e('trouser_size')} />
+      </div>
+      <FormField name="shoe_size" label="Shoe size" placeholder="UK 5" max={20} value={v('shoe_size')} error={e('shoe_size')} />
+      <FormField name="dietary_requirements" label="Dietary requirements" placeholder="Vegan, halal, gluten free" value={v('dietary_requirements')} error={e('dietary_requirements')} hint="For food and supplement brands. Leave blank if none." />
+      <FormField name="allergies" label="Allergies" value={v('allergies')} error={e('allergies')} hint="Anything you react to. Leave blank if none." />
+    </div>
+  )
+}
+
+{
+  step === 'socials' && (
+    <div class="grid gap-6">
+      <div class="grid gap-6 sm:grid-cols-2">
+        <FormField name="instagram_url" label="Instagram" placeholder="@yourname" autocomplete="off" value={v('instagram_url')} error={e('instagram_url')} />
+        <FormField name="instagram_followers" label="Instagram followers" inputmode="numeric" placeholder="12500" value={v('instagram_followers')} error={e('instagram_followers')} />
+        <FormField name="tiktok_url" label="TikTok" placeholder="@yourname" autocomplete="off" value={v('tiktok_url')} error={e('tiktok_url')} />
+        <FormField name="tiktok_followers" label="TikTok followers" inputmode="numeric" placeholder="3200" value={v('tiktok_followers')} error={e('tiktok_followers')} />
+        <FormField name="youtube_url" label="YouTube" placeholder="@yourchannel" autocomplete="off" value={v('youtube_url')} error={e('youtube_url')} />
+        <FormField name="youtube_followers" label="YouTube subscribers" inputmode="numeric" value={v('youtube_followers')} error={e('youtube_followers')} />
+      </div>
+      <FormField
+        name="rate_per_post"
+        label={`Your rate per post or reel (${config.currency})`}
+        inputmode="decimal"
+        placeholder="150"
+        value={v('rate_per_post')}
+        error={e('rate_per_post')}
+        hint="For paid briefs. Leave blank if you're not sure yet."
+      />
+      <FormField
+        name="join_gifting_network"
+        label="Join the gifting network?"
+        type="radio"
+        required
+        options={YES_NO}
+        value={v('join_gifting_network')}
+        error={e('join_gifting_network')}
+        hint="Gifted product is yours to keep, with no obligation to post."
+      />
+      <FormField name="additional_notes" label="Anything else we should know" type="textarea" max={2000} value={v('additional_notes')} error={e('additional_notes')} />
+      {mode === 'join' && (
+        <div class="flex flex-col gap-2" data-field="privacy_consent">
+          <label class="flex cursor-pointer items-start gap-3">
+            <input
+              class="form-check"
+              type="checkbox"
+              name="privacy_consent"
+              value="yes"
+              checked={v('privacy_consent') === 'yes'}
+              aria-describedby="f-privacy_consent-error"
+              aria-invalid={e('privacy_consent') ? 'true' : undefined}
+            />
+            <span class="type-caption">
+              {config.consent.text}{' '}
+              <a href={config.consent.privacyHref} target="_blank" class="link-underline font-bold">Privacy Policy</a> and{' '}
+              <a href={config.consent.termsHref} target="_blank" class="link-underline font-bold">Terms</a>. I understand
+              applying doesn't guarantee acceptance or campaigns.
+            </span>
+          </label>
+          <p class="form-error" id="f-privacy_consent-error" data-error-for="privacy_consent">{e('privacy_consent')}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .crm-repeat-list { display: grid; gap: var(--space-9, 3rem); }
+  .crm-item-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--hairline-strong); }
+  /* One item needs no number, and can't be removed. */
+  [data-single] .crm-item-head { display: none; }
+  .crm-item-remove { color: var(--ink-muted); }
+  .crm-repeat-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 0.8rem 1.25rem;
+    border: 1px dashed var(--hairline-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .crm-repeat-add:hover { border-style: solid; border-color: var(--ink); }
+  .crm-repeat-add[hidden] { display: none; }
+</style>
+
+<script>
+  // "Add another": copies the blank item with the next free number, and
+  // renumbers the headings when one is removed. Without JavaScript the form
+  // still works for the items it shows.
+  for (const root of document.querySelectorAll<HTMLElement>('[data-repeat]')) {
+    const list = root.querySelector<HTMLElement>('[data-repeat-list]')!;
+    const template = root.querySelector<HTMLTemplateElement>('[data-repeat-template]')!;
+    const add = root.querySelector<HTMLButtonElement>('[data-add]')!;
+    const max = Number(root.dataset.max ?? 1);
+    const label = root.dataset.item ?? '';
+    const items = () => [...list.querySelectorAll<HTMLElement>(':scope > [data-repeat-item]')];
+    let next = Math.max(-1, ...items().map((el) => Number(el.dataset.index))) + 1;
+
+    const sync = () => {
+      const all = items();
+      all.forEach((el, n) => {
+        const title = el.querySelector('[data-item-title]');
+        if (title) title.textContent = `${label} ${n + 1}`;
+      });
+      root.toggleAttribute('data-single', all.length === 1);
+      add.hidden = all.length >= max;
+    };
+
+    add.addEventListener('click', () => {
+      list.insertAdjacentHTML('beforeend', template.innerHTML.replaceAll('__i__', String(next++)));
+      sync();
+      list.lastElementChild?.querySelector<HTMLElement>('input, select, textarea')?.focus();
+    });
+    list.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-remove]');
+      if (!button || items().length <= 1) return;
+      button.closest('[data-repeat-item]')?.remove();
+      sync();
+      add.focus();
+    });
+    sync();
+  }
+</script>

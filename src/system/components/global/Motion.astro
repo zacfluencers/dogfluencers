@@ -1,0 +1,52 @@
+---
+/**
+ * Scroll reveals. Headings wipe up out of a mask, and copy and grid items rise
+ * in with a short stagger, once, as each first enters the viewport.
+ *
+ * Opt-in by class: `.reveal-mask` (headings), `.reveal-rise` (anything else),
+ * and every child of `.card-grid` or `[data-reveal-group]`.
+ *
+ * Content is never hidden unless this runs: the hidden state only applies
+ * under `html[data-motion]`, which the inline script sets before first paint,
+ * and only when reduced motion is off. Rendered in <head>.
+ */
+---
+
+<script is:inline>
+  if (
+    'IntersectionObserver' in window &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    document.documentElement.setAttribute('data-motion', '');
+  }
+</script>
+
+<script>
+  const REVEAL = '.reveal-mask, .reveal-rise, .card-grid > *, [data-reveal-group] > *';
+  const STAGGER = 90;
+  const MAX_STEPS = 6;
+  // Matches --duration-reveal in system.css, plus a margin, before the
+  // transition is dropped so hover effects get their own transitions back.
+  const SETTLE = 1100;
+
+  if (document.documentElement.hasAttribute('data-motion')) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Elements arriving together stagger in reading order.
+        let step = 0;
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const el = entry.target as HTMLElement;
+          observer.unobserve(el);
+          const own = parseInt(el.style.getPropertyValue('--reveal-delay'), 10);
+          const delay = Number.isNaN(own) ? Math.min(step++, MAX_STEPS) * STAGGER : own;
+          el.style.setProperty('--reveal-delay', `${delay}ms`);
+          el.classList.add('is-in');
+          window.setTimeout(() => el.classList.add('is-done'), delay + SETTLE);
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' }
+    );
+    document.querySelectorAll(REVEAL).forEach((el) => observer.observe(el));
+  }
+</script>

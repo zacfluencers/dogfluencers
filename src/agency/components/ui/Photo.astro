@@ -1,0 +1,45 @@
+---
+/**
+ * A rounded photo. With no `src`, a quiet hatched gap that can't be mistaken
+ * for design. Zooms a touch inside a `.lift` parent on hover.
+ */
+interface Props {
+  src?: string;
+  alt?: string;
+  ratio?: string;
+  /** Degrees. 0 by default; the hero uses a little. */
+  tilt?: number;
+  eager?: boolean;
+  radius?: 'lg' | 'md';
+  class?: string;
+  label?: string;
+}
+const { src, alt = '', ratio = '4 / 5', tilt = 0, eager = false, radius = 'lg', class: className = '', label = 'Photo needed' } = Astro.props;
+---
+
+<div class:list={['dphoto', `dphoto-${radius}`, className]} style={`aspect-ratio: ${ratio}; --tilt: ${tilt}deg`}>
+  {
+    src ? (
+      <img src={src} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    ) : (
+      <div class="dphoto-gap"><span class="d-ui d-muted">{label}</span></div>
+    )
+  }
+</div>
+
+<style>
+  .dphoto { position: relative; overflow: hidden; rotate: var(--tilt); background: var(--surface); }
+  .dphoto-lg { border-radius: var(--radius-lg); }
+  .dphoto-md { border-radius: var(--radius-md); }
+  .dphoto img { display: block; width: 100%; height: 100%; object-fit: cover; transition: scale 500ms var(--ease-out); }
+  :global(.lift):hover .dphoto img,
+  :global(.lift):focus-visible .dphoto img { scale: 1.04; }
+  @media (prefers-reduced-motion: reduce) { .dphoto img { transition: none; } }
+  .dphoto-gap {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: 1rem;
+    background-image: repeating-linear-gradient(-45deg, transparent 0 11px, var(--hairline) 11px 12px);
+  }
+</style>

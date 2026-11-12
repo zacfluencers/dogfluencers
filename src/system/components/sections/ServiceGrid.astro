@@ -1,0 +1,127 @@
+---
+import type { ComponentProps } from 'astro/types';
+import type { Service, Link } from '../../types/content';
+import Container from '../global/Container.astro';
+import Section from '../global/Section.astro';
+import ServiceCard from './ServiceCard.astro';
+import SectionHeader from '../global/SectionHeader.astro';
+import { hasVisual } from '../../lib/video';
+
+interface Props {
+  /** Section ground. `raised` gives a white band for rhythm down a page. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  services: Service[];
+  link?: Link;
+  id?: string;
+  /** Give each card a media tile: its example clip, playing while on screen. */
+  media?: boolean;
+}
+const { eyebrow, heading, description, services, link, id, tone, media = false } = Astro.props;
+
+const hasClips = media && services.some((service) => hasVisual(service.video));
+---
+
+{
+  services.length > 0 && (
+    <Section id={id} tone={tone}>
+      <Container>
+        <SectionHeader eyebrow={eyebrow} heading={heading} description={description} link={link} />
+
+        <div data-service-grid>
+          <div class="card-grid grid gap-x-10 md:grid-cols-2 lg:grid-cols-4">
+            {services.map((service) => (
+              <ServiceCard service={service} media={media} />
+            ))}
+          </div>
+
+          {hasClips && (
+            <div class="mt-8 flex justify-end">
+              <button type="button" class="clips-toggle type-eyebrow" data-clips-toggle aria-pressed="false">
+                <span class="link-underline" data-clips-toggle-label>Pause clips</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </Container>
+    </Section>
+  )
+}
+
+<style>
+  .clips-toggle {
+    color: var(--ink-muted);
+    transition: color var(--duration-fast) var(--ease);
+  }
+  .clips-toggle:hover {
+    color: var(--ink);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .clips-toggle {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { fadeInWhenReady } from '../../lib/video';
+
+  // Each clip starts a little before it scrolls into view, so it is already
+  // moving when it arrives, and stops once well away. Never under reduced
+  // motion. One control pauses the whole grid, since the clips loop for
+  // longer than five seconds (WCAG 2.2.2).
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  for (const grid of document.querySelectorAll<HTMLElement>('[data-service-grid]')) {
+    const videos = [...grid.querySelectorAll<HTMLVideoElement>('[data-service-video]')];
+    if (!videos.length) continue;
+    const toggle = grid.querySelector<HTMLButtonElement>('[data-clips-toggle]');
+    const label = grid.querySelector<HTMLElement>('[data-clips-toggle-label]');
+    const inView = new Set<HTMLVideoElement>();
+    let paused = false;
+    videos.forEach(fadeInWhenReady);
+
+    const sync = () => {
+      for (const video of videos) {
+        if (inView.has(video) && !paused && !reduced.matches) video.play().catch(() => {});
+        else video.pause();
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const video = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) inView.add(video);
+          else inView.delete(video);
+        }
+        sync();
+      },
+      { rootMargin: '25% 0px' },
+    );
+    videos.forEach((video) => observer.observe(video));
+
+    toggle?.addEventListener('click', () => {
+      paused = !paused;
+      toggle.setAttribute('aria-pressed', String(paused));
+      if (label) label.textContent = paused ? 'Play clips' : 'Pause clips';
+      sync();
+    });
+
+    reduced.addEventListener('change', sync);
+
+    // Without hover, the card crossing a band across the middle of the screen
+    // is the one brought forward.
+    if (!window.matchMedia('(hover: hover)').matches) {
+      const band = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) entry.target.toggleAttribute('data-active', entry.isIntersecting);
+        },
+        { rootMargin: '-40% 0px -40% 0px' },
+      );
+      grid.querySelectorAll('[data-service-card]').forEach((card) => band.observe(card));
+    }
+  }
+</script>

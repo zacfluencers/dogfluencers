@@ -1,0 +1,66 @@
+---
+/**
+ * Case studies as rounded hairline cards: service chip, title, brand,
+ * summary and up to three verified figures.
+ */
+import type { Campaign, Link } from '../../../system/types/content';
+import SectionHead from './SectionHead.astro';
+import Chip from '../ui/Chip.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  campaigns: Campaign[];
+  link?: Link;
+  band?: 'paper' | 'cream' | 'soft' | 'night';
+}
+const { eyebrow, heading, description, campaigns, link, band = 'paper' } = Astro.props;
+---
+
+{campaigns.length > 0 && (
+  <section class:list={['band', `band-${band}`]}>
+    <div class="wrap">
+      <SectionHead eyebrow={eyebrow} heading={heading} description={description} link={link} />
+      <ul class="dcamp" data-reveal-group>
+        {campaigns.map((c) => (
+          <li>
+            <a href={`/campaigns/${c.slug}/`} class="dcamp-card">
+              {c.campaignType && <Chip>{c.campaignType}</Chip>}
+              <h3 class="d-h3 mt-6">{c.title}</h3>
+              {c.brand && <p class="d-ui d-muted mt-2">{c.brand}</p>}
+              <p class="d-body d-muted mt-4">{c.summary}</p>
+              {c.metrics && c.metrics.length > 0 && (
+                <dl class="dcamp-metrics">
+                  {c.metrics.slice(0, 3).map((m) => (
+                    <div><dt class="d-small d-muted">{m.label}</dt><dd class="d-h3">{m.value}</dd></div>
+                  ))}
+                </dl>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .dcamp { display: grid; gap: var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .dcamp-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--card-pad);
+    border-radius: var(--radius-lg);
+    background: var(--cream);
+    color: inherit;
+    text-decoration: none;
+    transition: translate 300ms var(--ease-out), box-shadow 300ms var(--ease-out);
+  }
+  :global(.band-cream) .dcamp-card { background: var(--paper); }
+  .dcamp-card:hover { translate: 0 -3px; box-shadow: 0 14px 30px -18px rgb(26 20 18 / 0.35); }
+  .dcamp-metrics { display: flex; flex-wrap: wrap; gap: 1.5rem 2rem; margin: auto 0 0; padding-top: 1.75rem; }
+  .dcamp-metrics dd { margin: 0.25rem 0 0; }
+  @media (min-width: 64rem) { .dcamp { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+</style>

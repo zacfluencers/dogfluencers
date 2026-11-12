@@ -1,0 +1,262 @@
+---
+/**
+ * Homepage hero. Copy on the left: chip, headline (the bar behind its last
+ * row), lead, two pills. On the right, a three-photo mosaic on the site
+ * grid: one tall photo and two stacked, the same gap as every card grid, so
+ * the mosaic starts on the line the 4-up grids' third column starts on.
+ * Two overlays, both inset by the same amount: a straight "content
+ * delivered" card inside the tall photo, and a straight night sticker on
+ * the top photo. Nothing is tilted: the grid stays square. The partner logos sit in the hero's foot.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import LogoMarks from '../../../system/components/sections/LogoMarks.astro';
+import type { Brand, Link, VideoRef } from '../../../system/types/content';
+import Button from '../ui/Button.astro';
+import Chip from '../ui/Chip.astro';
+import Paw from '../ui/Paw.astro';
+import Media from '../ui/Media.astro';
+import ClipToggle from '../ui/ClipToggle.astro';
+
+interface Props {
+  chip?: string;
+  heading: string;
+  description?: string;
+  primaryCta?: Link;
+  secondaryCta?: Link;
+  media: VideoRef[];
+  card?: { title: string; body: string };
+  brands?: Brand[];
+  brandsLabel?: string;
+}
+const { chip, heading, description, primaryCta, secondaryCta, media, card, brands = [], brandsLabel = 'Trusted by' } = Astro.props;
+const [main, top, bottom] = media;
+---
+
+<section class="band-paper dhero">
+  <div class="wrap">
+    <div class="dhero-grid">
+      <div class="dhero-copy">
+        {chip && <div class="enter enter-1"><Chip>{chip}</Chip></div>}
+        <h1 class="d-display enter enter-2 mt-7"><MarkedText text={heading} /></h1>
+        {description && <p class="d-lead d-muted enter enter-3 mt-7 max-w-[32rem]">{description}</p>}
+        <div class="enter enter-4 mt-9 flex flex-wrap gap-3">
+          {primaryCta && <Button href={primaryCta.href} event={primaryCta.event} size="large" arrow>{primaryCta.label}</Button>}
+          {secondaryCta && <Button href={secondaryCta.href} event={secondaryCta.event} variant="outline" size="large">{secondaryCta.label}</Button>}
+        </div>
+      </div>
+
+      <div class="dmosaic enter enter-3" data-boop-area>
+        <div class="dmosaic-main">
+          <Media video={main} ratio="auto" eager />
+          
+          {card && (
+            <div class="dhero-card" aria-hidden="true">
+              <span class="dhero-avatar"><Paw class="w-[55%]" /></span>
+              <span>
+                <span class="d-ui block">{card.title}</span>
+                <span class="d-small d-muted">{card.body}</span>
+              </span>
+            </div>
+          )}
+        </div>
+        <div class="dmosaic-top">
+          <Media video={top} ratio="auto" radius="md" eager />
+          <ClipToggle class="dhero-toggle" />
+        </div>
+        <div class="dmosaic-bottom"><Media video={bottom} ratio="auto" radius="md" eager /></div>
+      </div>
+    </div>
+
+    <template data-boop>
+      <span class="dsticker dsticker-paw"><Paw /></span>
+      <span class="dsticker dsticker-badge dsticker-round">Good<br />dog</span>
+      <span class="dsticker dsticker-badge dsticker-woof">Woof!</span>
+      <span class="dsticker dsticker-badge dsticker-cream">Pawsome</span>
+    </template>
+
+    {brands.length > 0 && (
+      <div class="dhero-logos reveal-rise">
+        <p class="d-ui d-muted">{brandsLabel}</p>
+        <div class="dhero-logos-row"><LogoMarks brands={brands} /></div>
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  // Boop: clicking a hero tile slaps a sticker down where it was clicked,
+  // cycling through the logo paw and a few badges, at a slight random angle.
+  // It holds a moment, then peels away. Buttons on the tiles (pause) keep
+  // working as normal. Decorative only, so it's hidden from assistive tech.
+  const area = document.querySelector<HTMLElement>('[data-boop-area]');
+  const set = document.querySelector<HTMLTemplateElement>('template[data-boop]');
+  if (area && set) {
+    const stickers = Array.from(set.content.children) as HTMLElement[];
+    let next = 0;
+    area.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest('button, a')) return;
+      const tile = target.closest<HTMLElement>('.dmosaic > div');
+      if (!tile || !stickers.length) return;
+      // Stickers live on the mosaic, above every tile, so one never slips
+      // under another tile whichever is clicked next.
+      const box = area.getBoundingClientRect();
+      const sticker = stickers[next++ % stickers.length].cloneNode(true) as HTMLElement;
+      sticker.setAttribute('aria-hidden', 'true');
+      // A click with no pointer position (keyboard, scripted) lands centre.
+      const pointed = event.detail > 0 && (event.clientX || event.clientY);
+      const spot = tile.getBoundingClientRect();
+      sticker.style.left = `${(pointed ? event.clientX : spot.left + spot.width / 2) - box.left}px`;
+      sticker.style.top = `${(pointed ? event.clientY : spot.top + spot.height / 2) - box.top}px`;
+      sticker.style.setProperty('--turn', `${Math.round(Math.random() * 36 - 18)}deg`);
+      area.append(sticker);
+      sticker.addEventListener('animationend', () => sticker.remove(), { once: true });
+      const all = area.querySelectorAll('.dsticker');
+      if (all.length > 8) all[0].remove();
+    });
+  }
+</script>
+
+<style>
+  /* Stickers may hang over a tile's edge and onto its neighbours, like a
+     real one; the hero only clips sideways, at the screen edge. */
+  .dmosaic { position: relative; }
+  .dmosaic > div { cursor: pointer; }
+  .dhero { overflow-x: clip; }
+  /* Stickers: a white die-cut edge, a soft lift off the photo, a slap down
+     (overshoot, settle), a hold, then a peel away. */
+  :global(.dsticker) {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+    translate: -50% -50%;
+    rotate: var(--turn, 0deg);
+    filter: drop-shadow(0 1px 1px rgb(26 20 18 / 0.18)) drop-shadow(0 8px 14px rgb(26 20 18 / 0.28));
+    animation: dsticker 3200ms var(--ease-out) forwards;
+  }
+  :global(.dsticker-paw) { width: clamp(3.75rem, 6.5vw, 5rem); color: var(--orange); }
+  :global(.dsticker-paw svg) { display: block; width: 100%; height: auto; overflow: visible; }
+  :global(.dsticker-paw path) { fill-rule: nonzero; stroke: #fff; stroke-width: 64; stroke-linejoin: round; paint-order: stroke; }
+  :global(.dsticker-badge) {
+    display: grid;
+    place-items: center;
+    border: 4px solid #fff;
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  :global(.dsticker-round) { width: 5.25rem; height: 5.25rem; border-radius: 999px; background: var(--night); color: var(--cream); font-size: 1.5rem; }
+  :global(.dsticker-woof) { padding: 0.55rem 1rem 0.45rem; border-radius: 999px; background: var(--orange); color: #fff; font-size: 1.75rem; }
+  :global(.dsticker-cream) { padding: 0.55rem 0.9rem 0.45rem; border-radius: var(--radius-sm); background: var(--cream); color: var(--night); font-size: 1.5rem; }
+  @keyframes dsticker {
+    0% { scale: 1.6; opacity: 0; }
+    9% { scale: 0.92; opacity: 1; }
+    15% { scale: 1.04; }
+    21% { scale: 1; }
+    82% { scale: 1; opacity: 1; translate: -50% -50%; }
+    100% { scale: 0.96; opacity: 0; translate: -50% calc(-50% - 0.75rem); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.dsticker) { animation: dsticker-calm 2600ms ease forwards; }
+    @keyframes dsticker-calm { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  }
+
+  .dhero { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3rem, 6vw, 4.5rem); }
+  .dhero-grid { display: grid; gap: 3rem var(--grid-gap); align-items: center; }
+
+  .dmosaic {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+    aspect-ratio: 1 / 1;
+  }
+  .dmosaic > div { position: relative; min-height: 0; }
+  .dmosaic :global(.dmedia) { height: 100%; }
+  :global(.dhero-toggle) { position: absolute; top: var(--overlay-inset); right: var(--overlay-inset); }
+  .dmosaic-main { grid-row: span 2; }
+
+  .dhero-card {
+    position: absolute;
+    left: var(--overlay-inset);
+    bottom: var(--overlay-inset);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1.1rem 0.7rem 0.7rem;
+    border-radius: var(--radius-md);
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(26 20 18 / 0.06), 0 12px 32px -12px rgb(26 20 18 / 0.28);
+  }
+  /* The card arrives after the photos, a small lift with the paw popping in. */
+  :global(html[data-motion]) .dhero-card { animation: dhero-card 700ms var(--ease-out) 900ms backwards; }
+  :global(html[data-motion]) .dhero-avatar { animation: dhero-pop 500ms var(--bounce) 1200ms backwards; }
+  @keyframes dhero-card { from { opacity: 0; translate: 0 12px; } }
+  @keyframes dhero-pop { from { scale: 0.4; opacity: 0; } }
+
+  /* On scroll the side photos drift up a touch faster than the main one,
+     so the mosaic parts slightly as the page moves on. */
+  @supports (animation-timeline: view()) {
+    :global(html[data-motion]) .dmosaic-top,
+    :global(html[data-motion]) .dmosaic-bottom { animation: dmosaic-part linear both; animation-timeline: view(); animation-range: exit 0% exit 100%; }
+    :global(html[data-motion]) .dmosaic-bottom { animation-name: dmosaic-part-more; }
+    @keyframes dmosaic-part { to { translate: 0 -2rem; } }
+    @keyframes dmosaic-part-more { to { translate: 0 -3.5rem; } }
+  }
+  .dhero-avatar { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: 999px; background: var(--orange); color: #fff; }
+
+  .dhero-sticker {
+    position: absolute;
+    top: var(--overlay-inset);
+    right: var(--overlay-inset);
+    padding: 0.6rem 0.85rem 0.55rem;
+    border-radius: var(--radius-sm);
+    background: var(--night);
+    color: var(--cream);
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 1.0625rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .dhero-logos {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: clamp(3.5rem, 7vw, 5.5rem);
+    padding-top: 2rem;
+    border-top: 1px solid var(--hairline);
+  }
+  .dhero-logos-row { opacity: 0.7; }
+  .dhero-logos-row :global(.logo-row) { --logo-unit: clamp(2.25rem, 3vw, 2.75rem); }
+
+  @media (min-width: 64rem) {
+    .dhero-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dhero-copy { padding-right: clamp(1rem, 3vw, 3rem); }
+    .dhero-logos { grid-template-columns: auto 1fr; align-items: center; gap: 3rem; }
+  }
+  @media (max-width: 30rem) {
+    .dhero-sticker { top: 0.6rem; right: 0.6rem; padding: 0.45rem 0.6rem 0.4rem; font-size: 0.75rem; }
+    .dhero-card { left: 0.6rem; right: 0.6rem; bottom: 0.6rem; gap: 0.55rem; padding: 0.5rem 0.75rem 0.5rem 0.5rem; }
+    .dhero-avatar { width: 2rem; height: 2rem; }
+    .dhero-card :global(.d-ui) { font-size: 0.8125rem; }
+    .dhero-card :global(.d-small) { font-size: 0.75rem; }
+  }
+  /* Phones: the main tile full width, so its card has room, and the two
+     smaller tiles side by side beneath it. */
+  @media (max-width: 39.99rem) {
+    .dmosaic { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; aspect-ratio: auto; }
+    .dmosaic-main { grid-row: auto; grid-column: span 2; aspect-ratio: 5 / 4; }
+    .dmosaic-top, .dmosaic-bottom { aspect-ratio: 4 / 5; }
+    :global(html[data-motion]) .dmosaic-top,
+    :global(html[data-motion]) .dmosaic-bottom { animation: none; }
+  }
+</style>

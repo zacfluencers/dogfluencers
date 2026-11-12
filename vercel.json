@@ -1,0 +1,175 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "astro",
+  "trailingSlash": true,
+  "regions": [
+    "dub1"
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/review-digest/",
+      "schedule": "0 8,9 * * *"
+    },
+    {
+      "path": "/api/cron/mailchimp-sync/",
+      "schedule": "20 * * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/your-complete-guide-to-ugc-for-pet-food-brands/",
+      "destination": "/insights/your-complete-guide-to-ugc-for-pet-food-brands/",
+      "permanent": true
+    },
+    {
+      "source": "/best-hashtag-strategy-for-dog-influencers/",
+      "destination": "/insights/best-hashtag-strategy-for-dog-influencers/",
+      "permanent": true
+    },
+    {
+      "source": "/everything-you-need-to-know-about-dogpool-from-deadpool-wolverine/",
+      "destination": "/insights/everything-you-need-to-know-about-dogpool-from-deadpool-wolverine/",
+      "permanent": true
+    },
+    {
+      "source": "/everything-you-need-to-know-about-pippin-from-come-outside/",
+      "destination": "/insights/everything-you-need-to-know-about-pippin-from-come-outside/",
+      "permanent": true
+    },
+    {
+      "source": "/mistakes-to-avoid-when-renting-a-puppy-for-a-day/",
+      "destination": "/insights/mistakes-to-avoid-when-renting-a-puppy-for-a-day/",
+      "permanent": true
+    },
+    {
+      "source": "/how-to-rent-a-puppy-for-a-day/",
+      "destination": "/insights/how-to-rent-a-puppy-for-a-day/",
+      "permanent": true
+    },
+    {
+      "source": "/top-designer-dog-apparel-brands-for-your-dog/",
+      "destination": "/insights/top-designer-dog-apparel-brands-for-your-dog/",
+      "permanent": true
+    },
+    {
+      "source": "/tips-on-shopping-for-designer-dog-apparel/",
+      "destination": "/insights/tips-on-shopping-for-designer-dog-apparel/",
+      "permanent": true
+    },
+    {
+      "source": "/the-biggest-dog-model-influencers-of-2024/",
+      "destination": "/insights/the-biggest-dog-model-influencers-of-2024/",
+      "permanent": true
+    },
+    {
+      "source": "/working-with-a-dog-modelling-agency-uk-everything-you-need-to-know/",
+      "destination": "/insights/working-with-a-dog-modelling-agency-uk-everything-you-need-to-know/",
+      "permanent": true
+    },
+    {
+      "source": "/top-10-dog-models-the-best-breeds-for-dog-modelling-and-how-to-succeed/",
+      "destination": "/insights/top-10-dog-models-the-best-breeds-for-dog-modelling-and-how-to-succeed/",
+      "permanent": true
+    },
+    {
+      "source": "/dog-modeling-101-the-ultimate-guide/",
+      "destination": "/insights/dog-modeling-101-the-ultimate-guide/",
+      "permanent": true
+    },
+    {
+      "source": "/why-quality-assurance-matters-in-influencer-marketing/",
+      "destination": "/insights/why-quality-assurance-matters-in-influencer-marketing/",
+      "permanent": true
+    },
+    {
+      "source": "/behind-the-scenes-creating-captivating-ad-content-with-dog-influencers/",
+      "destination": "/insights/behind-the-scenes-creating-captivating-ad-content-with-dog-influencers/",
+      "permanent": true
+    },
+    {
+      "source": "/how-to-optimize-your-instagram-profile-for-maximum-engagement/",
+      "destination": "/insights/how-to-optimize-your-instagram-profile-for-maximum-engagement/",
+      "permanent": true
+    },
+    {
+      "source": "/creating-a-successful-brand-collaboration-with-dogfluencers/",
+      "destination": "/insights/creating-a-successful-brand-collaboration-with-dogfluencers/",
+      "permanent": true
+    },
+    {
+      "source": "/the-role-of-authenticity-in-dog-influencer-marketing/",
+      "destination": "/insights/the-role-of-authenticity-in-dog-influencer-marketing/",
+      "permanent": true
+    },
+    {
+      "source": "/the-benefits-of-collaborating-with-dog-influencers-for-product-launches/",
+      "destination": "/insights/the-benefits-of-collaborating-with-dog-influencers-for-product-launches/",
+      "permanent": true
+    },
+    {
+      "source": "/creating-engaging-user-generated-content-with-your-pooch/",
+      "destination": "/insights/creating-engaging-user-generated-content-with-your-pooch/",
+      "permanent": true
+    },
+    {
+      "source": "/how-to-leverage-dog-influencers-for-your-brands-marketing-strategy/",
+      "destination": "/insights/how-to-leverage-dog-influencers-for-your-brands-marketing-strategy/",
+      "permanent": true
+    },
+    {
+      "source": "/unleash-the-power-of-dog-influencers-why-brands-should-partner-with-services-like-dogfluencers/",
+      "destination": "/insights/unleash-the-power-of-dog-influencers-why-brands-should-partner-with-services-like-dogfluencers/",
+      "permanent": true
+    },
+    {
+      "source": "/blog/",
+      "destination": "/insights/",
+      "permanent": true
+    },
+    {
+      "source": "/about-us/",
+      "destination": "/about/",
+      "permanent": true
+    },
+    {
+      "source": "/brands/",
+      "destination": "/for-brands/",
+      "permanent": true
+    },
+    {
+      "source": "/influencers/",
+      "destination": "/for-creators/",
+      "permanent": true
+    },
+    {
+      "source": "/faq/",
+      "destination": "/for-creators/",
+      "permanent": true
+    },
+    {
+      "source": "/privacy-policy/",
+      "destination": "/privacy/",
+      "permanent": true
+    },
+    {
+      "source": "/terms-conditions/",
+      "destination": "/terms/",
+      "permanent": true
+    },
+    {
+      "source": "/mailing-list-signup/",
+      "destination": "/join/",
+      "permanent": true
+    },
+    {
+      "source": "/login/",
+      "destination": "/creator/login/",
+      "permanent": true
+    },
+    {
+      "source": "/account/",
+      "destination": "/creator/profile/",
+      "permanent": true
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+---
+import type { CreatorCategory } from '../../types/content';
+import Media from '../global/Media.astro';
+
+interface Props {
+  categories: CreatorCategory[];
+  /**
+   * `list` omits imagery and renders a tighter hairline list. `index` sets
+   * each name at display size with its description beside it, for a page
+   * that has no category imagery but wants the categories to carry weight.
+   */
+  variant?: 'cards' | 'list' | 'index';
+}
+const { categories, variant = 'cards' } = Astro.props;
+const sorted = [...categories].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+---
+
+{
+  variant === 'cards' ? (
+    <ul class="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+      {sorted.map((category) => (
+        <li class="flex flex-col gap-4">
+          <Media media={category.image} ratio="1 / 1" fallbackLabel="Category image" />
+          <h3 class="type-heading">{category.name}</h3>
+          {category.description && <p class="type-caption muted">{category.description}</p>}
+        </li>
+      ))}
+    </ul>
+  ) : variant === 'index' ? (
+    <ul class="flex flex-col border-b border-[var(--hairline-strong)]" data-reveal-group>
+      {sorted.map((category) => (
+        <li class="grid gap-3 border-t border-[var(--hairline-strong)] py-8 lg:grid-cols-2 lg:items-baseline lg:gap-x-10 lg:py-10">
+          <h3 class="type-display-m">{category.name}</h3>
+          {category.description && <p class="type-body muted measure">{category.description}</p>}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <ul class="flex flex-col">
+      {sorted.map((category) => (
+        <li class="flex flex-col gap-2 border-t border-[var(--hairline)] py-6 sm:flex-row sm:items-baseline sm:gap-10">
+          <h3 class="type-heading sm:w-64 sm:shrink-0">{category.name}</h3>
+          {category.description && <p class="type-body muted measure">{category.description}</p>}
+        </li>
+      ))}
+    </ul>
+  )
+}

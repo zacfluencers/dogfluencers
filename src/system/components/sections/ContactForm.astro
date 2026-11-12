@@ -1,0 +1,197 @@
+---
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+/**
+ * Campaign enquiry form.
+ *
+ * Works without JavaScript by posting to the configured endpoint. JavaScript
+ * upgrades it to an async submit with accessible status messaging. No API keys
+ * or provider credentials appear client-side — the endpoint is a public URL.
+ */
+import type { AgencyConfig } from '../../types/agency';
+import Container from '../global/Container.astro';
+import Section from '../global/Section.astro';
+import Button from '../global/Button.astro';
+import { HONEYPOT_FIELD } from '../../lib/enquiry';
+
+interface Props {
+  agency: AgencyConfig;
+  heading?: string;
+  description?: string;
+  services: { title: string; slug: string }[];
+  /** Where the form posts. Falls back to PUBLIC_FORM_ENDPOINT. */
+  endpoint?: string;
+  id?: string;
+  /** `tight` straight after a type-only masthead on the same ground. */
+  spacing?: 'default' | 'tight';
+}
+const { agency, heading, description, services, id = 'enquiry', spacing } = Astro.props;
+
+const endpoint = Astro.props.endpoint ?? (import.meta.env.PUBLIC_FORM_ENDPOINT as string | undefined);
+
+const field =
+  'min-h-14 w-full border border-[var(--hairline-strong)] bg-transparent px-4 py-3.5 text-[var(--ink)] ' +
+  'placeholder:text-[var(--ink-muted)] focus:border-[var(--accent)] focus:outline-none ' +
+  'transition-colors duration-[var(--duration-fast)]';
+const labelClass = 'type-eyebrow muted';
+const budgets = ['Under £5,000', '£5,000 to £15,000', '£15,000 to £50,000', '£50,000+', 'Not yet defined'];
+const timings = ['As soon as possible', 'Next 1 to 3 months', 'Next 3 to 6 months', 'Planning ahead'];
+---
+
+<Section id={id} spacing={spacing}>
+  <Container>
+    <div class="grid gap-14 lg:grid-cols-2 lg:gap-x-10">
+      <div class="heading-stack lg:sticky lg:top-32 lg:self-start">
+        {heading && <h2 class="reveal-mask type-display-m">{heading}</h2>}
+        {description && <p class="type-lead muted measure">{description}</p>}
+        <div class="flex flex-col gap-2 border-t border-[var(--hairline)] pt-6">
+          <p class="type-eyebrow muted">Or email us</p>
+          <a href={`mailto:${agency.contact.email}`} class="type-subheading link-underline self-start">
+            {agency.contact.email}
+          </a>
+        </div>
+      </div>
+
+      <form
+        id="enquiry-form"
+        action={endpoint}
+        method="post"
+        data-endpoint={endpoint}
+        class="flex flex-col gap-8"
+      >
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="name">Name *</label>
+            <input class={field} id="name" name="name" type="text" required autocomplete="name" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="company">Company *</label>
+            <input class={field} id="company" name="company" type="text" required autocomplete="organization" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="email">Email *</label>
+            <input class={field} id="email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="website">Website</label>
+            <input class={field} id="website" name="website" type="url" placeholder="https://" autocomplete="url" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="service">Service required *</label>
+            <select class={field} id="service" name="service" required>
+              <option value="">Select a service</option>
+              {services.map((service) => <option value={service.slug}>{service.title}</option>)}
+              <option value="not-sure">Not sure yet</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="category">Product category</label>
+            <select class={field} id="category" name="category">
+              <option value="">Select a category</option>
+              {agency.brandAudience.categories.map((category) => <option value={category}>{category}</option>)}
+            </select>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="budget">Budget</label>
+            <select class={field} id="budget" name="budget">
+              <option value="">Select a range</option>
+              {budgets.map((budget) => <option value={budget}>{budget}</option>)}
+            </select>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="timing">Campaign timing</label>
+            <select class={field} id="timing" name="timing">
+              <option value="">Select timing</option>
+              {timings.map((timing) => <option value={timing}>{timing}</option>)}
+            </select>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="quantity">Estimated product quantity</label>
+            <input class={field} id="quantity" name="quantity" type="text" inputmode="numeric" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class={labelClass} for="audience">Target audience</label>
+            <input class={field} id="audience" name="audience" type="text" />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class={labelClass} for="objective">Campaign objective *</label>
+          <textarea class={field} id="objective" name="objective" rows="3" required></textarea>
+        </div>
+
+        <!-- Spam trap: hidden from people and assistive tech, filled by bots. -->
+        <div class="absolute -left-[9999px]" aria-hidden="true">
+          <label for={HONEYPOT_FIELD}>Leave this empty</label>
+          <input id={HONEYPOT_FIELD} name={HONEYPOT_FIELD} type="text" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class={labelClass} for="notes">Anything else</label>
+          <textarea class={field} id="notes" name="notes" rows="4"></textarea>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-6">
+          <Button type="submit" size="large" event="contact_form_submit">Send enquiry</Button>
+          <p class="type-caption muted" id="form-status" role="status" aria-live="polite"></p>
+        </div>
+
+        {
+          !endpoint && SHOW_PLACEHOLDERS && (
+            <p class="type-caption border border-dashed border-[var(--accent)] p-4 text-[var(--accent)]">
+              Submission is not wired up. Set <code>PUBLIC_FORM_ENDPOINT</code> to a form handler,
+              then confirm notifications reach the team inbox.
+            </p>
+          )
+        }
+      </form>
+    </div>
+  </Container>
+</Section>
+
+<script>
+  const form = document.getElementById('enquiry-form') as HTMLFormElement | null;
+  const status = document.getElementById('form-status');
+
+  if (form && status) {
+    const endpoint = form.dataset.endpoint;
+
+    // A no-JavaScript submit that failed comes back with ?error=1.
+    if (new URLSearchParams(location.search).has('error')) {
+      status.textContent = 'Something went wrong. Please email us and we will pick it up.';
+    }
+
+    // Fire a form-start event once, for whichever analytics provider is wired up.
+    let started = false;
+    form.addEventListener('input', () => {
+      if (started) return;
+      started = true;
+      document.dispatchEvent(new CustomEvent('site:event', { detail: { name: 'contact_form_start' } }));
+    });
+
+    form.addEventListener('submit', async (event) => {
+      if (!endpoint) {
+        event.preventDefault();
+        status.textContent = 'This form is not connected yet. Please email us instead.';
+        return;
+      }
+
+      event.preventDefault();
+      const submit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      if (submit) submit.disabled = true;
+      status.textContent = 'Sending…';
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        location.assign('/contact/thanks/');
+      } catch {
+        status.textContent = 'Something went wrong. Please email us and we will pick it up.';
+        if (submit) submit.disabled = false;
+      }
+    });
+  }
+</script>

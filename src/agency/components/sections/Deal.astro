@@ -1,0 +1,141 @@
+---
+/**
+ * The deal: one per page, where we have hard, confirmed figures. In the
+ * manner of Linear and Stripe: a dark inset panel, a
+ * crisp headline split against one supporting line, then a row of three
+ * big figures in hairline cells, and a foot with the requirements as a
+ * checklist beside a single call to action. All structure comes from
+ * hairlines and type; no shadows, no gradients.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import type { Link } from '../../../system/types/content';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  label?: string;
+  heading: string;
+  description?: string;
+  stats: { value: string; label: string }[];
+  requirements?: string[];
+  /** Label above the pills in the foot. */
+  footLabel?: string;
+  cta?: Link;
+}
+const { label, heading, description, stats, requirements = [], footLabel = 'What you need', cta } = Astro.props;
+---
+
+<section class="band band-paper ddeal-band">
+  <div class="wrap">
+    <div class="band-night ddeal reveal-rise">
+      <div class="ddeal-head">
+        <div>
+          {label && <p class="ddeal-label"><span aria-hidden="true"></span>{label}</p>}
+          <h2 class="d-h1 ddeal-title"><MarkedText text={heading} /></h2>
+        </div>
+        {description && <p class="d-lead ddeal-desc">{description}</p>}
+      </div>
+
+      <dl class:list={['ddeal-stats', `ddeal-stats-${stats.length}`]} data-reveal-group>
+        {stats.map((stat) => (
+          <div class="ddeal-stat">
+            <dt class="ddeal-stat-label">{stat.label}</dt>
+            <dd class="ddeal-value">{stat.value === '∞' ? <span class="ddeal-inf">∞</span> : stat.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {(requirements.length > 0 || cta) && (
+        <div class="ddeal-foot">
+          {requirements.length > 0 && (
+            <div>
+              <p class="ddeal-foot-label">{footLabel}</p>
+              <ul class="ddeal-reqs">
+                {requirements.map((req) => (
+                  <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    {req}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {cta && <Button href={cta.href} event={cta.event} size="large" arrow>{cta.label}</Button>}
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .ddeal-band { padding-block: 0 var(--band-y); }
+  .ddeal { overflow: hidden; border-radius: var(--radius-lg); }
+
+  .ddeal-head {
+    display: grid;
+    gap: 1.5rem var(--grid-gap);
+    align-items: end;
+    padding: clamp(2rem, 4.5vw, 3.75rem) clamp(1.5rem, 4.5vw, 3.75rem) clamp(2rem, 4vw, 3rem);
+  }
+  .ddeal-label { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 1.25rem; padding: 0.35rem 0.75rem 0.35rem 0.6rem; border: 1px solid var(--hairline-strong); border-radius: 999px; font-size: 0.8125rem; font-weight: 600; color: var(--cream-muted); }
+  .ddeal-label span { width: 0.45rem; height: 0.45rem; border-radius: 999px; background: var(--orange); }
+  .ddeal-title { max-width: 14ch; }
+  .ddeal-desc { max-width: 30rem; color: var(--cream-muted); }
+
+  .ddeal-stats { display: grid; margin: 0; border-top: 1px solid var(--hairline); }
+  .ddeal-stat {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2.5rem;
+    min-height: clamp(10rem, 16vw, 13rem);
+    padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.5rem, 4.5vw, 3.75rem);
+    transition: background-color 300ms var(--ease-out);
+  }
+  .ddeal-stat + .ddeal-stat { border-top: 1px solid var(--hairline); }
+  .ddeal-stat:hover { background: rgb(249 234 208 / 0.035); }
+  .ddeal-stat-label { font-size: 0.9375rem; font-weight: 600; color: var(--cream-muted); }
+  .ddeal-value {
+    margin: 0;
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: clamp(4.5rem, 8vw, 7.5rem);
+    line-height: 0.82;
+    letter-spacing: -0.05em;
+    color: var(--cream);
+  }
+  .ddeal-stat:first-child .ddeal-value { color: var(--orange); }
+  /* The infinity sign draws small and light in this face: bring it up to
+     the digits' weight. */
+  .ddeal-inf { display: inline-block; font-family: var(--font-body); font-stretch: 100%; font-weight: 700; font-size: 1.5em; line-height: 0.55; translate: 0 0.04em; }
+
+  .ddeal-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.75rem 2rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.5rem, 4.5vw, 3.75rem);
+    border-top: 1px solid var(--hairline);
+  }
+  .ddeal-foot-label { margin: 0 0 0.85rem; font-size: 0.8125rem; font-weight: 600; color: var(--cream-muted); }
+  .ddeal-reqs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .ddeal-reqs li { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.85rem 0.5rem 0.65rem; border: 1px solid var(--hairline-strong); border-radius: 999px; font-size: 0.875rem; font-weight: 600; color: var(--cream); }
+  .ddeal-reqs svg { width: 0.95rem; height: 0.95rem; color: var(--orange); }
+
+  @media (min-width: 64rem) {
+    .ddeal-head { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ddeal-stats { grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); }
+    .ddeal-stats-2 { --cols: 2; }
+    .ddeal-stats-4 { --cols: 4; }
+    .ddeal-stats-4 .ddeal-value { font-size: clamp(4rem, 6.4vw, 6rem); }
+    .ddeal-stat + .ddeal-stat { border-top: 0; border-left: 1px solid var(--hairline); }
+  }
+  /* Phones: each figure becomes one compact row, label left, figure right. */
+  @media (max-width: 39.99rem) {
+    .ddeal-stat { flex-direction: row; align-items: center; gap: 1rem; min-height: 0; padding-block: 1.1rem; }
+    .ddeal-stat-label { max-width: 12rem; }
+    .ddeal-value, .ddeal-stats-4 .ddeal-value { font-size: 3.25rem; text-align: right; }
+    .ddeal-foot :global(.dbtn) { width: 100%; }
+  }
+</style>

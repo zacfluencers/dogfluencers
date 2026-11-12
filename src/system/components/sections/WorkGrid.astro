@@ -1,0 +1,390 @@
+---
+import type { ComponentProps } from 'astro/types';
+import type { Link, WorkItem } from '../../types/content';
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import Container from '../global/Container.astro';
+import Section from '../global/Section.astro';
+import SectionHeader from '../global/SectionHeader.astro';
+import ContentRequired from '../dev/ContentRequired.astro';
+import PlaceholderMark from '../dev/PlaceholderMark.astro';
+
+interface Props {
+  tone?: ComponentProps<typeof Section>['tone'];
+  heading?: string;
+  description?: string;
+  items: WorkItem[];
+  link?: Link;
+}
+const { tone, heading, description, items, link } = Astro.props;
+const hasClips = items.some((item) => item.video.src);
+
+// Four, or eight, sit one full row across at the clips' native 9:16, which
+// also keeps them from echoing the 4:5 service tiles; six run six across
+// (three on tablets), also whole. Any other count runs three across at 4:5,
+// so no piece is left alone on a last row.
+const sixUp = items.length > 0 && items.length % 6 === 0;
+const fourUp = !sixUp && items.length > 0 && items.length % 4 === 0;
+const tall = fourUp || sixUp;
+const hasFull = items.some((item) => item.video.full);
+---
+
+<!--
+  Proof by example: creator content made for clients, each tagged with the
+  brand and the service it was made under. Clips hold on their poster and play
+  while hovered; without hover, they play while on or near the screen, with a
+  pause control. The hero reel stays the page's one ambient
+  moment, so nothing here moves on its own on desktop.
+-->
+{
+  (items.length > 0 || SHOW_PLACEHOLDERS) && (
+    <Section tone={tone}>
+      <Container>
+        <SectionHeader heading={heading} description={description} link={link} />
+
+        {items.length > 0 ? (
+          <div data-work-grid>
+            <ul
+              class:list={[
+                'grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-10 md:gap-y-14',
+                fourUp ? 'lg:grid-cols-4' : sixUp ? 'md:grid-cols-3 lg:grid-cols-6' : 'md:grid-cols-3',
+              ]}
+              data-reveal-group
+            >
+              {items.map((item) => (
+                <li>
+                  <figure class="work-item flex flex-col gap-4" data-work-item>
+                    <div class="relative">
+                    <div class:list={['work-media', tall && 'work-media-tall']} aria-hidden={item.video.alt ? undefined : 'true'}>
+                      {item.video.src ? (
+                        /* The poster also sits behind the clip, so a moment where
+                           Safari blanks the video as playback starts still shows it. */
+                        <div
+                          class="work-zoom"
+                          style={item.video.poster ? `background-image: url("${item.video.poster}")` : undefined}
+                        >
+                          <video
+                            muted
+                            loop
+                            playsinline
+                            preload={item.video.poster ? 'none' : 'metadata'}
+                            poster={item.video.poster}
+                            aria-label={item.video.alt || undefined}
+                            data-work-video
+                            data-fade-in
+                          >
+                            <source src={item.video.poster ? item.video.src : `${item.video.src}#t=0.001`} type="video/mp4" />
+                          </video>
+                        </div>
+                      ) : (
+                        <div class="work-media-fallback">
+                          <span class="type-eyebrow muted">Creator content, 9:16</span>
+                        </div>
+                      )}
+                    </div>
+                    {item.video.full && (
+                      <button
+                        type="button"
+                        class="work-open"
+                        data-work-open={item.video.full}
+                        data-poster={item.video.poster}
+                        aria-label={`Play the full video with sound${item.video.alt ? `: ${item.video.alt}` : ''}`}
+                      >
+                        <span class="work-play type-eyebrow">Play</span>
+                      </button>
+                    )}
+                    </div>
+
+                    <figcaption class="flex flex-col gap-2">
+                      {(item.brand || item.service) && (
+                        <span class="type-eyebrow muted flex flex-col gap-y-1">
+                          {item.brand && <span class="text-[var(--ink)]">{item.brand}</span>}
+                          {item.service && <span>{item.service.title}</span>}
+                        </span>
+                      )}
+                      {item.caption && <span class="type-caption muted">{item.caption}</span>}
+                      {item.status === 'placeholder' && <PlaceholderMark reason="Awaiting real, rights-cleared work" />}
+                    </figcaption>
+                  </figure>
+                </li>
+              ))}
+            </ul>
+
+            {hasClips && (
+              <div class="work-toggle-row mt-8 justify-end">
+                <button type="button" class="work-toggle type-eyebrow" data-work-toggle aria-pressed="false">
+                  <span class="link-underline" data-work-toggle-label>Pause clips</span>
+                </button>
+              </div>
+            )}
+
+            {/* One player for the grid: a clip with a full-length version
+                opens it here, with sound and the browser's own controls. */}
+            {hasFull && (
+              <dialog class="work-player" data-work-player aria-label="Video player">
+                <button type="button" class="work-player-close type-eyebrow" data-work-player-close>
+                  <span class="link-underline">Close</span>
+                </button>
+                <video class="work-player-video" controls playsinline preload="none" data-work-player-video></video>
+              </dialog>
+            )}
+          </div>
+        ) : (
+          <ContentRequired
+            title="The work"
+            items={[
+              'Four to six 9:16 clips of creator content made for clients, usage rights cleared',
+              'For each: the brand (approved for display) and the service it was made under',
+              'A first-frame poster for each, so tiles never sit empty while loading',
+            ]}
+          />
+        )}
+      </Container>
+    </Section>
+  )
+}
+
+<style>
+  /* Three across, cropped from 9:16 to 4:5 so six sit in two calm rows
+     rather than a wall of tall video. Four across, shown whole at 9:16. */
+  .work-media {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .work-media-tall {
+    aspect-ratio: 9 / 16;
+  }
+  /* The hover zoom scales this wrapper, never the video: Safari repaints a
+     video layer that scales while playback starts, which flickered. */
+  .work-zoom {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: transform var(--duration-reveal) var(--ease-out);
+  }
+  .work-media video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--duration) var(--ease-out);
+  }
+  /* Hover only: touch screens get no zoom. */
+  @media (hover: hover) {
+    .work-item:hover .work-zoom {
+      transform: scale(1.03);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .work-zoom {
+      transform: none !important;
+    }
+  }
+  .work-media-fallback {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: var(--space-3);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 11px,
+      var(--hairline) 11px,
+      var(--hairline) 12px
+    );
+  }
+
+  /* A clip with a full-length version is a button over its tile. */
+  .work-open {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: var(--space-2);
+    cursor: pointer;
+  }
+  .work-open:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .work-play {
+    padding: 0.5em 0.8em;
+    background: var(--ink);
+    color: var(--ground);
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+  .work-open:hover .work-play {
+    background: var(--accent-fill);
+    color: var(--tone-accent-ink);
+  }
+
+  /* The player: the video at its own 9:16, as large as the screen allows,
+     on the black ground. */
+  .work-player {
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: var(--space-6) var(--space-2) var(--space-2);
+    border: 0;
+    background: transparent;
+    color: var(--tone-accent-ink);
+  }
+  .work-player[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .work-player::backdrop {
+    background: var(--tone-accent-fill);
+  }
+  .work-player-video {
+    display: block;
+    height: 100%;
+    max-width: 100%;
+    aspect-ratio: 9 / 16;
+    object-fit: contain;
+    background: var(--tone-accent-fill);
+  }
+  .work-player-close {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-3);
+    color: var(--tone-accent-ink);
+  }
+
+  /* The pause control only matters where clips play without a hover. */
+  .work-toggle-row {
+    display: none;
+  }
+  @media (hover: none) and (prefers-reduced-motion: no-preference) {
+    .work-toggle-row {
+      display: flex;
+    }
+  }
+  .work-toggle {
+    color: var(--ink-muted);
+    transition: color var(--duration-fast) var(--ease);
+  }
+  .work-toggle:hover {
+    color: var(--ink);
+  }
+</style>
+
+<script>
+  import { fadeInWhenReady } from '../../lib/video';
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const canHover = window.matchMedia('(hover: hover)');
+
+  // Full-length videos: the clip's button opens the grid's player, which
+  // plays with sound (the click is the user's go-ahead) and stops on close.
+  for (const player of document.querySelectorAll<HTMLDialogElement>('[data-work-player]')) {
+    const grid = player.closest<HTMLElement>('[data-work-grid]')!;
+    const video = player.querySelector<HTMLVideoElement>('[data-work-player-video]')!;
+    const previews = [...grid.querySelectorAll<HTMLVideoElement>('[data-work-video]')];
+
+    for (const button of grid.querySelectorAll<HTMLButtonElement>('[data-work-open]')) {
+      button.addEventListener('click', () => {
+        previews.forEach((preview) => preview.pause());
+        video.poster = button.dataset.poster ?? '';
+        video.src = button.dataset.workOpen!;
+        player.showModal();
+        video.play().catch(() => {});
+      });
+    }
+    player.querySelector('[data-work-player-close]')!.addEventListener('click', () => player.close());
+    // A click on the black around the video closes it too.
+    player.addEventListener('click', (event) => {
+      if (event.target === player) player.close();
+    });
+    player.addEventListener('close', () => {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+    });
+  }
+
+  for (const grid of document.querySelectorAll<HTMLElement>('[data-work-grid]')) {
+    const items = [...grid.querySelectorAll<HTMLElement>('[data-work-item]')].filter((item) =>
+      item.querySelector('[data-work-video]'),
+    );
+    if (!items.length) continue;
+    const videoOf = (item: HTMLElement) => item.querySelector<HTMLVideoElement>('[data-work-video]')!;
+    items.forEach((item) => fadeInWhenReady(videoOf(item)));
+
+    const play = (item: HTMLElement) => {
+      if (!reduced.matches) videoOf(item).play().catch(() => {});
+    };
+    const pause = (item: HTMLElement) => videoOf(item).pause();
+
+    if (canHover.matches) {
+      // Load each clip as the grid nears the screen, so a hover plays at once
+      // instead of blanking the poster while Safari fetches the first frame.
+      const warm = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            const video = videoOf(entry.target as HTMLElement);
+            if (video.preload !== 'auto') {
+              video.preload = 'auto';
+              video.load();
+            }
+            warm.unobserve(entry.target);
+          }
+        },
+        { rootMargin: '50% 0px' },
+      );
+      for (const item of items) {
+        warm.observe(item);
+        item.addEventListener('pointerenter', () => play(item));
+        item.addEventListener('pointerleave', () => pause(item));
+      }
+      continue;
+    }
+
+    // Without hover: each clip starts a quarter screen before it scrolls in
+    // and runs until well past, so it is already moving when seen. This
+    // replaced a play-only-in-a-middle-band rule that flickered on iOS
+    // Safari: the collapsing address bar moved the band mid-scroll, flipping
+    // clips between play and pause, and each start flashed black over the
+    // poster. The pause control holds every clip, since they loop past five
+    // seconds (WCAG 2.2.2).
+    const toggle = grid.querySelector<HTMLButtonElement>('[data-work-toggle]');
+    const label = grid.querySelector<HTMLElement>('[data-work-toggle-label]');
+    const near = new Set<HTMLElement>();
+    let paused = false;
+
+    const sync = () => {
+      for (const item of items) {
+        if (near.has(item) && !paused) play(item);
+        else pause(item);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const item = entry.target as HTMLElement;
+          if (entry.isIntersecting) near.add(item);
+          else near.delete(item);
+        }
+        sync();
+      },
+      { rootMargin: '25% 0px' },
+    );
+    items.forEach((item) => observer.observe(item));
+
+    toggle?.addEventListener('click', () => {
+      paused = !paused;
+      toggle.setAttribute('aria-pressed', String(paused));
+      if (label) label.textContent = paused ? 'Play clips' : 'Pause clips';
+      sync();
+    });
+
+    reduced.addEventListener('change', sync);
+  }
+</script>

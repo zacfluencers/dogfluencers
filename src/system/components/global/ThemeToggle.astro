@@ -1,0 +1,106 @@
+---
+/**
+ * Light / dark switch. Until it is used the site follows the system setting;
+ * once used, the choice is remembered and set as `data-theme` on <html>,
+ * which the agency theme already honours in both directions.
+ *
+ * The icon is a disc half filled with ink. Switching turns it half a turn,
+ * so the filled half swaps sides: the gesture is the state change.
+ *
+ * Pair with `ThemeScript` in <head>, so a stored choice applies before first
+ * paint rather than flashing the system theme.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={['theme-toggle', className]}
+  data-theme-toggle
+  aria-label="Switch colour theme"
+>
+  <svg class="theme-toggle-icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+    <circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5" />
+    <path d="M9 1a8 8 0 0 1 0 16Z" fill="currentColor" />
+  </svg>
+</button>
+
+<style>
+  /* Same 44px square as the menu button, so the two sit as a pair. */
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    inline-size: 44px;
+    block-size: 44px;
+    flex: none;
+    color: var(--ink);
+  }
+
+  .theme-toggle-icon {
+    transition: rotate var(--duration) var(--ease-out);
+  }
+
+  :global(:root[data-theme-current='dark']) .theme-toggle-icon {
+    rotate: 180deg;
+  }
+
+  .theme-toggle:active .theme-toggle-icon {
+    translate: 0 1px;
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const dark = window.matchMedia('(prefers-color-scheme: dark)');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const current = () =>
+    (root.dataset.theme as 'light' | 'dark' | undefined) ?? (dark.matches ? 'dark' : 'light');
+
+  // Keeps the icon, the label and the browser chrome colour in step with
+  // whichever theme is showing, chosen or inherited from the system.
+  const sync = () => {
+    const theme = current();
+    root.dataset.themeCurrent = theme;
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+      button.setAttribute('aria-label', `Switch to ${next} mode`);
+    });
+    const ground = getComputedStyle(root).getPropertyValue('--ground').trim();
+    if (ground) {
+      document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+        meta.setAttribute('content', ground);
+      });
+    }
+  };
+
+  const apply = (theme: 'light' | 'dark') => {
+    root.dataset.theme = theme;
+    try {
+      localStorage.setItem('theme', theme);
+    } catch {
+      /* Storage blocked: the choice lasts for this page only. */
+    }
+    sync();
+  };
+
+  document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const next = current() === 'dark' ? 'light' : 'dark';
+      // A short cross-fade between schemes where the browser can do it.
+      if (!document.startViewTransition || reduced.matches) {
+        apply(next);
+        return;
+      }
+      root.dataset.themeSwitching = '';
+      const transition = document.startViewTransition(() => apply(next));
+      transition.finished.finally(() => delete root.dataset.themeSwitching);
+    });
+  });
+
+  dark.addEventListener('change', sync);
+  sync();
+</script>

@@ -1,0 +1,115 @@
+---
+/**
+ * Accessible accordion using native <details>. Content stays in the DOM and
+ * crawlable, keyboard behaviour comes free, and it needs no JavaScript.
+ */
+import type { Faq } from '../../types/content';
+import Container from '../global/Container.astro';
+import type { ComponentProps } from 'astro/types';
+import Section from '../global/Section.astro';
+
+interface Props {
+  /** Section ground; see `Section tone`. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  eyebrow?: string;
+  heading?: string;
+  faqs: Faq[];
+  id?: string;
+}
+const { eyebrow, heading, faqs, id, tone } = Astro.props;
+const sorted = [...faqs].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+---
+
+{
+  sorted.length > 0 && (
+    <Section id={id} tone={tone}>
+      <Container>
+        <div class="grid gap-12 lg:grid-cols-2 lg:gap-x-10">
+          <div class="heading-stack lg:sticky lg:top-32 lg:self-start">
+            {eyebrow && <p class="type-eyebrow muted">{eyebrow}</p>}
+            {heading && <h2 class="reveal-mask type-display-l">{heading}</h2>}
+          </div>
+
+          <div class="flex flex-col">
+            {sorted.map((faq) => (
+              <details class="faq border-t border-[var(--hairline)] last:border-b">
+                <summary class="flex cursor-pointer list-none items-start justify-between gap-6 py-6">
+                  <h3 class="type-subheading">{faq.question}</h3>
+                  <span aria-hidden="true" class="faq-icon mt-1 shrink-0">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M6.5 0v13" class="faq-icon-bar" />
+                      <path d="M0 6.5h13" />
+                    </svg>
+                  </span>
+                </summary>
+                <div class="faq-answer">
+                  <p class="type-body muted measure pb-7 pr-10">{faq.answer}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </Container>
+    </Section>
+  )
+}
+
+<style>
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The whole row responds to hover, not just the question text. */
+  .faq summary:hover .faq-icon,
+  .faq[open] .faq-icon {
+    color: var(--accent);
+  }
+
+  .faq-icon {
+    color: var(--ink-muted);
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      transform var(--duration) var(--ease-out);
+  }
+
+  /* Plus becomes minus: the vertical bar collapses into the horizontal one. */
+  .faq-icon-bar {
+    transform-origin: center;
+    transition: transform var(--duration) var(--ease-out);
+  }
+  .faq[open] .faq-icon {
+    transform: rotate(180deg);
+  }
+  .faq[open] .faq-icon-bar {
+    transform: scaleY(0);
+  }
+
+  /*
+   * Height animates to and from `auto` via interpolate-size. Browsers without
+   * it simply open instantly, which is the correct fallback.
+   */
+  .faq::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size var(--duration) var(--ease-out),
+      content-visibility var(--duration) allow-discrete;
+  }
+
+  .faq[open]::details-content {
+    block-size: auto;
+  }
+
+  /* Fallback for browsers without ::details-content support. */
+  @supports not selector(details::details-content) {
+    .faq .faq-answer {
+      animation: faq-in var(--duration) var(--ease-out);
+    }
+    @keyframes faq-in {
+      from {
+        opacity: 0;
+        transform: translateY(-0.25rem);
+      }
+    }
+  }
+</style>

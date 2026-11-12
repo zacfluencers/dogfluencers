@@ -1,0 +1,62 @@
+---
+/**
+ * The header row above a section's content: heading on the left; description
+ * and the section's "see all" link on the right, sharing the heading's
+ * baseline at desktop width.
+ *
+ * With a description the header splits into two equal columns at desktop,
+ * so the description starts on the same line as the third column of a
+ * four-up grid below, and its first line shares the heading's cap line: the
+ * two read as one statement, and the header is only as tall as its longer side. With only a link it runs edge to edge and the link
+ * aligns to the container's right edge.
+ *
+ * The link lives up here rather than under the grid. Below the grid it sits
+ * directly beneath a row of per-card links in the same style and reads as a
+ * stray extra card link.
+ */
+import type { Link } from '../../types/content';
+import TextLink from './TextLink.astro';
+import MarkedText from './MarkedText.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  link?: Link;
+  class?: string;
+}
+const { eyebrow, heading, description, link, class: className = '' } = Astro.props;
+const hasAside = Boolean(description || link);
+---
+
+{
+  (heading || eyebrow || hasAside) && (
+    <div
+      class:list={[
+        'mb-[var(--section-head-gap)] flex flex-col gap-8',
+        description
+          ? 'lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10'
+          : 'lg:flex-row lg:items-end lg:justify-between lg:gap-16',
+        className,
+      ]}
+    >
+      {(eyebrow || heading) && (
+        <div class="heading-stack">
+          {eyebrow && <p class="type-eyebrow muted">{eyebrow}</p>}
+          {heading && <h2 class="reveal-mask type-display-l max-w-3xl"><MarkedText text={heading} /></h2>}
+        </div>
+      )}
+
+      {hasAside && (
+        <div class="reveal-rise flex shrink-0 flex-col items-start gap-6 lg:max-w-lg" style="--reveal-delay: 120ms">
+          {description && <p class="type-lead muted">{description}</p>}
+          {link && (
+            <TextLink href={link.href} event={link.event}>
+              {link.label}
+            </TextLink>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

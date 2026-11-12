@@ -1,0 +1,151 @@
+---
+/**
+ * The services index. A sticky row of pills (one per service, the current
+ * one highlighted) above a stack of panels, one per service, each its own
+ * rounded cream panel so the four read as four distinct offers.
+ *
+ * A panel: the service's clip on one side (sides alternate), and on the
+ * other the fact chip, the name, the claim, what's included as a ticked
+ * two-up list, and the way in.
+ */
+import type { Service } from '../../../system/types/content';
+import Media from '../ui/Media.astro';
+import Button from '../ui/Button.astro';
+import ClipToggle from '../ui/ClipToggle.astro';
+
+interface Props {
+  services: Service[];
+  facts?: Record<string, string>;
+}
+const { services, facts = {} } = Astro.props;
+---
+
+<section class="band band-paper dsvc-band" data-clip-group>
+  <div class="wrap">
+    <nav class="dsvc-nav" aria-label="Services on this page">
+      <ul>
+        {services.map((service, i) => (
+          <li><a href={`#${service.slug}`} class:list={['dsvc-pill', i === 0 && 'is-current']} data-svc-link={service.slug}>{service.title}</a></li>
+        ))}
+      </ul>
+      <ClipToggle class="dsvc-toggle" />
+    </nav>
+
+    <div class="dsvc-stack">
+      {services.map((service, i) => (
+        <article id={service.slug} class:list={['dsvc', i % 2 === 1 && 'dsvc-flip']} data-svc={service.slug}>
+          <a href={`/services/${service.slug}/`} class="dsvc-media lift reveal-rise" tabindex="-1" aria-hidden="true">
+            <Media video={service.video} ratio="4 / 5" radius="md" />
+          </a>
+          <div class="dsvc-copy reveal-rise">
+            {facts[service.slug] && <span class="dsvc-fact">{facts[service.slug]}</span>}
+            <h2 class="d-h1 dsvc-title">{service.title}</h2>
+            <p class="d-lead d-muted dsvc-lead">{service.shortDescription}</p>
+            {service.features && service.features.length > 0 && (
+              <ul class="dsvc-list">
+                {service.features.slice(0, 4).map((f) => (
+                  <li>
+                    <span class="dsvc-tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+                    <span>
+                      <span class="d-ui block">{f.title}</span>
+                      {f.description && <span class="d-small d-muted">{f.description}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div class="dsvc-actions">
+              <Button href={`/services/${service.slug}/`} arrow>Find out more</Button>
+              <Button href="/contact/" variant="outline">Start a campaign</Button>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  // Highlight the pill for the panel being read.
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-svc-link]');
+  const panels = document.querySelectorAll<HTMLElement>('[data-svc]');
+  if (links.length && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const slug = (e.target as HTMLElement).dataset.svc;
+          links.forEach((l) => {
+            const on = l.dataset.svcLink === slug;
+            l.classList.toggle('is-current', on);
+            // On phones the row scrolls sideways: keep the current pill in view.
+            const row = l.closest('ul');
+            if (on && row && row.scrollWidth > row.clientWidth) row.scrollTo({ left: l.offsetLeft - 8, behavior: 'smooth' });
+          });
+        }
+      },
+      { rootMargin: '-45% 0px -50% 0px' }
+    );
+    panels.forEach((p) => io.observe(p));
+  }
+</script>
+
+<style>
+  .dsvc-band { padding-top: 0; }
+
+  .dsvc-nav {
+    position: sticky;
+    top: calc(var(--header-h) + 0.75rem);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: var(--grid-gap);
+    padding: 0.4rem;
+    border-radius: 999px;
+    background: rgb(255 250 243 / 0.88);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+  .dsvc-nav ul { display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; overflow-x: auto; scrollbar-width: none; }
+  .dsvc-nav ul::-webkit-scrollbar { display: none; }
+  .dsvc-pill { display: block; padding: 0.6rem 1rem; border-radius: 999px; font-size: 0.9375rem; font-weight: 600; white-space: nowrap; color: var(--night-muted); text-decoration: none; transition: background-color 200ms ease, color 200ms ease; }
+  .dsvc-pill:hover { color: var(--night); }
+  .dsvc-pill.is-current { background: var(--night); color: var(--cream); }
+  :global(.dsvc-toggle) { flex: none; }
+
+  .dsvc-stack { display: grid; gap: var(--grid-gap); }
+  .dsvc {
+    display: grid;
+    gap: 2.5rem var(--grid-gap);
+    align-items: center;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    border-radius: var(--radius-lg);
+    background: var(--cream);
+    scroll-margin-top: calc(var(--header-h) + 5rem);
+  }
+  .dsvc-media { display: block; }
+  .dsvc-copy { padding: clamp(0.5rem, 3vw, 2.5rem); }
+  .dsvc-fact { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 999px; background: var(--paper); font-size: 0.8125rem; font-weight: 600; }
+  .dsvc-title { margin-top: 1.25rem; }
+  .dsvc-lead { margin-top: 1.25rem; max-width: 32rem; }
+  .dsvc-list { display: grid; gap: 1.25rem var(--grid-gap); margin: 2rem 0 0; padding: 1.75rem 0 0; list-style: none; border-top: 1px solid var(--hairline-strong); }
+  .dsvc-list li { display: grid; grid-template-columns: 1.5rem 1fr; gap: 0.75rem; align-items: start; }
+  .dsvc-list .d-small { display: block; margin-top: 0.2rem; }
+  .dsvc-tick { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; margin-top: -0.05rem; border-radius: 999px; background: var(--orange); color: var(--night); }
+  .dsvc-tick svg { width: 0.8rem; height: 0.8rem; }
+  .dsvc-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.25rem; }
+
+  @media (min-width: 40rem) { .dsvc-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) {
+    .dsvc { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dsvc-flip .dsvc-media { order: 2; }
+  }
+  @media (max-width: 39.99rem) {
+    .dsvc-nav { border-radius: var(--radius-md); }
+    .dsvc-media :global(.dmedia) { aspect-ratio: 1 / 1 !important; }
+    .dsvc-actions { flex-direction: column; }
+    .dsvc-actions :global(.dbtn) { width: 100%; }
+  }
+</style>

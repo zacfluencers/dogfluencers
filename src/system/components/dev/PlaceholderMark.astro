@@ -1,0 +1,26 @@
+---
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+/**
+ * Review-mode marker. Makes unapproved content unmistakable during review
+ * (`SHOW_PLACEHOLDERS`: dev, or a review deployment) and disappears entirely
+ * from a launch build.
+ */
+interface Props { reason?: string; class?: string; }
+const { reason = 'Placeholder, awaiting sign-off', class: className = '' } = Astro.props;
+const show = SHOW_PLACEHOLDERS;
+// `self-start`: inside a flex column it keeps its own width instead of stretching.
+---
+
+{
+  show && (
+    <span
+      class:list={[
+        'type-eyebrow pointer-events-none inline-flex items-center self-start justify-self-start border border-dashed border-[var(--accent)] px-2 py-1 text-[var(--accent)]',
+        className,
+      ]}
+      title={reason}
+    >
+      Placeholder
+    </span>
+  )
+}

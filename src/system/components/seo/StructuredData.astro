@@ -1,0 +1,13 @@
+---
+interface Props {
+  /** One or more JSON-LD objects. Only schema that accurately describes the page. */
+  schemas: Record<string, unknown>[];
+}
+const { schemas } = Astro.props;
+---
+
+{
+  schemas.map((schema) => (
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  ))
+}

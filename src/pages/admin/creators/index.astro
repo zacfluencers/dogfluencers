@@ -1,0 +1,23 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { crm } from '../../../agency/crm';
+import { isAdmin } from '../../../system/crm/supabase';
+import { listAllCreators } from '../../../system/crm/server';
+import { parseCreatorQuery, toRow } from '../../../system/crm/query';
+import CreatorsTable from '../../../system/components/crm/CreatorsTable.astro';
+
+export const prerender = false;
+
+// The middleware has sent anyone signed out to the login page; this checks
+// they are on the team. The database checks again on every read.
+const { supabase } = Astro.locals.session!;
+if (!(await isAdmin(supabase))) return Astro.redirect('/admin/login/?error=forbidden', 303);
+
+const creators = await listAllCreators(supabase);
+const rows = creators.map((c) => toRow(c, crm));
+const query = parseCreatorQuery(Astro.url.searchParams, crm);
+---
+
+<AdminLayout title="Creators">
+  <CreatorsTable rows={rows} query={query} config={crm} />
+</AdminLayout>

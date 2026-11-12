@@ -1,0 +1,70 @@
+---
+/**
+ * The team CRM's frame: the lockup, one line of navigation and the theme
+ * switch, with the full width given to the data. Same type, tokens and
+ * geometry as the public site; no marketing header, footer or motion.
+ */
+import '../styles/global.css';
+import { agency } from '../agency/config';
+import ThemeScript from '../system/components/global/ThemeScript.astro';
+import ThemeToggle from '../system/components/global/ThemeToggle.astro';
+import Wordmark from '../system/components/global/Wordmark.astro';
+
+interface Props {
+  title: string;
+  /** Shows the navigation and log out. Off for the login page. */
+  signedIn?: boolean;
+}
+const { title, signedIn = true } = Astro.props;
+const onCreators = Astro.url.pathname.startsWith('/admin/creators/');
+---
+
+<!doctype html>
+<html lang={agency.site.locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <ThemeScript />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>{`${title} | ${agency.name} CRM`}</title>
+  </head>
+  <body>
+    <header class="border-b border-[var(--hairline)]">
+      <div class="flex h-16 items-center gap-4 px-[var(--gutter)] sm:gap-8">
+        <a href={signedIn ? '/admin/creators/' : '/'} class="shrink-0" aria-label={signedIn ? `${agency.name} CRM` : `${agency.name} home`}>
+          <Wordmark logo={agency.logo} name={agency.name} />
+        </a>
+        <p class="type-eyebrow muted hidden sm:block">Team CRM</p>
+        <nav class="ml-auto flex items-center gap-5 sm:gap-6" aria-label="CRM">
+          {
+            signedIn && (
+              <>
+                <a
+                  href="/admin/creators/"
+                  aria-current={onCreators ? 'page' : undefined}
+                  class:list={['type-eyebrow link-underline hidden sm:inline', onCreators && 'text-[var(--accent)]']}
+                >Creators</a>
+                <a href="/" class="type-eyebrow link-underline hidden sm:inline">View site</a>
+                {/* A flex form, so the button sits on the same line as the links
+                    rather than on the form's own (taller) text line. */}
+                <form method="post" action="/auth/logout/" class="flex">
+                  <input type="hidden" name="next" value="/admin/login/" />
+                  <button type="submit" class="type-eyebrow link-underline whitespace-nowrap">Log out</button>
+                </form>
+              </>
+            )
+          }
+          {!signedIn && <a href="/" class="type-eyebrow link-underline whitespace-nowrap">Back to site</a>}
+          <ThemeToggle />
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="px-[var(--gutter)] py-10">
+      <slot />
+    </main>
+  </body>
+</html>

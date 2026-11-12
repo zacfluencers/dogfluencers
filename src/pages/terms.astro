@@ -1,0 +1,11 @@
+---
+import LegalPage from '../layouts/LegalPage.astro';
+import { terms } from '../agency/content/legal';
+---
+
+<LegalPage
+  title="Terms and conditions"
+  description="The terms for brands and influencers working with Dogfluencers, and for using this website."
+  body={terms.body}
+  updated={terms.updated}
+/>

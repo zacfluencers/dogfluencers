@@ -1,0 +1,64 @@
+---
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import type { Statistic } from '../../types/content';
+import Container from '../global/Container.astro';
+import type { ComponentProps } from 'astro/types';
+import Section from '../global/Section.astro';
+import SectionHeader from '../global/SectionHeader.astro';
+import ContentRequired from '../dev/ContentRequired.astro';
+import PlaceholderMark from '../dev/PlaceholderMark.astro';
+
+interface Props {
+  /** Section ground; see `Section tone`. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  heading?: string;
+  stats: Statistic[];
+  invert?: boolean;
+  /** `large` sets the figures at display size, for a page led by its numbers. */
+  size?: 'default' | 'large';
+  /** `tight` straight after a masthead on the same ground. */
+  spacing?: ComponentProps<typeof Section>['spacing'];
+}
+const { heading, stats, invert = false, tone, size = 'default', spacing } = Astro.props;
+/** Handles 1–6 gracefully; beyond four it wraps to a second row. */
+const columns =
+  stats.length <= 2 ? 'grid-cols-2' : stats.length === 3 ? 'sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4';
+---
+
+{
+  (stats.length > 0 || SHOW_PLACEHOLDERS) && (
+    <Section invert={invert} tone={tone} spacing={spacing}>
+      <Container>
+        <SectionHeader heading={heading} />
+
+        {stats.length > 0 ? (
+          /*
+           * Subgrid rows (figure, label, context, marker) are shared across the
+           * row, so a label that wraps to two lines doesn't push its context out
+           * of line with the neighbouring columns. Rows are placed explicitly:
+           * <dt> must precede <dd> in the markup, but the figure reads first.
+           */
+          <dl class:list={['card-grid grid gap-x-10', columns]}>
+            {stats.map((stat) => (
+              <div class="row-span-4 grid grid-rows-subgrid content-start gap-y-3">
+                <dt class="type-eyebrow muted row-start-2">{stat.label}</dt>
+                <dd class:list={[size === 'large' ? 'type-display-l' : 'type-display-m', 'row-start-1 mb-1 border-t border-[var(--hairline-strong)] pt-6 font-display']}>{stat.value}</dd>
+                {stat.context && <p class="type-caption muted row-start-3">{stat.context}</p>}
+                {stat.status === 'placeholder' && <PlaceholderMark reason="Unverified figure" class="row-start-4" />}
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <ContentRequired
+            title="Key statistics"
+            items={[
+              'Verified creator network size',
+              'Verified campaign or content volumes',
+              'Anything stated here must be evidenced. Figures are not estimated',
+            ]}
+          />
+        )}
+      </Container>
+    </Section>
+  )
+}

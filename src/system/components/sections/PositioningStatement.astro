@@ -1,0 +1,35 @@
+---
+/**
+ * Large editorial type block. Carries the agency's own positioning — no claim
+ * about clients or results.
+ */
+import Container from '../global/Container.astro';
+import TextLink from '../global/TextLink.astro';
+import type { ComponentProps } from 'astro/types';
+import Section from '../global/Section.astro';
+import type { Link } from '../../types/content';
+
+interface Props {
+  eyebrow?: string;
+  statement: string;
+  supporting?: string;
+  link?: Link;
+  invert?: boolean;
+  /** Overrides `invert` when set. */
+  tone?: ComponentProps<typeof Section>['tone'];
+}
+const { eyebrow, statement, supporting, link, invert = false, tone } = Astro.props;
+---
+
+<Section invert={invert} tone={tone}>
+  <Container>
+    <div class="grid gap-10 lg:grid-cols-[auto_1fr] lg:gap-20">
+      {eyebrow && <p class="type-eyebrow muted lg:pt-3 lg:w-40">{eyebrow}</p>}
+      <div class="flex flex-col gap-8">
+        <p class="reveal-mask type-display-l max-w-5xl">{statement}</p>
+        {supporting && <p class="reveal-rise type-lead muted measure" style="--reveal-delay: 120ms">{supporting}</p>}
+        {link && <TextLink href={link.href} event={link.event}>{link.label}</TextLink>}
+      </div>
+    </div>
+  </Container>
+</Section>

@@ -1,0 +1,14 @@
+---
+/**
+ * Applies a remembered colour theme before first paint. Render in <head>,
+ * ahead of any stylesheet-dependent script. Without a stored choice it does
+ * nothing and the site follows the system setting. Paired with ThemeToggle.
+ */
+---
+
+<script is:inline>
+  try {
+    var theme = localStorage.getItem('theme');
+    if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+  } catch (e) {}
+</script>

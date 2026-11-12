@@ -1,0 +1,141 @@
+---
+/**
+ * Dogfluencers header: wordmark, sentence-case nav, a quiet log-in link and
+ * the orange pill CTA. Translucent paper with a hairline once scrolled.
+ * Below lg, a menu button opens a full-height panel.
+ */
+import { agency } from '../config';
+import Button from './ui/Button.astro';
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+const account = agency.accountLinks?.[0];
+---
+
+<header class="dhead" data-dhead>
+  <div class="wrap dhead-row">
+    <a href="/" class="dhead-logo" aria-label={`${agency.name} home`}>
+      <img src={agency.logo.src} alt={agency.logo.alt} width={agency.logo.width} height={agency.logo.height} />
+    </a>
+
+    <nav aria-label="Main" class="dhead-nav">
+      <ul>
+        {agency.navigation.map((item) => (
+          <li><a class="d-ui" href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="dhead-actions">
+      {account && <a class="dhead-login d-ui" href={account.href}>{account.shortLabel ?? account.label}</a>}
+      <Button href={agency.ctas.primary.href} event={agency.ctas.primary.event} class="dhead-cta">{agency.ctas.primary.label}</Button>
+      <button type="button" class="dhead-toggle" aria-expanded="false" aria-controls="dmenu" data-dmenu-toggle>
+        <span class="sr-only" data-dmenu-label>Open menu</span>
+        <span class="dhead-burger" aria-hidden="true"><i></i><i></i></span>
+      </button>
+    </div>
+  </div>
+
+  <div id="dmenu" class="dmenu" hidden data-dmenu>
+    <nav aria-label="Menu" class="wrap">
+      <ul class="dmenu-list">
+        {agency.navigation.map((item) => (
+          <li><a href={item.href} class="d-h2" aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a></li>
+        ))}
+      </ul>
+      <div class="dmenu-foot">
+        <Button href={agency.ctas.primary.href} event={agency.ctas.primary.event} size="large">{agency.ctas.primary.label}</Button>
+        <Button href={agency.ctas.secondary.href} variant="outline" size="large">{agency.ctas.secondary.label}</Button>
+        {account && <Button href={account.href} variant="ghost">{account.label}</Button>}
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .dhead {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms ease;
+  }
+  .dhead[data-scrolled] { border-bottom-color: var(--hairline); }
+  .dhead-row { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: var(--header-h); }
+  .dhead-logo img { display: block; width: clamp(8.5rem, 12vw, 10rem); height: auto; }
+  .dhead-nav { display: none; }
+  .dhead-nav ul { display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; }
+  .dhead-nav a {
+    display: block;
+    padding: 0.55rem 0.8rem;
+    border-radius: 999px;
+    color: var(--night);
+    text-decoration: none;
+    transition: background-color 160ms ease;
+  }
+  .dhead-nav a:hover { background: var(--cream); }
+  .dhead-nav a[aria-current='page'] { background: var(--cream); }
+  .dhead-actions { display: flex; align-items: center; gap: 1rem; }
+  .dhead-login { color: var(--night); text-decoration: none; display: none; }
+  .dhead-login:hover { color: var(--orange-text); }
+  .dhead-actions :global(.dhead-cta) { display: none; }
+  .dhead-toggle {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--night);
+    cursor: pointer;
+  }
+  .dhead-burger { display: grid; gap: 5px; width: 1.1rem; }
+  .dhead-burger i { display: block; height: 2px; border-radius: 2px; background: currentColor; transition: rotate 220ms var(--ease-out), translate 220ms var(--ease-out); }
+  [aria-expanded='true'] .dhead-burger i:first-child { translate: 0 3.5px; rotate: 45deg; }
+  [aria-expanded='true'] .dhead-burger i:last-child { translate: 0 -3.5px; rotate: -45deg; }
+
+  @media (min-width: 40rem) { .dhead-actions :global(.dhead-cta) { display: inline-flex; } }
+  @media (min-width: 64rem) {
+    .dhead-nav { display: block; }
+    .dhead-login { display: inline; }
+    .dhead-toggle { display: none; }
+  }
+
+  .dmenu { position: fixed; inset: var(--header-h) 0 0; overflow-y: auto; padding-block: 2rem 3rem; background: var(--paper); border-top: 1px solid var(--hairline); }
+  .dmenu-list { display: grid; margin: 0; padding: 0; list-style: none; }
+  .dmenu-list li { border-bottom: 1px solid var(--hairline); }
+  .dmenu-list a { display: block; padding-block: 0.9rem; color: var(--night); text-decoration: none; }
+  .dmenu-list a[aria-current='page'] { color: var(--orange-text); }
+  .dmenu-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 2rem; }
+  @media (min-width: 64rem) { .dmenu { display: none; } }
+</style>
+
+<script>
+  const head = document.querySelector<HTMLElement>('[data-dhead]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-dmenu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-dmenu]');
+  const label = document.querySelector<HTMLElement>('[data-dmenu-label]');
+
+  const onScroll = () => head?.toggleAttribute('data-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const setOpen = (open: boolean) => {
+    if (!toggle || !menu) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    menu.hidden = !open;
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (label) label.textContent = open ? 'Close menu' : 'Open menu';
+  };
+  toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+  window.matchMedia('(min-width: 64rem)').addEventListener('change', (mq) => mq.matches && setOpen(false));
+</script>

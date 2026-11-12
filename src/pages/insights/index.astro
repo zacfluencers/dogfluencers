@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { clips } from '../../agency/content/clips';
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import CtaBand from '../../agency/components/sections/CtaBand.astro';
+import ArticleCard from '../../agency/components/ui/ArticleCard.astro';
+import { agency } from '../../agency/config';
+import { content } from '../../content';
+import { breadcrumbSchema } from '../../system/lib/seo';
+
+
+const articles = await content.articles();
+const [lead, ...rest] = articles;
+
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Insights' }];
+---
+
+<BaseLayout
+  seo={{
+    title: 'Insights',
+    description:
+      'Notes on dog and pet influencer marketing: gifting, UGC, dog modelling and how campaigns are actually run.',
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow="Insights"
+    heading="Notes on dog creator *marketing.*"
+    description="Practical pieces on how this work runs, written for the people briefing it."
+    media={[clips.spanielsLick, clips.goldenToy, clips.pomsBowls]}
+  />
+
+  <section class="band band-paper dins-band">
+    <div class="wrap">
+      {articles.length === 0 ? (
+        <p class="d-lead d-muted">New pieces are on the way.</p>
+      ) : (
+        <div class="dins">
+          {lead && <div class="reveal-rise"><ArticleCard article={lead} size="lead" /></div>}
+          {rest.length > 0 && (
+            <ul class="dins-grid" data-reveal-group>
+              {rest.map((article) => <li><ArticleCard article={article} /></li>)}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  </section>
+
+  <CtaBand
+    heading="Start a *campaign.*"
+    description="Tell us what you are launching and we will come back with an approach."
+    primaryCta={agency.ctas.primary}
+  />
+</BaseLayout>
+
+<style>
+  
+  .dins { display: grid; gap: clamp(3.5rem, 7vw, 5.5rem); }
+  .dins-grid { display: grid; gap: 3.5rem var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 40rem) { .dins-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .dins-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+</style>

@@ -1,0 +1,19 @@
+---
+/**
+ * Heading text with optional marked words. Wrap words in asterisks
+ * (`Real people. *Real results.*`) and they render inside `.text-mark`, which
+ * the agency theme may decorate (a brush stroke, an underline, a colour).
+ * With no theme rule the mark is invisible, so copy carrying asterisks reads
+ * the same on an agency that does not use marks.
+ *
+ * Plain text only: the asterisks are the whole syntax, and nothing is
+ * rendered as HTML.
+ */
+interface Props {
+  text: string;
+}
+const { text } = Astro.props;
+const parts = text.split('*').map((value, i) => ({ value, marked: i % 2 === 1 && value.length > 0 }));
+---
+
+{parts.map((part) => (part.marked ? <span class="text-mark">{part.value}</span> : part.value))}

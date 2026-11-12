@@ -1,0 +1,104 @@
+---
+import type { AgencyConfig } from '../../types/agency';
+import Wordmark from './Wordmark.astro';
+
+interface Props { agency: AgencyConfig; }
+const { agency } = Astro.props;
+
+const year = new Date().getFullYear();
+const { contact } = agency;
+const hasLegalEntity = Boolean(contact.companyName || contact.companyNumber || contact.addressLines?.length);
+---
+
+<footer class="border-t border-[var(--hairline)]">
+  <div class="wrap py-[var(--section-y-tight)]">
+    <!--
+      Phone: brand, then link columns two-up. Tablet: brand above, every
+      column in one row. Desktop: brand as the first, wider column.
+    -->
+    <div style={`--footer-cols: ${agency.footerNavigation.length}`} class="footer-grid grid grid-cols-2 gap-x-8 gap-y-12 pb-[var(--section-y-tight)] lg:gap-8">
+      <div class="footer-brand col-span-2 flex flex-col gap-4">
+        <a href="/" aria-label={`${agency.name} home`} class="self-start">
+          <Wordmark logo={agency.logo} name={agency.name} size="large" />
+        </a>
+        <p class="type-caption muted max-w-xs">{agency.positioning.oneLine}</p>
+        <a href={`mailto:${contact.email}`} class="type-caption link-underline self-start">{contact.email}</a>
+        {contact.phone && <a href={`tel:${contact.phone.replace(/\s/g, '')}`} class="type-caption link-underline self-start">{contact.phone}</a>}
+      </div>
+
+      {
+        agency.footerNavigation.map((group) => (
+          <nav aria-label={group.heading} class="flex flex-col gap-4">
+            <h3 class="type-eyebrow muted">{group.heading}</h3>
+            <ul class="type-caption flex flex-col gap-3">
+              {group.links.map((link) => (
+                <li>
+                  <a href={link.href} class="link-underline -my-1 inline-block py-1">{link.label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div class="flex flex-col gap-6 border-t border-[var(--hairline)] pt-8 md:flex-row md:items-center md:justify-between">
+      <div class="flex flex-col gap-2">
+        <p class="type-caption muted">&copy; {year} {agency.name}.</p>
+        {
+          /* Legal and company details render only when the business supplies them. */
+          hasLegalEntity && (
+            <address class="type-caption muted not-italic">
+              {contact.companyName && <span class="block">{contact.companyName}</span>}
+              {contact.addressLines?.map((line) => <span class="block">{line}</span>)}
+              {contact.companyNumber && <span class="block">Company no. {contact.companyNumber}</span>}
+            </address>
+          )
+        }
+      </div>
+
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:gap-10">
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+          {
+            agency.legalLinks.map((link) => (
+              <a href={link.href} class="type-caption muted link-underline">{link.label}</a>
+            ))
+          }
+        </div>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+          {
+            agency.socialLinks.map((link) => (
+              <a
+                href={link.href}
+                target={link.external ? '_blank' : undefined}
+                rel={link.external ? 'noopener noreferrer' : undefined}
+                class="type-eyebrow link-underline"
+              >
+                {link.label}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  @media (min-width: 768px) {
+    .footer-grid {
+      grid-template-columns: repeat(var(--footer-cols), minmax(0, 1fr));
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 1024px) {
+    .footer-grid {
+      grid-template-columns: 1.5fr repeat(var(--footer-cols), minmax(0, 1fr));
+    }
+    .footer-brand {
+      grid-column: auto;
+    }
+  }
+</style>

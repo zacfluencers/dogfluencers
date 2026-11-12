@@ -1,0 +1,94 @@
+---
+/**
+ * A set of logos, each cropped to its own ink and sized for equal visual
+ * weight, painted in --ink so it follows theme and tone. `row` spreads them
+ * edge to edge at desktop (a client strip); `grid` keeps a tidy grid at every
+ * width (a set of marks inside a column).
+ */
+import type { Brand } from '../../types/content';
+import PlaceholderMark from '../dev/PlaceholderMark.astro';
+import { measureLogo } from '../../lib/logo';
+
+interface Props {
+  brands: Brand[];
+  layout?: 'row' | 'grid';
+}
+const { brands, layout = 'row' } = Astro.props;
+
+/*
+ * Each mark is cropped to its own ink (see lib/logo.ts) and sized for equal
+ * area rather than equal height: a wide wordmark gets wider and shorter, a
+ * round badge squarer, so no logo shouts over the others. Sizes are in
+ * multiples of --logo-unit, the side of a square logo.
+ */
+const marks = await Promise.all(
+  brands.map(async (brand) => {
+    const src = brand.logo?.src;
+    if (!src) return undefined;
+    const fallbackAspect = brand.logo?.width && brand.logo?.height ? brand.logo.width / brand.logo.height : 3;
+    const box = (await measureLogo(src)) ?? { aspect: fallbackAspect, x: 0, y: 0, w: 1, h: 1 };
+    const aspect = (box.aspect * box.w) / box.h;
+    const pct = (n: number) => `${(n * 100).toFixed(3)}%`;
+    return {
+      frame: `--logo-w: ${(Math.sqrt(aspect) * (brand.logoScale ?? 1)).toFixed(4)}; aspect-ratio: ${aspect.toFixed(4)}`,
+      image: `width: ${pct(1 / box.w)}; height: ${pct(1 / box.h)}; left: ${pct(-box.x / box.w)}; top: ${pct(-box.y / box.h)}`,
+    };
+  }),
+);
+---
+
+<ul
+  class:list={[
+    'logo-row grid grid-cols-2 items-center',
+    layout === 'row' && 'gap-x-10 gap-y-10 sm:grid-cols-3 lg:flex lg:justify-between',
+    layout === 'grid' && 'logo-grid gap-x-10 gap-y-14',
+  ]}
+  data-reveal-group
+>
+            {brands.map((brand, index) => (
+              <li class="flex flex-col items-start gap-2">
+                {brand.logo?.src && marks[index] ? (
+                  <span class="logo-frame" style={marks[index].frame}>
+                    <img
+                      src={brand.logo.src}
+                      alt={brand.logo.alt || brand.name}
+                      loading="lazy"
+                      decoding="async"
+                      style={marks[index].image}
+                    />
+                  </span>
+                ) : (
+                  <span class="type-subheading font-display uppercase muted">{brand.name}</span>
+                )}
+                {brand.status === 'placeholder' && <PlaceholderMark reason={`${brand.name} is not a confirmed client`} />}
+              </li>
+            ))}
+          </ul>
+
+<style>
+  /* The side of a square logo; everything else scales from it. Kept small:
+     a quiet row of marks reads as more assured than a wall of them. */
+  .logo-row {
+    --logo-unit: clamp(2.75rem, 4vw, 3.75rem);
+  }
+  /* Inside a column: two to a row and a size up, so each mark has room. */
+  .logo-grid {
+    --logo-unit: clamp(3.25rem, 5vw, 4.5rem);
+  }
+  .logo-frame {
+    position: relative;
+    display: block;
+    width: calc(var(--logo-unit) * var(--logo-w));
+    /* A wide wordmark shrinks to fit a narrow column rather than overrun it. */
+    max-width: 100%;
+    overflow: hidden;
+  }
+  /* Positioned so the cropped-away padding falls outside the frame. Painted
+     in --ink, so a logo is dark on a light ground and light on a dark one,
+     wherever the strip sits. Logos must be dark on a transparent ground. */
+  .logo-frame img {
+    position: absolute;
+    max-width: none;
+    filter: var(--ink-filter);
+  }
+</style>

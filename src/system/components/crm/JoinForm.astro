@@ -1,0 +1,230 @@
+---
+/**
+ * The creator application, in steps.
+ *
+ * Without JavaScript every step shows at once as one long form, and the server
+ * checks it. With JavaScript it becomes one step at a time: each step is
+ * checked in the browser (with the same rules the server uses) before moving
+ * on, and a server error sends the creator back to the step it belongs to.
+ */
+import type { CrmConfig } from '../../crm/types';
+import { buildSchemas, stepOwns, type FieldErrors } from '../../crm/validation';
+import CreatorFields from './CreatorFields.astro';
+import Button from '../global/Button.astro';
+
+interface Props {
+  config: CrmConfig;
+  values?: Record<string, string | string[]>;
+  errors?: FieldErrors;
+  message?: string;
+  loginHref: string;
+}
+const { config, values = {}, errors = {}, message, loginHref } = Astro.props;
+
+const steps = buildSchemas(config).steps.map(({ id, title, blurb, names, prefix }) => ({ id, title, blurb, names, prefix }));
+// A server error opens the form on the first step that has one.
+const errorStep = steps.findIndex((s) => Object.keys(errors).some((n) => stepOwns(s, n)));
+const start = errorStep >= 0 ? errorStep : 0;
+---
+
+<form method="post" novalidate class="join" data-join data-start={start} data-crm={JSON.stringify(config)}>
+  <div class="join-progress" aria-hidden="true" hidden data-progress>
+    <p class="type-eyebrow muted" data-progress-label>Step 1 of {steps.length}: {steps[0].title}</p>
+    <div class="join-bars">
+      {steps.map(() => <span class="join-bar" />)}
+    </div>
+  </div>
+
+  {message && <p class="form-alert mb-10" role="alert" data-message>{message}</p>}
+
+  {
+    steps.map((step, i) => (
+      <section class="join-step" data-step={i} aria-labelledby={`step-${step.id}`}>
+        <div class="heading-stack mb-10">
+          <h2 class="type-display-m outline-none" id={`step-${step.id}`} tabindex="-1">{step.title}</h2>
+          <p class="type-lead muted">{step.blurb}</p>
+        </div>
+        <CreatorFields step={step.id} config={config} values={values} errors={errors} />
+      </section>
+    ))
+  }
+
+  <div class="join-nav">
+    <Button type="button" variant="outline" size="large" class="join-back" data-back>Back</Button>
+    <Button type="button" size="large" class="join-next" data-next>Continue</Button>
+    <Button type="submit" size="large" class="join-submit" data-submit>Submit application</Button>
+  </div>
+
+  <p class="type-caption muted mt-8">
+    Already joined? <a href={loginHref} class="link-underline font-bold text-[var(--ink)]">Log in</a>
+  </p>
+</form>
+
+<style>
+  /* Moving between steps scrolls to the form's top, clear of the fixed header. */
+  .join {
+    scroll-margin-top: calc(var(--header-h) + var(--space-6));
+  }
+  .join-step + .join-step {
+    margin-top: var(--space-9);
+  }
+  .join-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+  }
+  /* Without JavaScript there is only the submit button. */
+  .join-back,
+  .join-next {
+    display: none;
+  }
+
+  .join-progress {
+    margin-bottom: var(--space-8);
+  }
+  .join-bars {
+    display: flex;
+    gap: 0.375rem;
+    margin-top: var(--space-3);
+  }
+  .join-bar {
+    flex: 1;
+    height: 2px;
+    background: var(--hairline-strong);
+    transition: background-color var(--duration) var(--ease-out);
+  }
+  .join-bar[data-done] {
+    background: var(--accent-fill);
+  }
+
+  /* Stepped, once the script has taken over. */
+  :global(.join[data-stepped]) .join-step {
+    display: none;
+    margin-top: 0;
+  }
+  :global(.join[data-stepped]) .join-step[data-current] {
+    display: block;
+    animation: step-in var(--duration) var(--ease-out);
+  }
+  :global(.join[data-stepped]) .join-back:not([hidden]),
+  :global(.join[data-stepped]) .join-next:not([hidden]) {
+    display: inline-flex;
+  }
+  :global(.join[data-stepped]) .join-submit[hidden] {
+    display: none;
+  }
+  @keyframes step-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.join[data-stepped]) .join-step[data-current] {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { buildSchemas, fieldErrorsFrom, formToInput, stepOwns } from '../../crm/validation';
+  import type { CrmConfig } from '../../crm/types';
+
+  for (const form of document.querySelectorAll<HTMLFormElement>('form[data-join]')) {
+    const config = JSON.parse(form.dataset.crm ?? '{}') as CrmConfig;
+    const { steps } = buildSchemas(config);
+    const sections = [...form.querySelectorAll<HTMLElement>('[data-step]')];
+    const back = form.querySelector<HTMLButtonElement>('[data-back]')!;
+    const next = form.querySelector<HTMLButtonElement>('[data-next]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const progress = form.querySelector<HTMLElement>('[data-progress]')!;
+    const progressLabel = form.querySelector<HTMLElement>('[data-progress-label]')!;
+    const bars = [...form.querySelectorAll<HTMLElement>('.join-bar')];
+    let current = Number(form.dataset.start ?? 0);
+
+    form.dataset.stepped = '';
+    progress.hidden = false;
+
+    const show = (index: number, focus: boolean) => {
+      current = index;
+      sections.forEach((s, i) => s.toggleAttribute('data-current', i === index));
+      bars.forEach((b, i) => b.toggleAttribute('data-done', i <= index));
+      progressLabel.textContent = `Step ${index + 1} of ${steps.length}: ${steps[index].title}`;
+      back.hidden = index === 0;
+      next.hidden = index === steps.length - 1;
+      submit.hidden = index !== steps.length - 1;
+      if (focus) {
+        const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        form.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+        sections[index].querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+      }
+    };
+
+    const setError = (name: string, message: string) => {
+      const slot = form.querySelector<HTMLElement>(`[data-error-for="${CSS.escape(name)}"]`);
+      if (slot) slot.textContent = message;
+      const field = form.querySelector<HTMLElement>(`[data-field="${CSS.escape(name)}"]`);
+      field?.querySelectorAll('input, select, textarea, fieldset').forEach((el) => {
+        if (message) el.setAttribute('aria-invalid', 'true');
+        else el.removeAttribute('aria-invalid');
+      });
+    };
+
+    /** Checks one step. Shows its errors, focuses the first, returns whether it passed. */
+    const check = (index: number) => {
+      const step = steps[index];
+      const input = formToInput(new FormData(form), config);
+      const result = step.schema.safeParse(input);
+      // Clear every error on the step, including any "add another" items.
+      sections[index].querySelectorAll<HTMLElement>('[data-error-for]').forEach((slot) => setError(slot.dataset.errorFor ?? '', ''));
+      if (result.success) return true;
+      const errors = fieldErrorsFrom(result.error);
+      for (const [name, message] of Object.entries(errors)) setError(name, message);
+      const first = Object.keys(errors).find((n) => stepOwns(step, n));
+      if (first) {
+        const field = form.querySelector<HTMLElement>(`[data-field="${CSS.escape(first)}"]`);
+        field?.querySelector<HTMLElement>('input, select, textarea')?.focus();
+      }
+      return false;
+    };
+
+    // Clear a field's error as soon as it is changed.
+    form.addEventListener('input', (event) => {
+      const field = (event.target as HTMLElement).closest<HTMLElement>('[data-field]');
+      if (field?.dataset.field) setError(field.dataset.field, '');
+    });
+
+    next.addEventListener('click', () => {
+      if (check(current)) show(current + 1, true);
+    });
+    back.addEventListener('click', () => show(current - 1, true));
+
+    // Enter in a field moves on rather than submitting from an early step.
+    form.addEventListener('keydown', (event) => {
+      const target = event.target as HTMLElement;
+      if (event.key === 'Enter' && target.tagName === 'INPUT' && current < steps.length - 1) {
+        event.preventDefault();
+        next.click();
+      }
+    });
+
+    form.addEventListener('submit', (event) => {
+      // Every step, not just the last: a server error may have reopened one.
+      for (let i = 0; i < steps.length; i++) {
+        if (!check(i)) {
+          event.preventDefault();
+          if (i !== current) {
+            show(i, true);
+            check(i);
+          }
+          return;
+        }
+      }
+      submit.disabled = true;
+      submit.textContent = 'Sending application';
+    });
+
+    show(current, false);
+  }
+</script>

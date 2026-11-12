@@ -1,0 +1,175 @@
+---
+/**
+ * Dogfluencers' own motion, on top of the system's reveals (Motion.astro,
+ * which sets `html[data-motion]` before paint unless reduced motion is on).
+ *
+ * - `[data-play]` gets `.is-playing` while at least a third is on screen,
+ *   and `.is-in` the first time (one-shot sequences key off `.is-in`).
+ * - `.text-mark` gets `.is-in` once: the bar behind marked words wipes in.
+ * - `video[data-clip]` plays only while half on screen, and not at all
+ *   once the page's ClipToggle is pressed.
+ * - `[data-clip-sound]` turns one video's sound on (restarting it, so the
+ *   whole piece is heard) and every other video's off. That's a viewer's
+ *   own choice, so it works with reduced motion too.
+ * Nothing else here runs without `data-motion`, so content is never stranded.
+ */
+---
+
+<script>
+  const root = document.documentElement;
+
+  // A page reached from a link opens at the top. Back and forward keep the
+  // browser's own position, and links to an #anchor still land on it.
+  const entry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+  if ((!entry || entry.type === 'navigate') && !location.hash) {
+    const toTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    toTop();
+    window.addEventListener('load', toTop, { once: true });
+  }
+
+  // Stretch each heading's bar to its whole bottom row.
+  const rowMarks = () => {
+    document.querySelectorAll<HTMLElement>('.text-mark').forEach((mark) => {
+      const block = mark.parentElement;
+      if (!block) return;
+      mark.style.removeProperty('--row-left');
+      mark.style.removeProperty('--row-right');
+      const m = mark.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(block);
+      let left = m.left;
+      let right = m.right;
+      for (const r of Array.from(range.getClientRects())) {
+        const mid = (r.top + r.bottom) / 2;
+        if (r.width < 1 || mid < m.top || mid > m.bottom) continue;
+        left = Math.min(left, r.left);
+        right = Math.max(right, r.right);
+      }
+      // Never past the heading's own box: a stray line box (Safari can report
+      // one) must not send the bar off the page.
+      const box = block.getBoundingClientRect();
+      left = Math.max(left, box.left);
+      right = Math.min(right, box.right);
+      mark.style.setProperty('--row-left', `${Math.max(0, Math.round(m.left - left))}px`);
+      mark.style.setProperty('--row-right', `${Math.max(0, Math.round(right - m.right))}px`);
+    });
+  };
+  rowMarks();
+  document.fonts?.ready.then(rowMarks);
+  let rowTimer = 0;
+  window.addEventListener('resize', () => {
+    window.clearTimeout(rowTimer);
+    rowTimer = window.setTimeout(rowMarks, 120);
+  });
+
+  // Lift the still off a clip only once frames are actually moving.
+  document.querySelectorAll<HTMLVideoElement>('video[data-clip]').forEach((v) => {
+    const ready = () => v.parentElement?.classList.add('is-ready');
+    v.addEventListener('playing', () => {
+      if (v.readyState >= 3) requestAnimationFrame(ready);
+      else v.addEventListener('canplay', ready, { once: true });
+    });
+  });
+
+  const soundButtons = document.querySelectorAll<HTMLButtonElement>('[data-clip-sound]');
+  const setSound = (btn: HTMLButtonElement, on: boolean) => {
+    btn.setAttribute('aria-pressed', String(on));
+    btn.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
+  };
+  soundButtons.forEach((btn) => {
+    const video = btn.parentElement?.querySelector('video');
+    if (!video) return;
+    btn.addEventListener('click', () => {
+      const on = video.muted;
+      soundButtons.forEach((other) => {
+        const v = other.parentElement?.querySelector('video');
+        if (v && v !== video) { v.muted = true; setSound(other, false); }
+      });
+      video.muted = !on;
+      setSound(btn, on);
+      if (on) {
+        video.currentTime = 0;
+        root.removeAttribute('data-clips-paused');
+        document.querySelectorAll('[data-clip-toggle]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+        video.play().catch(() => {});
+      }
+    });
+    // Sound goes off when the video leaves the screen.
+    new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting && !video.muted) { video.muted = true; video.pause(); setSound(btn, false); }
+    }).observe(video);
+  });
+
+  if (root.hasAttribute('data-motion')) {
+    const clips = new Set<HTMLVideoElement>();
+    const sync = (v: HTMLVideoElement) => {
+      if (v.dataset.visible === '1' && !root.hasAttribute('data-clips-paused')) v.play().catch(() => {});
+      else v.pause();
+    };
+
+    const play = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const el = e.target as HTMLElement;
+          el.classList.toggle('is-playing', e.isIntersecting);
+          if (e.isIntersecting) el.classList.add('is-in');
+        }
+      },
+      { threshold: 0.35 }
+    );
+    document.querySelectorAll('[data-play]').forEach((el) => play.observe(el));
+
+    const once = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add('is-in');
+          once.unobserve(e.target);
+        }
+      },
+      { rootMargin: '0px 0px -12% 0px' }
+    );
+    document.querySelectorAll('.text-mark').forEach((el) => once.observe(el));
+
+    const watch = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const v = e.target as HTMLVideoElement;
+          v.dataset.visible = e.intersectionRatio >= 0.5 ? '1' : '0';
+          sync(v);
+        }
+      },
+      { threshold: [0, 0.5, 1] }
+    );
+    // Start fetching a little before a clip arrives, so it is ready to play.
+    const warm = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const v = e.target as HTMLVideoElement;
+          if (v.preload !== 'auto') { v.preload = 'auto'; v.load(); }
+          warm.unobserve(v);
+        }
+      },
+      { rootMargin: '600px 0px' }
+    );
+
+    document.querySelectorAll<HTMLVideoElement>('video[data-clip]').forEach((v) => {
+      clips.add(v);
+      watch.observe(v);
+      warm.observe(v);
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-clip-toggle]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const paused = !root.hasAttribute('data-clips-paused');
+        root.toggleAttribute('data-clips-paused', paused);
+        document.querySelectorAll('[data-clip-toggle]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(paused));
+          b.setAttribute('aria-label', paused ? 'Play moving images' : 'Pause moving images');
+        });
+        clips.forEach(sync);
+      });
+    });
+  }
+</script>

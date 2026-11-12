@@ -1,0 +1,124 @@
+---
+/**
+ * Interior masthead. Breadcrumbs, an optional eyebrow, the h1 (with its bar
+ * behind marked words), a lead and optional pills.
+ *
+ * With `media`, the masthead splits on the site grid and shows up to three
+ * tiles in the homepage mosaic: one tall tile, or one tall and two stacked.
+ * Without media it is type only: the heading on the left, the lead on the
+ * right, sitting on the same split line as every other two-column band.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import type { Link, VideoRef } from '../../../system/types/content';
+import Button from '../ui/Button.astro';
+import ClipToggle from '../ui/ClipToggle.astro';
+import Media from '../ui/Media.astro';
+import FloatCard from '../ui/FloatCard.astro';
+
+interface Props {
+  breadcrumbs?: { label: string; href?: string }[];
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  primaryCta?: Link;
+  secondaryCta?: Link;
+  media?: VideoRef[];
+  /** One fact on a floating card in the main tile, like the homepage hero. */
+  card?: { title: string; body: string };
+  /** `compact` for utility pages (thanks, 404, account). */
+  size?: 'default' | 'compact';
+}
+const { breadcrumbs = [], eyebrow, heading, description, primaryCta, secondaryCta, media = [], card, size = 'default' } = Astro.props;
+const tiles = media.filter((v) => v.src || v.poster).slice(0, 3);
+const hasMedia = tiles.length > 0;
+const moving = tiles.some((v) => v.src);
+---
+
+<section class:list={['band-paper dpage', size === 'compact' && 'dpage-compact', hasMedia && 'dpage-media']}>
+  <div class="wrap">
+    {breadcrumbs.length > 1 && (
+      <nav aria-label="Breadcrumb" class="dcrumbs enter enter-1">
+        <ol>
+          {breadcrumbs.map((crumb, i) => (
+            <li>
+              {crumb.href && i < breadcrumbs.length - 1 ? <a href={crumb.href}>{crumb.label}</a> : <span aria-current="page">{crumb.label}</span>}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
+
+    <div class="dpage-grid">
+      <div class="dpage-copy">
+        {eyebrow && <p class="d-ui dpage-eyebrow enter enter-1">{eyebrow}</p>}
+        <h1 class:list={['enter enter-2', size === 'compact' ? 'd-h2' : hasMedia ? 'd-h1' : 'd-display']}><MarkedText text={heading} /></h1>
+        {hasMedia && description && <p class="d-lead d-muted enter enter-3 mt-7 max-w-[34rem]">{description}</p>}
+        {(primaryCta || secondaryCta) && (
+          <div class="enter enter-4 mt-9 flex flex-wrap gap-3">
+            {primaryCta && <Button href={primaryCta.href} event={primaryCta.event} size="large" arrow>{primaryCta.label}</Button>}
+            {secondaryCta && <Button href={secondaryCta.href} event={secondaryCta.event} variant="outline" size="large">{secondaryCta.label}</Button>}
+          </div>
+        )}
+      </div>
+
+      {!hasMedia && description && <p class="d-lead d-muted dpage-aside enter enter-3">{description}</p>}
+
+      {hasMedia && (
+        <div class:list={['dpage-mosaic enter enter-3', `dpage-mosaic-${tiles.length}`]}>
+          {tiles.map((video, i) => (
+            <div class:list={['dpage-tile', i === 0 && 'dpage-tile-main']}>
+              <Media video={video} ratio="auto" radius={i === 0 ? 'lg' : 'md'} eager />
+              {i === 0 && card && <FloatCard title={card.title} body={card.body} />}
+              {i === tiles.length - 1 && moving && <ClipToggle class="dpage-toggle" />}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .dpage { padding-block: clamp(2rem, 5vw, 3.5rem) clamp(3.5rem, 8vw, 6.5rem); }
+  .dpage-compact { padding-bottom: clamp(2rem, 5vw, 3rem); }
+
+  .dcrumbs ol { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 clamp(2rem, 5vw, 3.5rem); padding: 0; list-style: none; font-size: 0.875rem; font-weight: 600; color: var(--night-muted); }
+  .dcrumbs li + li::before { content: '/'; margin-right: 0.5rem; color: var(--hairline-strong); }
+  .dcrumbs a { color: inherit; text-decoration: none; }
+  .dcrumbs a:hover { color: var(--orange-text); }
+  .dcrumbs [aria-current] { color: var(--night); }
+
+  .dpage-eyebrow { margin-bottom: 1.25rem; color: var(--accent); }
+  .dpage-grid { display: grid; gap: 2rem var(--grid-gap); align-items: end; }
+  .dpage-media .dpage-grid { gap: 3rem var(--grid-gap); align-items: center; }
+  .dpage-copy :global(h1) { max-width: 16ch; }
+  .dpage-aside { max-width: 34rem; }
+
+  .dpage-mosaic { display: grid; gap: var(--grid-gap); aspect-ratio: 1 / 1; }
+  .dpage-mosaic-1 { aspect-ratio: 4 / 5; max-width: 32rem; width: 100%; justify-self: end; }
+  .dpage-mosaic-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); aspect-ratio: 6 / 5; }
+  .dpage-mosaic-3 { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+  .dpage-mosaic-3 .dpage-tile-main { grid-row: span 2; }
+  .dpage-tile { position: relative; min-height: 0; }
+  .dpage-tile :global(.dmedia) { height: 100%; }
+  :global(.dpage-toggle) { position: absolute; top: var(--overlay-inset); right: var(--overlay-inset); }
+  .dpage-mosaic-1 :global(.dpage-toggle) { top: auto; bottom: var(--overlay-inset); }
+  @supports (animation-timeline: view()) {
+    :global(html[data-motion]) .dpage-mosaic-3 .dpage-tile:not(.dpage-tile-main) { animation: dpage-part linear both; animation-timeline: view(); animation-range: exit 0% exit 100%; }
+    :global(html[data-motion]) .dpage-mosaic-3 .dpage-tile:last-child { animation-name: dpage-part-more; }
+    @keyframes dpage-part { to { translate: 0 -2rem; } }
+    @keyframes dpage-part-more { to { translate: 0 -3.5rem; } }
+  }
+
+  @media (min-width: 64rem) {
+    .dpage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dpage-media .dpage-copy { padding-right: clamp(1rem, 3vw, 3rem); }
+    .dpage-aside { padding-bottom: 0.5rem; }
+  }
+  @media (max-width: 39.99rem) {
+    .dpage-mosaic-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; aspect-ratio: auto; }
+    .dpage-mosaic-3 .dpage-tile-main { grid-row: auto; grid-column: span 2; aspect-ratio: 5 / 4; }
+    .dpage-mosaic-3 .dpage-tile:not(.dpage-tile-main) { aspect-ratio: 4 / 5; }
+    :global(html[data-motion]) .dpage-mosaic-3 .dpage-tile:not(.dpage-tile-main) { animation: none; }
+  }
+</style>

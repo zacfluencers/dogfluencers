@@ -1,0 +1,38 @@
+---
+/**
+ * One pause control for the moving media on the page (WCAG 2.2.2). It
+ * pauses every clip and drifting still, not just its own group, and the
+ * choice holds while you scroll. Hidden when motion is off, since nothing
+ * moves then.
+ */
+interface Props { class?: string }
+const { class: className = '' } = Astro.props;
+---
+
+<button type="button" class:list={['dclip-toggle', className]} data-clip-toggle aria-pressed="false" aria-label="Pause moving images">
+  <svg class="dclip-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></svg>
+  <svg class="dclip-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
+</button>
+
+<style>
+  .dclip-toggle {
+    display: none;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgb(255 250 243 / 0.9);
+    backdrop-filter: blur(8px);
+    color: var(--night);
+    cursor: pointer;
+    transition: background-color 160ms ease, scale 200ms var(--bounce);
+  }
+  :global(html[data-motion]) .dclip-toggle { display: grid; }
+  .dclip-toggle:hover { background: #fff; scale: 1.06; }
+  .dclip-toggle:focus-visible { outline: 2px solid var(--night); outline-offset: 2px; }
+  .dclip-toggle svg { width: 0.95rem; height: 0.95rem; }
+  .dclip-play { display: none; }
+  .dclip-toggle[aria-pressed='true'] .dclip-pause { display: none; }
+  .dclip-toggle[aria-pressed='true'] .dclip-play { display: block; }
+</style>

@@ -1,0 +1,25 @@
+---
+/**
+ * The "where next" column beside a short account form (log in, set up a
+ * login, reset a password): a few hairline-topped options, so the page
+ * offers a way on rather than a form floating in empty space.
+ */
+import TextLink from '../global/TextLink.astro';
+
+interface Props {
+  items: { title: string; body: string; link: { label: string; href: string } }[];
+}
+const { items } = Astro.props;
+---
+
+<aside class="flex flex-col gap-8">
+  {
+    items.map((item) => (
+      <div class="flex flex-col items-start gap-3 border-t border-[var(--hairline-strong)] pt-8">
+        <h2 class="type-heading">{item.title}</h2>
+        <p class="type-body muted max-w-[28rem]">{item.body}</p>
+        <TextLink href={item.link.href} class="mt-1">{item.link.label}</TextLink>
+      </div>
+    ))
+  }
+</aside>

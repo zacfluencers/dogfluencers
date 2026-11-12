@@ -1,0 +1,126 @@
+---
+/**
+ * Agency lockup.
+ *
+ * Renders the supplied artwork, swapping to the dark-background variant in dark
+ * mode. Both images are in the markup and CSS picks one, keyed on the same
+ * signals as the theme tokens: `data-theme` when the visitor has chosen with
+ * ThemeToggle, the system setting otherwise. A <picture> media query can only
+ * see the system setting, so it ignored the toggle. Falls back to a typographic wordmark only when an agency has
+ * supplied no file at all.
+ */
+import type { AgencyLogo } from '../../types/agency';
+
+interface Props {
+  logo: AgencyLogo;
+  /** Accessible name, and the fallback when nothing is configured. */
+  name: string;
+  size?: 'default' | 'large';
+  /** Above-the-fold lockups should not lazy-load. */
+  priority?: boolean;
+  class?: string;
+}
+const { logo, name, size = 'default', priority = false, class: className = '' } = Astro.props;
+
+const height = size === 'large' ? 34 : 22;
+/** Preserve the artwork's aspect ratio so the header never shifts on load.
+ *  `max-width: none` on the img: the base `max-width: 100%` would let a
+ *  shrinking flex or grid column squash the lockup horizontally. */
+const width =
+  logo.width && logo.height ? Math.round((logo.width / logo.height) * height) : undefined;
+
+const primary = logo.wordmark?.primary ?? name;
+const secondary = logo.wordmark?.secondary;
+---
+
+{
+  logo.src ? (
+    <span class:list={['block', className]} data-logo>
+      <img
+        data-logo-light
+        src={logo.src}
+        alt={logo.alt || name}
+        width={width}
+        height={height}
+        style={`height:${height}px;width:auto;max-width:none`}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding={priority ? 'sync' : 'async'}
+        fetchpriority={priority ? 'high' : undefined}
+      />
+      {logo.srcDark && (
+        <img
+          data-logo-dark
+          src={logo.srcDark}
+          alt={logo.alt || name}
+          width={width}
+          height={height}
+          style={`height:${height}px;width:auto;max-width:none`}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding={priority ? 'sync' : 'async'}
+          fetchpriority={priority ? 'high' : undefined}
+        />
+      )}
+    </span>
+  ) : (
+    <span class:list={['wordmark inline-flex flex-col', className]} data-size={size}>
+      <span class="wordmark-primary font-display">{primary}</span>
+      {secondary && <span class="wordmark-secondary">{secondary}</span>}
+    </span>
+  )
+}
+
+<style>
+  /* One variant at a time. Mirrors the dark-mode selectors in theme.css. */
+  [data-logo-dark] {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) [data-logo-dark] {
+    display: block;
+  }
+
+  :global(:root[data-theme='dark']) [data-logo]:has([data-logo-dark]) [data-logo-light] {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) [data-logo-dark] {
+      display: block;
+    }
+
+    :global(:root:not([data-theme='light'])) [data-logo]:has([data-logo-dark]) [data-logo-light] {
+      display: none;
+    }
+  }
+
+  .wordmark {
+    line-height: 1;
+  }
+
+  .wordmark-primary {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    font-size: 1.0625rem;
+  }
+
+  .wordmark[data-size='large'] .wordmark-primary {
+    font-size: 1.75rem;
+  }
+
+  .wordmark-secondary {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.34em;
+    /* Compensate for the trailing letter-space so the line stays optically centred. */
+    text-indent: 0.34em;
+    text-align: center;
+    margin-top: 0.3em;
+    opacity: 0.9;
+  }
+
+  .wordmark[data-size='large'] .wordmark-secondary {
+    font-size: 0.8125rem;
+  }
+</style>

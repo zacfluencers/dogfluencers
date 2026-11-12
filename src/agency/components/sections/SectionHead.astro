@@ -1,0 +1,51 @@
+---
+/**
+ * The opening of every section, one pattern throughout so the page reads as
+ * one flow: a small orange eyebrow, the heading, a supporting line beneath.
+ * The section's "see all" link sits at the right, on the last line.
+ * Rises in once on scroll.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import type { Link } from '../../../system/types/content';
+import Button from '../ui/Button.astro';
+import Arrow from '../ui/Arrow.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  link?: Link;
+  /** The hand-drawn arrow, beside the heading. Ration it: one per page. */
+  arrow?: boolean;
+  align?: 'start' | 'centre';
+  as?: 'h1' | 'h2';
+  class?: string;
+}
+const { eyebrow, heading, description, link, arrow = false, align = 'start', as = 'h2', class: className = '' } = Astro.props;
+const H = as;
+---
+
+<div class:list={['dsh reveal-rise', align === 'centre' && 'dsh-centre', className]}>
+  <div class="dsh-main">
+    {eyebrow && <p class="d-ui dsh-eyebrow">{eyebrow}</p>}
+    <div class="dsh-title">
+      <H class="d-h2"><MarkedText text={heading} /></H>
+      {arrow && <Arrow class="dsh-arrow" direction="down-right" />}
+    </div>
+    {description && <p class="d-lead d-muted dsh-desc">{description}</p>}
+  </div>
+  {link && <Button href={link.href} variant="outline" arrow class="dsh-link">{link.label}</Button>}
+</div>
+
+<style>
+  .dsh { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.5rem 3rem; margin-bottom: clamp(2.5rem, 5vw, 3.75rem); }
+  .dsh-main { max-width: 44rem; }
+  .dsh-eyebrow { margin-bottom: 1rem; color: var(--accent); }
+  .dsh-title { display: flex; align-items: flex-end; gap: 0.75rem; }
+  .dsh-title :global(:is(h1, h2)) { max-width: 18ch; }
+  :global(.dsh-arrow) { flex: none; width: clamp(2.5rem, 3.6vw, 3.5rem); color: var(--orange); margin-bottom: -0.6rem; }
+  .dsh-desc { margin-top: 1.25rem; max-width: 36rem; }
+  .dsh-centre { flex-direction: column; align-items: center; text-align: center; }
+  .dsh-centre .dsh-main { display: flex; flex-direction: column; align-items: center; }
+  .dsh-centre .dsh-title { justify-content: center; }
+</style>

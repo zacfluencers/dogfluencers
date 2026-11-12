@@ -1,0 +1,64 @@
+---
+import type { Campaign } from '../../types/content';
+import Media from '../global/Media.astro';
+import PlaceholderMark from '../dev/PlaceholderMark.astro';
+
+interface Props {
+  campaign: Campaign;
+  /** Only verified metrics reach this component. */
+  showMetrics?: boolean;
+}
+const { campaign, showMetrics = true } = Astro.props;
+const metrics = showMetrics ? (campaign.metrics ?? []) : [];
+---
+
+<!--
+  Subgrid rows (image, meta, title, summary, footer) are shared across the
+  grid row so titles, summaries and metrics sit on common lines.
+-->
+<article class="group relative grid row-span-5 grid-rows-subgrid content-start gap-y-3">
+  <div class="mb-2 overflow-hidden">
+    <Media
+      media={campaign.heroImage}
+      ratio="4 / 5"
+      fallbackLabel="Campaign image required"
+      class="transition-transform duration-[var(--duration)] ease-[var(--ease)] group-hover:scale-[1.02]"
+    />
+  </div>
+
+  <div class="type-eyebrow muted flex flex-wrap items-center gap-x-3 gap-y-1">
+    {campaign.brand && <span class="text-[var(--ink)]">{campaign.brand}</span>}
+    {campaign.campaignType && <span>{campaign.campaignType}</span>}
+  </div>
+
+  <h3 class="type-heading">
+    <a href={`/campaigns/${campaign.slug}/`}>
+      <span class="absolute inset-0" aria-hidden="true"></span>
+      <span class="link-underline">{campaign.title}</span>
+    </a>
+  </h3>
+
+  <p class="type-body muted measure">{campaign.summary}</p>
+
+  <div class="flex flex-col items-start gap-3">
+    {
+      metrics.length > 0 && (
+        /* Every verified figure, two by two in a narrow card and in one row
+           once the card is wide enough (a container query, so it follows the
+           card rather than the viewport). */
+        <div class="@container mt-2 self-stretch border-t border-[var(--hairline)] pt-4">
+          <dl class="grid grid-cols-2 gap-x-6 gap-y-4 @2xl:grid-cols-4">
+            {metrics.map((metric) => (
+              <div class="flex flex-col gap-1.5">
+                <dt class="type-eyebrow muted">{metric.label}</dt>
+                <dd class="type-heading order-first font-display">{metric.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )
+    }
+
+    {campaign.status === 'placeholder' && <PlaceholderMark reason="Case study not approved for publication" />}
+  </div>
+</article>

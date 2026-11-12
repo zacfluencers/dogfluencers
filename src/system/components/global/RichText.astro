@@ -1,0 +1,54 @@
+---
+import type { RichTextBlock } from '../../types/content';
+import InlineSpans from './InlineSpans.astro';
+import Media from './Media.astro';
+
+interface Props {
+  blocks: RichTextBlock[];
+  class?: string;
+}
+const { blocks, class: className = '' } = Astro.props;
+---
+
+<div class:list={['measure flex flex-col gap-6', className]}>
+  {
+    blocks.map((block) => {
+      if (block.type === 'heading') {
+        const Tag = block.level === 2 ? 'h2' : 'h3';
+        return <Tag class={block.level === 2 ? 'type-display-m mt-6' : 'type-heading mt-4'}>{block.text}</Tag>;
+      }
+      if (block.type === 'paragraph') {
+        return <p class="type-body">{block.spans ? <InlineSpans spans={block.spans} /> : block.text}</p>;
+      }
+      if (block.type === 'image') {
+        const { width, height } = block.image;
+        return (
+          <figure class="my-4">
+            <Media
+              media={block.image}
+              ratio={width && height ? `${width} / ${height}` : '3 / 2'}
+              sizes="(min-width: 768px) 46rem, 100vw"
+            />
+            {block.caption && <figcaption class="type-caption muted mt-3">{block.caption}</figcaption>}
+          </figure>
+        );
+      }
+      if (block.type === 'quote') {
+        return (
+          <blockquote class="border-l border-[var(--accent)] pl-6">
+            <p class="type-lead">{block.text}</p>
+            {block.attribution && <cite class="type-eyebrow muted mt-3 block not-italic">{block.attribution}</cite>}
+          </blockquote>
+        );
+      }
+      const ListTag = block.ordered ? 'ol' : 'ul';
+      return (
+        <ListTag class:list={['flex flex-col gap-3 pl-5', block.ordered ? 'list-decimal' : 'list-disc']}>
+          {block.items.map((item, i) => (
+            <li class="type-body">{block.spans?.[i] ? <InlineSpans spans={block.spans[i]} /> : item}</li>
+          ))}
+        </ListTag>
+      );
+    })
+  }
+</div>

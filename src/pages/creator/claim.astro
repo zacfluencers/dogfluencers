@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { agency } from '../../agency/config';
+import { isCrmConfigured } from '../../system/crm/supabase';
+import { requestClaim } from '../../system/crm/server';
+import { emailSchema } from '../../system/crm/validation';
+
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import Section from '../../system/components/global/Section.astro';
+import Container from '../../system/components/global/Container.astro';
+import Button from '../../system/components/global/Button.astro';
+import AccountAside from '../../system/components/crm/AccountAside.astro';
+import FormField from '../../system/components/crm/FormField.astro';
+import CrmUnavailable from '../../system/components/crm/CrmUnavailable.astro';
+
+export const prerender = false;
+
+let email = '';
+let error: string | undefined;
+let sent = false;
+
+if (Astro.request.method === 'POST' && isCrmConfigured()) {
+  const form = await Astro.request.formData();
+  email = String(form.get('email') ?? '');
+  const parsed = emailSchema.safeParse(email);
+  if (parsed.success) {
+    // Covers both cases: a reset link for a login, a set-up link for a
+    // creator imported from the old site. Same answer either way.
+    await requestClaim(parsed.data, Astro.url.origin);
+    sent = true;
+  } else {
+    error = parsed.error.issues[0].message;
+    Astro.response.status = 422;
+  }
+}
+---
+
+<BaseLayout seo={{ title: 'Set up your login', noIndex: true }}>
+  <PageHead size="compact"
+    heading="Set up your login"
+    description="Joined through our old website? Your details are already here. Enter the email you joined with and we'll send you a link to choose a password."
+  />
+  <Section spacing="tight">
+    <Container>
+      {/* Form on the left, ways on to the right: the site's shared split. */}
+      <div class="grid gap-16 lg:grid-cols-2 lg:gap-x-10">
+      {/* Opens on a rule, like the options beside it, so both columns start on one line. */}
+      <div class="max-w-[30rem] border-t border-[var(--hairline-strong)] pt-8">
+        {
+          !isCrmConfigured() ? (
+            <CrmUnavailable message="Creator logins are opening soon." email={agency.contact.email} />
+          ) : sent ? (
+            <p class="form-alert" role="status">
+              If {email} is in our creator network, a link to set up your login is on its way. It works once, for an hour.
+            </p>
+          ) : (
+            <form method="post" novalidate class="flex flex-col gap-6">
+              <FormField name="email" label="Email" type="email" autocomplete="email" inputmode="email" value={email} error={error} />
+              <div class="mt-2">
+                <Button type="submit" size="large">Send the link</Button>
+              </div>
+            </form>
+          )
+        }
+      </div>
+        <AccountAside items={[{ title: 'Already set up?', body: 'Log in with your email and the password you chose.', link: { label: 'Log in', href: '/creator/login/' } }, { title: 'Not in the network yet?', body: 'Joining is free, with no follower minimum. It takes about five minutes.', link: { label: 'Join the creator network', href: '/join/' } }]} />
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,63 @@
+---
+import type { ImageRef, Link } from '../../types/content';
+import Container from '../global/Container.astro';
+import type { ComponentProps } from 'astro/types';
+import Section from '../global/Section.astro';
+import Button from '../global/Button.astro';
+import Media from '../global/Media.astro';
+import MarkedText from '../global/MarkedText.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  primaryCta?: Link;
+  secondaryCta?: Link;
+  media?: ImageRef;
+  invert?: boolean;
+  /** Defaults to the accent band. Overrides `invert` when set. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  /** Moving film grain on the ground, to set the closing ask apart. On by default. */
+  grain?: boolean;
+}
+const {
+  eyebrow,
+  heading,
+  description,
+  primaryCta,
+  secondaryCta,
+  media,
+  invert = false,
+  tone = invert ? 'ink' : 'accent',
+  grain = true,
+} = Astro.props;
+---
+
+<Section invert={invert} tone={tone} grain={grain}>
+  <Container>
+    <div class:list={['grid gap-12', media && 'lg:grid-cols-[1.2fr_1fr] lg:items-center lg:gap-20']}>
+      <div class="heading-stack">
+        {eyebrow && <p class="type-eyebrow muted">{eyebrow}</p>}
+        <h2 class="reveal-mask type-display-l max-w-3xl"><MarkedText text={heading} /></h2>
+        {description && <p class="reveal-rise type-lead muted measure" style="--reveal-delay: 120ms">{description}</p>}
+        {
+          (primaryCta || secondaryCta) && (
+            <div class="reveal-rise grid gap-3 sm:flex sm:flex-wrap sm:items-center" style="--reveal-delay: 220ms">
+              {primaryCta && (
+                <Button href={primaryCta.href} event={primaryCta.event} size="large">
+                  {primaryCta.label}
+                </Button>
+              )}
+              {secondaryCta && (
+                <Button href={secondaryCta.href} event={secondaryCta.event} variant="outline" size="large">
+                  {secondaryCta.label}
+                </Button>
+              )}
+            </div>
+          )
+        }
+      </div>
+      {media && <Media media={media} ratio="1 / 1" fallbackLabel="Image optional" />}
+    </div>
+  </Container>
+</Section>

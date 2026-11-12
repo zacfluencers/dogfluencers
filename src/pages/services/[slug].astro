@@ -1,0 +1,177 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { clips } from '../../agency/content/clips';
+import WorkPosts from '../../agency/components/sections/WorkPosts.astro';
+import { agency } from '../../agency/config';
+import { content } from '../../content';
+import { breadcrumbSchema, serviceSchema } from '../../system/lib/seo';
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import ListSplit from '../../agency/components/sections/ListSplit.astro';
+import Deal from '../../agency/components/sections/Deal.astro';
+import Steps from '../../agency/components/sections/Steps.astro';
+import Pricing from '../../agency/components/sections/Pricing.astro';
+import CampaignCards from '../../agency/components/sections/CampaignCards.astro';
+import Faq from '../../agency/components/sections/Faq.astro';
+import CtaBand from '../../agency/components/sections/CtaBand.astro';
+
+export const getStaticPaths = (async () => {
+  const services = await content.services();
+  // Only build pages for services this agency actually offers.
+  return services
+    .filter((service) => agency.enabledServices.includes(service.slug))
+    .map((service) => ({ params: { slug: service.slug }, props: { service } }));
+}) satisfies GetStaticPaths;
+
+const { service } = Astro.props;
+
+const [campaigns, work] = await Promise.all([content.campaigns(), content.work()]);
+
+// The service's own clip leads, then two that are not on its index row.
+const extra: Record<string, [typeof clips.beagle, typeof clips.beagle]> = {
+  'mass-gifting': [clips.spanielsLick, clips.beagle],
+  ugc: [clips.cockerLickmat, clips.colliePark],
+  'creator-campaigns': [clips.ownerUnbox, clips.goldenCar],
+  'product-launches': [clips.labPatio, clips.goldenBed],
+};
+const cards: Record<string, { title: string; body: string }> = {
+  'mass-gifting': { title: 'Up to 100 dogs', body: 'In a single drop' },
+  ugc: { title: 'Content in 7 days', body: 'With unlimited edits' },
+  'creator-campaigns': { title: 'Paid posts', body: 'From creators you approve' },
+  'product-launches': { title: 'All in one', body: 'Gifting, UGC and paid' },
+};
+const mastheadMedia = [service.video, ...(extra[service.slug] ?? [])].filter((v): v is NonNullable<typeof v> => Boolean(v));
+
+// Every campaign, with this service's own first. A stable sort, so each
+// group keeps the order set in the content.
+const ownService = (campaign: (typeof campaigns)[number]) => (campaign.campaignType === service.title ? 0 : 1);
+const relatedCampaigns = [...campaigns].sort((a, b) => ownService(a) - ownService(b)).slice(0, 3);
+
+const faqs = service.faqs ?? [];
+
+// Bands alternate cream and paper in whatever order they render, so two
+// neighbours never share a ground whatever content a service has.
+const bands = [
+  service.features && service.features.length > 0 && 'features',
+  service.process && service.process.length > 0 && 'process',
+  service.packages && service.packages.length > 0 && 'packages',
+  relatedCampaigns.length > 0 && 'campaigns',
+  faqs.length > 0 && 'faqs',
+].filter(Boolean);
+const band = (name: string) => (bands.indexOf(name) % 2 === 0 ? 'cream' : 'paper') as 'cream' | 'paper';
+
+// Written per service: building it from the title read badly
+// ("Start a creator campaigns campaign").
+const ctaHeadings: Record<string, string> = {
+  'mass-gifting': 'Start a gifting *drop.*',
+  ugc: 'Get your content *made.*',
+  'creator-campaigns': 'Start a creator *campaign.*',
+  'product-launches': 'Plan your *product launch.*',
+};
+
+// Each service at a glance: figures taken from its own features and
+// process copy, nothing new claimed.
+type DealContent = { heading: string; description: string; stats: { value: string; label: string }[]; footLabel: string; requirements: string[] };
+const deals: Record<string, DealContent> = {
+  'mass-gifting': {
+    heading: 'One drop, a hundred *dogs.*',
+    description: 'Every dog matched to what you make, and every owner opted in before anything ships.',
+    stats: [
+      { value: '100', label: 'Dogs in a single drop' },
+      { value: '100%', label: 'Owners opted in before anything ships' },
+      { value: '0', label: 'Parcels for you to coordinate' },
+    ],
+    footLabel: 'Also included',
+    requirements: ['Dog matching', 'Story tracking', 'Reporting'],
+  },
+  ugc: {
+    heading: 'Content you own *outright.*',
+    description: 'Briefed, filmed and delivered in a week, and yours for organic and paid with no renewal.',
+    stats: [
+      { value: '7', label: 'Days from product to content' },
+      { value: '∞', label: 'Rounds of edits' },
+      { value: '100%', label: 'Yours to use, for life' },
+    ],
+    footLabel: 'Also included',
+    requirements: ['Creative briefing', 'Creator selection', 'Every ratio you need'],
+  },
+  'creator-campaigns': {
+    heading: 'Paid reach, on your *terms.*',
+    description: 'You approve the creators and every post. We handle the terms, the briefs and the chasing.',
+    stats: [
+      { value: '100%', label: 'Creators approved by you' },
+      { value: '0', label: 'Posts live without your sign-off' },
+    ],
+    footLabel: 'Also included',
+    requirements: ['Creator strategy', 'Written briefs', 'Owner management', 'Reporting'],
+  },
+  'product-launches': {
+    heading: 'One launch, everywhere at *once.*',
+    description: 'Gifting, UGC and paid creator posts planned as one programme, timed to your date.',
+    stats: [
+      { value: '1', label: 'Programme, planned as one campaign' },
+      { value: '3', label: 'Ways in: gifting, UGC and paid posts' },
+    ],
+    footLabel: 'Also included',
+    requirements: ['Built around the date', 'Always-on options', 'Custom reporting'],
+  },
+};
+const deal = deals[service.slug];
+
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Services', href: '/services/' },
+  { label: service.title },
+];
+---
+
+<BaseLayout
+  seo={service.seo ?? {
+    title: `${service.title} for pet brands`,
+    description: service.shortDescription,
+  }}
+  schemas={[serviceSchema(agency, service), breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow="Service"
+    heading={service.title.replace(/(\S+)$/, "*$1*")}
+    description={service.description ?? service.shortDescription}
+    primaryCta={agency.ctas.primary}
+    media={mastheadMedia}
+    card={cards[service.slug]}
+  />
+
+  {deal && <Deal label="At a glance" {...deal} cta={agency.ctas.primary} />}
+
+  {service.features && service.features.length > 0 && (
+    <ListSplit band={band('features')} eyebrow="What it covers" heading="Everything in between" items={service.features.map((f) => ({ title: f.title, body: f.description }))} />
+  )}
+
+  {service.process && service.process.length > 0 && (
+    <Steps band={band('process')} eyebrow="How it runs" heading={`${service.title}, step by step`} steps={service.process} />
+  )}
+
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+
+  {service.packages && service.packages.length > 0 && (
+    <Pricing
+      band={band('packages')}
+      heading={service.packagesHeading ?? 'Choose your package'}
+      description={service.packagesIntro}
+      packages={service.packages}
+      note={service.packagesNote}
+      cta={{ label: 'Get started', href: agency.ctas.primary.href, event: agency.ctas.primary.event }}
+    />
+  )}
+
+  <CampaignCards band={band('campaigns')} eyebrow="Case studies" heading="Campaigns" campaigns={relatedCampaigns} link={{ label: 'All campaigns', href: '/campaigns/' }} />
+
+  {faqs.length > 0 && <Faq band={band('faqs')} eyebrow="FAQ" heading="Common questions" faqs={faqs} link={{ label: 'Get in touch', href: '/contact/' }} />}
+
+  <CtaBand
+    heading={ctaHeadings[service.slug] ?? 'Start a *campaign.*'}
+    description="Tell us about the product and the timeline, and we will come back with an approach."
+    primaryCta={agency.ctas.primary}
+  />
+</BaseLayout>

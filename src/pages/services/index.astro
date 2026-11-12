@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { clips } from '../../agency/content/clips';
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import ServiceRows from '../../agency/components/sections/ServiceRows.astro';
+import WorkPosts from '../../agency/components/sections/WorkPosts.astro';
+import Faq from '../../agency/components/sections/Faq.astro';
+import CtaBand from '../../agency/components/sections/CtaBand.astro';
+import { agency } from '../../agency/config';
+import { brandFaqs, content } from '../../content';
+import { breadcrumbSchema } from '../../system/lib/seo';
+
+
+const [services, work] = await Promise.all([content.services(), content.work()]);
+const orderedServices = agency.enabledServices
+  .map((slug) => services.find((service) => service.slug === slug))
+  .filter((service): service is NonNullable<typeof service> => Boolean(service));
+
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Services' }];
+---
+
+<BaseLayout
+  seo={{
+    title: 'Services',
+    description:
+      'Mass gifting, UGC and ad content, creator campaigns and product launches for pet brands: what each service covers and how it runs.',
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow="Services"
+    heading="Four ways to get your product *seen.*"
+    media={[clips.goldenToy, clips.cockerLickmat, clips.labPatio]}
+    card={{ title: 'Unlimited edits', body: 'Until it matches the brief' }}
+    description="Gifting, UGC, creator campaigns and launches. Most brands use more than one. The right mix depends on whether you need volume, owned content or contracted reach."
+  />
+
+  <ServiceRows services={orderedServices} facts={{ 'mass-gifting': 'Up to 100 dogs', ugc: '7 day delivery', 'creator-campaigns': 'Paid posts', 'product-launches': 'All in one' }} />
+
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+
+  <Faq eyebrow="FAQ" heading="Common questions" faqs={await brandFaqs()} link={{ label: 'Get in touch', href: '/contact/' }} />
+
+  <CtaBand
+    heading="Not sure which service you *need?*"
+    description="Tell us what you are launching and we will tell you what we would run, and why."
+    primaryCta={agency.ctas.primary}
+  />
+</BaseLayout>

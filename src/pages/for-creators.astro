@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { clips } from '../agency/content/clips';
+import WorkPosts from '../agency/components/sections/WorkPosts.astro';
+import PageHead from '../agency/components/sections/PageHead.astro';
+import Deal from '../agency/components/sections/Deal.astro';
+import Feature from '../agency/components/sections/Feature.astro';
+import Steps from '../agency/components/sections/Steps.astro';
+import Categories from '../agency/components/sections/Categories.astro';
+import Faq from '../agency/components/sections/Faq.astro';
+import CtaBand from '../agency/components/sections/CtaBand.astro';
+import { agency } from '../agency/config';
+import { content, creatorFaqs } from '../content';
+import { creatorJourney } from '../agency/content/journeys';
+import { breadcrumbSchema } from '../system/lib/seo';
+
+
+const [creatorCategories, work] = await Promise.all([content.creatorCategories(), content.work()]);
+
+// This page talks to owners, so it opens on an owner and her dog.
+const mastheadMedia = [clips.ownerCollie, clips.goldenCar, clips.goldenBed];
+const whatMedia = { src: '/video/full/cocker-paste.mp4#t=16', poster: '/video/cocker-paste.jpg', alt: 'A red and white cocker spaniel on a dog bed, offered a probiotic paste syringe.' };
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'For Creators' }];
+
+/**
+ * Copy here must not promise payment on every opportunity —
+ * `agency.creatorNetwork.allOpportunitiesPaid` is false for this agency.
+ */
+const opportunities = [
+  {
+    title: 'Gifted products',
+    body: 'Pawsome products for your dog to keep, in return for a fun Instagram story: an unboxing, a review, a taste test. Free to join, just tick the box when you sign up.',
+  },
+  {
+    title: 'Paid collaborations',
+    body: 'Set your own rate when you join. Offers we send are within 20% of it, we handle the negotiation and contracts, and we never take commission.',
+  },
+  {
+    title: 'UGC work',
+    body: 'Film content for a brand to use on their own channels. How well you film matters more than how many people follow you.',
+  },
+  {
+    title: 'Ongoing relationships',
+    body: 'Brands come back. The dogs and owners who deliver well tend to get asked again.',
+  },
+];
+---
+
+<BaseLayout
+  seo={{
+    title: 'For dog creators',
+    description:
+      'Join Dogfluencers: gifted products for your dog, paid collaborations with brands you love, and UGC work. Free to join, with no commission taken from your fees.',
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow="For dog owners"
+    heading="Get your dog the pawsome *stuff.*"
+    description={agency.creatorNetwork.description}
+    primaryCta={{ label: 'Join the network', href: agency.creatorNetwork.joinUrl, event: 'creator_signup_click' }}
+    secondaryCta={{ label: 'Gifting guidelines', href: '/for-creators/gifting-guidelines/' }}
+    media={mastheadMedia}
+    card={{ title: 'Free to join', body: 'No commission, ever' }}
+  />
+
+  <Deal
+    label="The deal"
+    heading="Simple, and on your *side.*"
+    description="Joining costs nothing. Your rate is your rate, and every brief is yours to accept or turn down."
+    stats={[
+      { value: '£0', label: 'To join' },
+      { value: '0%', label: 'Commission on your fee' },
+      { value: '100%', label: 'Your call on every brief' },
+    ]}
+    requirements={['1,000+ followers', '2.5%+ engagement', 'A dog who loves new things']}
+    cta={{ label: 'Join the network', href: agency.creatorNetwork.joinUrl, event: 'creator_signup_click' }}
+  />
+
+  <Feature band="cream" eyebrow="What comes through" heading="Gifts, paid work and UGC" video={whatMedia} side="right" items={opportunities} />
+
+  <Steps band="paper" eyebrow="Joining" heading="What happens next" steps={creatorJourney} cta={{ label: 'Join the network', href: agency.creatorNetwork.joinUrl, event: 'creator_signup_click' }} />
+
+  <WorkPosts eyebrow="Made by owners" heading="Owners like *you.*" description="Content dog owners in the network have made for pet brands." items={work.slice(0, 4)} />
+
+  <Categories band="soft" eyebrow="Who we work with" heading="Every breed, size and age" description="If your dog fits any of these, they are in scope." categories={creatorCategories} />
+
+  <Faq eyebrow="FAQ" heading="Creator questions" faqs={await creatorFaqs()} />
+
+  <CtaBand
+    heading="Join the creator *network.*"
+    description="Free lifetime access to paid collaborations, our gifting network and PR invites. Tell us about your dog and we will match you to briefs as they come in."
+    primaryCta={{ label: agency.ctas.secondary.label, href: agency.creatorNetwork.joinUrl, event: 'creator_signup_click' }}
+    secondaryCta={{ label: 'Gifting guidelines', href: '/for-creators/gifting-guidelines/' }}
+  />
+</BaseLayout>

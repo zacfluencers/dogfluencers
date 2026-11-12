@@ -1,0 +1,240 @@
+---
+/**
+ * One creator: everything they told us, in the order they told us, with the
+ * team-only status and notes beside it.
+ */
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { crm } from '../../../agency/crm';
+import { isAdmin } from '../../../system/crm/supabase';
+import { getCreator } from '../../../system/crm/server';
+import { sendWelcome } from '../../../system/crm/emails';
+import { agency } from '../../../agency/config';
+import { APPLICATION_STATUSES, GENDERS, labelFor } from '../../../system/crm/options';
+import { ageOn, formatPhone, socialHandle } from '../../../system/crm/validation';
+import { answerText, emailMarketingLabel, fmtDate, fmtMoney, fmtNumber, fullName } from '../../../system/crm/format';
+import { itemsOf } from '../../../system/crm/validation';
+import { statusChip } from '../../../system/crm/table';
+import Button from '../../../system/components/global/Button.astro';
+import FormField from '../../../system/components/crm/FormField.astro';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const { supabase } = Astro.locals.session!;
+if (!(await isAdmin(supabase))) return Astro.redirect('/admin/login/?error=forbidden', 303);
+if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return new Response(null, { status: 404 });
+
+let saved = false;
+let saveError: string | undefined;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const status = String(form.get('application_status') ?? '');
+  const notes = String(form.get('admin_notes') ?? '');
+  if (!APPLICATION_STATUSES.some((s) => s.value === status)) saveError = 'Choose a status.';
+  else if (notes.length > 10000) saveError = 'Notes are limited to 10,000 characters.';
+  else {
+    // Read first: the welcome email goes only on the move into Approved, so
+    // saving notes on someone already approved can never send it twice.
+    const before = await getCreator(supabase, id);
+    // The database function checks the caller is on the team before changing anything.
+    const { error } = await supabase.rpc('admin_update_creator', { p_id: id, p_status: status, p_admin_notes: notes });
+    if (error) {
+      console.error('admin update failed', error.code, error.message);
+      saveError = error.code === '42501' ? 'You don\'t have permission to do that.' : 'Couldn\'t save. Please try again.';
+    } else {
+      let welcome = '';
+      if (form.get('send_welcome') === 'yes' && status === 'approved' && before && before.application_status !== 'approved') {
+        const env = (name: string) => (import.meta.env[name] as string | undefined) || process.env[name];
+        const problem = await sendWelcome(crm, agency.name, agency.site.url, env('RESEND_API_KEY'), before);
+        welcome = problem ? `&welcome_error=${encodeURIComponent(problem)}` : '&welcome=sent';
+      }
+      return Astro.redirect(`/admin/creators/${id}/?saved=1${welcome}`, 303);
+    }
+  }
+  Astro.response.status = 422;
+}
+saved = Astro.url.searchParams.has('saved');
+const welcomeSent = Astro.url.searchParams.get('welcome') === 'sent';
+const welcomeError = Astro.url.searchParams.get('welcome_error')?.slice(0, 200);
+
+const c = await getCreator(supabase, id);
+if (!c) return new Response(null, { status: 404 });
+
+const yesNo = (v: boolean) => (v ? 'Yes' : 'No');
+const link = (url: string | null) => (url ? { href: url, text: socialHandle(url) } : null);
+
+type Item = { label: string; value?: string | null; href?: string; wide?: boolean; external?: boolean };
+const groups: { title: string; items: Item[] }[] = [
+  {
+    title: 'Contact',
+    items: [
+      { label: 'Email', value: c.email, href: `mailto:${c.email}` },
+      { label: 'Phone', value: formatPhone(c.phone), href: c.phone ? `tel:${c.phone}` : undefined },
+      {
+        label: 'Address',
+        wide: true,
+        value: [c.address_line_1, c.address_line_2, [c.town, c.county].filter(Boolean).join(', '), c.postcode, c.country]
+          .filter(Boolean)
+          .join('\n'),
+      },
+    ],
+  },
+  {
+    title: 'About them',
+    items: [
+      { label: 'Gender', value: labelFor(GENDERS, c.gender) },
+      { label: 'Date of birth', value: c.date_of_birth ? `${fmtDate(c.date_of_birth)} (age ${ageOn(c.date_of_birth)})` : null },
+    ],
+  },
+  ...crm.steps.flatMap((step) => {
+    const label = (f: (typeof step.fields)[number]) => (f.teamLabel ?? f.label).replace(/\?$/, '');
+    if (!step.repeat) {
+      return [{
+        title: step.teamTitle ?? step.title,
+        items: step.fields.map((f): Item => ({ label: label(f), value: answerText(f, c.details?.[f.key] as never), wide: f.type === 'textarea' })),
+      }];
+    }
+    // One section per item: "Dog 1: Bonnie". Answers an import filled in say so.
+    const { repeat } = step;
+    const list = itemsOf(c.details, repeat);
+    if (!list.length) return [{ title: step.teamTitle ?? step.title, items: [{ label: repeat.tableLabel, value: null }] }];
+    return list.map((item, n) => {
+      const estimated = new Set(Array.isArray(item._estimated) ? item._estimated : []);
+      const first = repeat.summary[0] ? item[repeat.summary[0]] : undefined;
+      return {
+        title: `${repeat.item} ${n + 1}${typeof first === 'string' && first ? `: ${first}` : ''}`,
+        items: step.fields.map((f): Item => {
+          const text = answerText(f, item[f.key]);
+          return { label: label(f), value: text && estimated.has(f.key) ? `${text} (estimated, not yet confirmed)` : text, wide: f.type === 'textarea' };
+        }),
+      };
+    });
+  }),
+  {
+    title: 'Sizes and diet',
+    items: [
+      { label: 'Top size', value: c.clothing_size ? labelFor(crm.clothingSizes, c.clothing_size) : null },
+      { label: 'Bottoms size', value: c.trouser_size ? labelFor(crm.clothingSizes, c.trouser_size) : null },
+      { label: 'Shoe size', value: c.shoe_size },
+      { label: 'Dietary requirements', value: c.dietary_requirements },
+      { label: 'Allergies', value: c.allergies, wide: true },
+    ],
+  },
+  {
+    title: 'Socials and rate',
+    items: [
+      { label: 'Instagram', value: link(c.instagram_url)?.text, href: c.instagram_url ?? undefined, external: true },
+      { label: 'Instagram followers', value: c.instagram_url ? fmtNumber(c.instagram_followers) : null },
+      { label: 'TikTok', value: link(c.tiktok_url)?.text, href: c.tiktok_url ?? undefined, external: true },
+      { label: 'TikTok followers', value: c.tiktok_url ? fmtNumber(c.tiktok_followers) : null },
+      { label: 'YouTube', value: link(c.youtube_url)?.text, href: c.youtube_url ?? undefined, external: true },
+      { label: 'YouTube subscribers', value: c.youtube_url ? fmtNumber(c.youtube_followers) : null },
+      { label: 'Rate per post or reel', value: c.rate_per_post === null ? null : fmtMoney(Number(c.rate_per_post), crm.currency) },
+      { label: 'Gifting network', value: yesNo(c.join_gifting_network) },
+      { label: 'Anything else', value: c.additional_notes, wide: true },
+    ],
+  },
+  {
+    title: 'Record',
+    items: [
+      { label: 'Joined via', value: c.source === 'import' ? 'Old website (imported)' : 'Join form' },
+      { label: 'Has a login', value: c.auth_user_id ? 'Yes' : 'Not yet' },
+      { label: 'Marketing emails', value: emailMarketingLabel(c) },
+      { label: 'Privacy consent', value: c.privacy_consent_at ? new Date(c.privacy_consent_at).toLocaleString('en-GB', { timeZone: 'Europe/London' }) : 'Not recorded (joined on the old website)' },
+      { label: 'Creator ID', value: c.id },
+    ],
+  },
+];
+
+const name = fullName(c) || c.email;
+---
+
+<AdminLayout title={name}>
+  <a href="/admin/creators/" class="type-eyebrow link-underline" data-back-to-list>All creators</a>
+
+  <div class="mt-8 flex flex-wrap items-center gap-5">
+    <h1 class="type-display-l">{name}</h1>
+    <Fragment set:html={statusChip(c.application_status)} />
+  </div>
+  <p class="type-caption muted mt-3">Joined {fmtDate(c.created_at)}. Last updated {fmtDate(c.updated_at)}.</p>
+
+  <div class="mt-12 grid gap-14 xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-20">
+    <div class="flex flex-col">
+      {
+        groups.map((group, i) => (
+          <section class:list={['grid gap-6 border-t border-[var(--hairline-strong)] pt-8', i > 0 && 'mt-12']}>
+            <h2 class="type-heading">{group.title}</h2>
+            <dl class="grid gap-x-10 gap-y-6 sm:grid-cols-2">
+              {group.items.map((item) => (
+                <div class:list={['min-w-0', item.wide && 'sm:col-span-2']}>
+                  <dt class="form-label">{item.label}</dt>
+                  <dd class:list={['mt-2 whitespace-pre-line [overflow-wrap:anywhere]', !item.value && 'muted']}>
+                    {item.value ? (
+                      item.href ? (
+                        <a href={item.href} class="link-underline font-bold" target={item.external ? '_blank' : undefined} rel={item.external ? 'noreferrer' : undefined}>
+                          {item.value}
+                        </a>
+                      ) : (
+                        item.value
+                      )
+                    ) : (
+                      'Not provided'
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))
+      }
+    </div>
+
+    {/* First on narrow screens, so status and notes are a thumb away. */}
+    <aside class="order-first xl:sticky xl:top-10 xl:order-none xl:self-start" id="team">
+      <form method="post" class="flex flex-col gap-6 border-t border-[var(--hairline-strong)] pt-8">
+        <h2 class="type-heading">Team only</h2>
+        {saved && <p class="form-alert" role="status">{welcomeSent ? 'Saved, and the welcome email is on its way.' : 'Saved'}</p>}
+        {welcomeError && <p class="form-alert" role="alert">{welcomeError}</p>}
+        {saveError && <p class="form-alert" role="alert">{saveError}</p>}
+        <FormField name="application_status" label="Status" type="select" options={APPLICATION_STATUSES} value={c.application_status} empty="Choose a status" />
+        <FormField
+          name="admin_notes"
+          label="Notes"
+          type="textarea"
+          max={10000}
+          value={c.admin_notes ?? ''}
+          hint="Never shown to the creator."
+        />
+        {/* Only on the move into Approved, and only if ticked, so a wrong click sends nothing. */}
+        {crm.welcome && c.application_status !== 'approved' && (
+          <label class="flex cursor-pointer items-start gap-3" data-welcome>
+            <input class="form-check" type="checkbox" name="send_welcome" value="yes" />
+            <span class="type-caption">Email them the welcome email when I save them as Approved</span>
+          </label>
+        )}
+        <div>
+          <Button type="submit" size="large">Save</Button>
+        </div>
+      </form>
+    </aside>
+  </div>
+</AdminLayout>
+
+<script>
+  // Back to the list with its filters, when that's where we came from.
+  const back = document.querySelector<HTMLAnchorElement>('[data-back-to-list]');
+  if (back && document.referrer.startsWith(`${location.origin}/admin/creators/?`)) back.href = document.referrer;
+
+  // The welcome tick box shows only while Approved is chosen.
+  const welcome = document.querySelector<HTMLElement>('[data-welcome]');
+  const status = document.querySelector<HTMLSelectElement>('select[name="application_status"]');
+  if (welcome && status) {
+    const sync = () => {
+      welcome.hidden = status.value !== 'approved';
+      if (welcome.hidden) welcome.querySelector('input')!.checked = false;
+    };
+    status.addEventListener('change', sync);
+    sync();
+  }
+</script>

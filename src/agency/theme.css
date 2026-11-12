@@ -1,0 +1,308 @@
+/* ==========================================================================
+   Dogfluencers: brand tokens and type
+   Direction: the April 2026 social statics. Flat orange, night and cream
+   bands; cream condensed capitals; a rounded bar behind the words that
+   matter; real dogs in slightly tilted prints; hand-drawn arrows; paws.
+   Clean first, in the manner of Airbnb and Linear: a warm paper page,
+   whitespace, rounded photos and cards, hairlines. The playful edge is
+   rationed: one bar highlight per heading that earns it, the odd hand-drawn arrow, a floating
+   post card. No grain, no gradients, no paw wallpaper.
+
+   The marketing pages are built from src/agency/components, which read
+   these tokens. The system's own components (forms, CRM, rich text) read
+   the semantic names below too, so they sit in the same palette.
+   ========================================================================== */
+
+@import '@fontsource-variable/open-sans/wdth.css';
+
+:root {
+  color-scheme: light;
+
+  /* --- Palette: three brand colours ------------------------------------- */
+  --orange: #f53d0c;
+  --night: #1a1412;
+  --cream: #f9ead0;
+  /* Derived steps. Orange on cream is 3.2:1, so orange as small text on
+     cream darkens to 4.7:1. Night-on-orange body copy is 4.8:1; cream on
+     orange (3.2:1) is for display type only. */
+  --orange-text: #c4300a;
+  --cream-soft: #fdf6ea;
+  --paper: #fffaf3;
+  --night-soft: #2a211e;
+  --night-muted: #6b5d55;   /* 5.3:1 on cream */
+  --cream-muted: #c9b99f;   /* 9:1 on night */
+
+  /* Names the system's `invert` mode reads. */
+  --shadow-black: var(--night);
+  --off-white: var(--cream);
+
+  /* --- Semantic tokens (read by system components) ---------------------- */
+  --ground: var(--paper);
+  --ink: var(--night);
+  --ink-filter: brightness(0) invert(0.08) sepia(0.3);
+  --ink-muted: var(--night-muted);
+  --accent: var(--orange-text);
+  --accent-fill: var(--orange);
+  --accent-ink: var(--night);
+  --surface: var(--cream-soft);
+  --hairline: rgb(26 20 18 / 0.1);
+  --hairline-strong: rgb(26 20 18 / 0.22);
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
+  --radius-sm: 0.625rem;
+
+  --tone-raised-ground: var(--cream-soft);
+  --tone-raised-surface: var(--cream);
+  --tone-accent-ground: var(--orange);
+  --tone-accent-ink: var(--night);
+  --tone-accent-ink-filter: brightness(0) invert(0.08) sepia(0.3);
+  --tone-accent-surface: var(--cream);
+  --tone-accent-hairline: rgb(26 20 18 / 0.24);
+  --tone-accent-hairline-strong: rgb(26 20 18 / 0.5);
+  --tone-accent-fill: var(--night);
+  --tone-accent-fill-ink: var(--cream);
+  --tone-inverse-ground: var(--night);
+  --tone-inverse-ink: var(--cream);
+  --tone-inverse-ink-filter: brightness(0) invert(0.93) sepia(0.25);
+  --tone-inverse-ink-muted: var(--cream-muted);
+  --tone-inverse-surface: var(--night-soft);
+  --tone-inverse-hairline: rgb(249 234 208 / 0.16);
+  --tone-inverse-hairline-strong: rgb(249 234 208 / 0.32);
+  --tone-inverse-accent: var(--orange);
+  --tone-inverse-grain-blend: normal;
+  --tone-inverse-grain-opacity: 0;
+  --tone-inverse-grain-texture: none;
+  --grain-opacity: 0;
+
+  /* The rounded bar behind marked words. Bands reassign it. */
+  --mark-color: var(--orange);
+
+  /* --- Type ---------------------------------------------------------------
+     Headings: Open Sans Condensed Extra Bold, uppercase, -50 tracking.
+     Body: Open Sans Medium, sentence case. */
+  --font-sans: 'Open Sans Variable', 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
+  --font-display-stretch: 75%;
+  --tracking-display: -0.05em;
+  --tracking-heading: -0.05em;
+  --tracking-body: 0em;
+  --tracking-eyebrow: 0.02em;
+  --weight-heading: 800;
+  --weight-body: 500;
+  --weight-strong: 700;
+
+  /* --- Dogfluencers' own rhythm ------------------------------------------ */
+  --band-y: clamp(4.5rem, 9vw, 8rem);
+  --tilt-1: -2deg;
+  --tilt-2: 1.5deg;
+  --tilt-3: -1deg;
+  --tilt-4: 2deg;
+  --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* --- Alignment ----------------------------------------------------------
+     One gap for every grid: card rows, the bento, the hero mosaic and the
+     two-column splits. With the same gap, a 1fr 1fr split's second column
+     starts exactly where a 4-up grid's third column does, so the right
+     column holds one line from band to band. */
+  --grid-gap: clamp(1rem, 1.8vw, 1.5rem);
+  --card-pad: clamp(1.5rem, 2.6vw, 2.25rem);
+  --overlay-inset: 1rem;
+
+  /* --- Buttons --------------------------------------------------------------
+     Night with cream text (15:1): calm, and it lets the orange stay the
+     highlight. Hover warms to brand orange with night text (4.8:1). On an
+     orange band the pill is cream with night text. Orange with black text
+     (too harsh) and a deeper orange with white (colour read off) were both
+     tried and rejected, November 2026. */
+  --btn-fill: var(--night);
+  --btn-ink: var(--cream);
+  --btn-hover: var(--orange);
+  --btn-hover-ink: var(--night);
+}
+
+/* --- Bands ---------------------------------------------------------------
+   Every marketing section sits on one of the three colours. A band
+   reassigns the semantic tokens, so anything inside follows. */
+.band { position: relative; padding-block: var(--band-y); }
+.band-paper,
+.band-cream,
+.band-soft {
+  --ink: var(--night);
+  --ink-muted: var(--night-muted);
+  --accent: var(--orange-text);
+  --accent-fill: var(--orange);
+  --accent-ink: var(--night);
+  --mark-color: var(--orange);
+  --heading: var(--night);
+  --hairline: rgb(26 20 18 / 0.14);
+  --hairline-strong: rgb(26 20 18 / 0.3);
+  --ink-filter: brightness(0) invert(0.08) sepia(0.3);
+  color: var(--night);
+}
+.band-paper { --ground: var(--paper); --surface: var(--cream-soft); background: var(--paper); }
+.band-cream { --ground: var(--cream); --surface: var(--cream-soft); background: var(--cream); }
+.band-soft { --ground: var(--cream-soft); --surface: var(--cream); background: var(--cream-soft); }
+.band-night {
+  --btn-fill: var(--cream);
+  --btn-ink: var(--night);
+  --btn-hover: var(--orange);
+  --btn-hover-ink: var(--night);
+  --ground: var(--night);
+  --ink: var(--cream);
+  --ink-muted: var(--cream-muted);
+  --accent: var(--orange);
+  --accent-fill: var(--orange);
+  --accent-ink: var(--night);
+  --mark-color: var(--orange);
+  --heading: var(--cream);
+  --surface: var(--night-soft);
+  --hairline: rgb(249 234 208 / 0.16);
+  --hairline-strong: rgb(249 234 208 / 0.32);
+  --ink-filter: brightness(0) invert(0.93) sepia(0.25);
+  background: var(--night);
+  color: var(--cream);
+}
+.band-orange {
+  --ground: var(--orange);
+  --ink: var(--night);
+  --ink-muted: var(--night);
+  --accent: var(--night);
+  --accent-fill: var(--night);
+  --accent-ink: var(--cream);
+  --mark-color: var(--night);
+  --heading: var(--cream);
+  --surface: var(--cream);
+  --hairline: rgb(26 20 18 / 0.24);
+  --hairline-strong: rgb(26 20 18 / 0.5);
+  --ink-filter: brightness(0) invert(0.08) sepia(0.3);
+  --btn-fill: var(--cream);
+  --btn-ink: var(--night);
+  --btn-hover: var(--night);
+  --btn-hover-ink: var(--cream);
+  background: var(--orange);
+  color: var(--night);
+}
+
+@layer components {
+  /* --- Type scale ------------------------------------------------------- */
+  .d-display,
+  .d-h1,
+  .d-h2,
+  .d-h3,
+  .d-h4,
+  .d-label {
+    margin: 0;
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+    color: var(--heading, currentColor);
+    text-wrap: balance;
+  }
+  .d-display { font-size: clamp(3rem, 6.2vw, 5.75rem); line-height: 0.9; }
+  .d-h1 { font-size: clamp(2.75rem, 5.4vw, 4.75rem); line-height: 0.92; }
+  .d-h2 { font-size: clamp(2.25rem, 3.9vw, 3.5rem); line-height: 0.94; }
+  .d-h3 { font-size: clamp(1.375rem, 1.8vw, 1.625rem); line-height: 1; letter-spacing: -0.03em; }
+  .d-h4 { font-size: 1.375rem; line-height: 1; letter-spacing: -0.03em; }
+  .d-label { font-size: 0.9375rem; line-height: 1; letter-spacing: 0.01em; color: inherit; }
+  /* UI text: nav, links, chips. Sentence case, the body face. */
+  .d-ui { font-family: var(--font-body); font-stretch: 100%; font-size: 0.9375rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.005em; text-transform: none; }
+  .d-lead { font-size: clamp(1.0625rem, 1.4vw, 1.25rem); line-height: 1.55; font-weight: 500; text-wrap: pretty; }
+  .d-body { font-size: 1.0625rem; line-height: 1.65; text-wrap: pretty; }
+  .d-small { font-size: 0.875rem; line-height: 1.55; }
+  .d-muted { color: var(--ink-muted); }
+}
+
+/* --- Marked words ----------------------------------------------------------
+   `*like this*` in a heading (MarkedText): the single rounded bar from the
+   statics, sitting behind the lower part of the heading's bottom row and
+   running a little past it on both sides. Use on the last phrase only, and
+   only on headings that carry the section (hero, CTA, a page title). */
+/* The bar covers the heading's whole bottom row, not just the marked
+   words: DogMotion measures the row and sets --row-left / --row-right
+   (how far the row runs past the marked phrase on each side). The heading
+   is the stacking context, so the bar sits behind every word on the row. */
+:is(h1, h2, h3, p, blockquote):has(> .text-mark) { isolation: isolate; }
+.text-mark {
+  position: relative;
+  display: inline-block;
+  /* Never split across lines: the bar is one shape. Keep marks to the
+     last one or two words so this always fits. */
+  white-space: nowrap;
+}
+.text-mark::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: calc(-0.14em - var(--row-left, 0px));
+  right: calc(-0.1em - var(--row-right, 0px));
+  bottom: -0.02em;
+  height: 0.36em;
+  border-radius: 999px;
+  background-color: var(--mark-color);
+}
+/* With motion on, the bar wipes in from the left the first time its
+   heading is on screen (DogMotion adds .is-in); the hero's plays on load. */
+/* A clip reveals it, rather than a scale from zero: Safari mishandles a
+   scale transition that starts at 0 and the bar slid in from the side. The
+   clip also keeps the rounded ends round all the way through. */
+html[data-motion] .text-mark::after { clip-path: inset(0 100% 0 0 round 999px); transition: clip-path 900ms var(--ease-out) 250ms; }
+html[data-motion] .text-mark.is-in::after { clip-path: inset(0 0 0 0 round 999px); }
+html[data-motion] h1 .text-mark::after { transition-delay: 700ms; }
+
+/* The system Button, where system components still use one (forms, CRM):
+   the same pill as Dogfluencers' own. */
+.btn {
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* --- System forms and buttons, in Dogfluencers' clothes ------------------
+   The enquiry form, the join form and the CRM are system components. They
+   read these, so they match the rest of the site: rounded white fields,
+   sentence-case labels in the body face, and the same pill colours as the
+   agency buttons. Unlayered, so they win over the system's layered rules. */
+:is(a, button).btn.btn-primary { background: var(--btn-fill); color: var(--btn-ink); }
+:is(a, button).btn.btn-primary:hover { background: var(--btn-hover); color: var(--btn-hover-ink); }
+:is(a, button).btn.btn-outline { border-radius: 999px; }
+
+.type-eyebrow,
+.form-label {
+  font-family: var(--font-body);
+  font-stretch: 100%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--night);
+}
+.type-eyebrow.muted { color: var(--night-muted); }
+
+main form :is(input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='submit']), select, textarea),
+.form-input {
+  border-radius: var(--radius-sm);
+  border-color: var(--hairline-strong);
+  background: #fff;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+main form :is(input:not([type='checkbox'], [type='radio']), select, textarea):hover,
+.form-input:hover { border-color: rgb(26 20 18 / 0.45); }
+main form :is(input:not([type='checkbox'], [type='radio']), select, textarea):focus-visible,
+.form-input:focus-visible { border-color: var(--orange); outline: none; box-shadow: 0 0 0 3px rgb(245 61 12 / 0.18); }
+.form-check { border-radius: 0.375rem; background: #fff; }
+.form-check:checked { border-color: var(--orange); }
+.form-alert { border-radius: var(--radius-md); }
+
+/* On phones, a group of pill buttons stacks full width: cleaner than two
+   ragged pills. Applies to the hero, mastheads and the closing panel. */
+@media (max-width: 30rem) {
+  .flex.flex-wrap.gap-3:has(> .dbtn) { flex-direction: column; align-items: stretch; }
+  .flex.flex-wrap.gap-3 > .dbtn { width: 100%; }
+}

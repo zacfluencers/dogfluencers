@@ -1,0 +1,36 @@
+---
+/**
+ * Stands in for a CRM form until Supabase is connected. Review mode says
+ * exactly what is missing; the public site says only that it isn't open yet.
+ */
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import ContentRequired from '../dev/ContentRequired.astro';
+
+interface Props {
+  /** Shown to the public. */
+  message: string;
+  email?: string;
+}
+const { message, email } = Astro.props;
+---
+
+{
+  SHOW_PLACEHOLDERS ? (
+    <ContentRequired
+      title="Creator database not connected"
+      items={[
+        'Create the Supabase project and add PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY',
+        'Run the migration in supabase/migrations, then redeploy',
+      ]}
+    />
+  ) : (
+    <p class="form-alert">
+      {message}
+      {email && (
+        <>
+          {' '}Email <a href={`mailto:${email}`} class="link-underline">{email}</a>.
+        </>
+      )}
+    </p>
+  )
+}

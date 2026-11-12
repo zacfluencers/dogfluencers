@@ -1,0 +1,33 @@
+---
+import type { Article, Link } from '../../types/content';
+import Container from '../global/Container.astro';
+import Section from '../global/Section.astro';
+import ArticleCard from './ArticleCard.astro';
+import SectionHeader from '../global/SectionHeader.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading?: string;
+  articles: Article[];
+  link?: Link;
+  columns?: 2 | 3;
+}
+const { eyebrow, heading, articles, link, columns = 3 } = Astro.props;
+const grid = columns === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3';
+---
+
+{
+  articles.length > 0 && (
+    <Section>
+      <Container>
+        <SectionHeader eyebrow={eyebrow} heading={heading} link={link} />
+
+        <div class:list={['card-grid grid gap-x-10', grid]}>
+          {articles.map((article) => (
+            <ArticleCard article={article} />
+          ))}
+        </div>
+      </Container>
+    </Section>
+  )
+}

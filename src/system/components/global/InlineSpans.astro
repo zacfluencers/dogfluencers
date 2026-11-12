@@ -1,0 +1,30 @@
+---
+/**
+ * The bold and linked runs inside one paragraph or list item. Links to other
+ * sites open in a new tab; links within the site don't.
+ */
+import type { InlineSpan } from '../../types/content';
+
+interface Props {
+  spans: InlineSpan[];
+}
+const { spans } = Astro.props;
+const external = (href: string) => /^https?:\/\//.test(href);
+---
+
+{
+  spans.map((span) =>
+    span.href ? (
+      <a
+        href={span.href}
+        class="link-underline font-bold"
+        target={external(span.href) ? '_blank' : undefined}
+        rel={external(span.href) ? 'noopener' : undefined}
+      >{span.text}</a>
+    ) : span.bold ? (
+      <strong class="font-bold">{span.text}</strong>
+    ) : (
+      span.text
+    ),
+  )
+}

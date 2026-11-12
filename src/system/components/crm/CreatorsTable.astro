@@ -1,0 +1,426 @@
+---
+/**
+ * The team's view of every creator: status quick filters, search, filters
+ * (core ones plus any agency field marked `filter`), sort, CSV export and the
+ * table itself.
+ *
+ * Without JavaScript the filters are a GET form and the server filters. With
+ * it, every change filters instantly from the full list, and the address bar
+ * keeps up so "back" from a creator restores the view.
+ */
+import type { CrmConfig } from '../../crm/types';
+import { AGE_BANDS, APPLICATION_STATUSES, GENDERS } from '../../crm/options';
+import { filterFields, queryCreators, SORTS, type CreatorQuery, type CreatorRow } from '../../crm/query';
+import { rowHtml, tableHeaders } from '../../crm/table';
+import Button from '../global/Button.astro';
+
+interface Props {
+  rows: CreatorRow[];
+  query: CreatorQuery;
+  config: CrmConfig;
+}
+const { rows, query, config } = Astro.props;
+
+const results = queryCreators(rows, query, config);
+const counts: Record<string, number> = {};
+rows.forEach((r) => (counts[r.application_status] = (counts[r.application_status] ?? 0) + 1));
+const filtersOn = Object.entries(query).some(([k, v]) => k !== 'sort' && v);
+
+const qs = (patch: Record<string, string | undefined>) => {
+  const sp = new URLSearchParams();
+  Object.entries({ ...query, ...patch }).forEach(([k, v]) => v && sp.set(k, v));
+  const s = sp.toString();
+  return s ? `?${s}` : '?';
+};
+
+// The first few filters always show; the rest fold behind "More filters".
+const PRIMARY = 3;
+const selects: { name: string; label: string; all: string; options: { value: string; label: string }[] }[] = [
+  ...filterFields(config).map(({ field, options }) => ({ name: `f.${field.key}`, label: field.filterLabel ?? field.label.replace(/\?$/, ''), all: 'Any', options })),
+  { name: 'gender', label: 'Gender', all: 'Any', options: GENDERS },
+  { name: 'age', label: 'Age', all: 'Any', options: AGE_BANDS },
+  { name: 'country', label: 'Country', all: 'Any', options: config.countries },
+  { name: 'gifting', label: 'Gifting network', all: 'Any', options: [{ value: 'yes', label: 'In gifting network' }, { value: 'no', label: 'Not in gifting' }] },
+  { name: 'source', label: 'Joined via', all: 'Any', options: [{ value: 'signup', label: 'Join form' }, { value: 'import', label: 'Old website' }] },
+];
+---
+
+<div class="crm" data-crm-table data-config={JSON.stringify(config)}>
+  <div class="flex flex-wrap items-end justify-between gap-6">
+    <div class="flex flex-col gap-2">
+      <h1 class="type-display-m">Creators</h1>
+      <p class="type-caption muted" aria-live="polite" data-count>
+        {filtersOn ? `${results.length} of ${rows.length} creators match` : `${rows.length} creators in total`}
+      </p>
+    </div>
+    <Button href={`/admin/creators/export/${qs({})}`} data-export>
+      Export CSV{filtersOn ? ` (${results.length})` : ''}
+    </Button>
+  </div>
+
+  <nav class="mt-8 flex flex-wrap gap-2" aria-label="Filter by status" data-status-chips>
+    <a href={qs({ status: undefined })} class="crm-filter-chip" aria-current={!query.status ? 'true' : undefined} data-status="">
+      All <span class="muted">{rows.length}</span>
+    </a>
+    {
+      APPLICATION_STATUSES.map((s) => (
+        <a href={qs({ status: s.value })} class="crm-filter-chip" aria-current={query.status === s.value ? 'true' : undefined} data-status={s.value}>
+          {s.label} <span class="muted">{counts[s.value] ?? 0}</span>
+        </a>
+      ))
+    }
+  </nav>
+
+  <form method="get" class="crm-filters" data-filters>
+    {query.status && <input type="hidden" name="status" value={query.status} />}
+    <label class="crm-control crm-search">
+      <span class="form-label">Search</span>
+      <input class="form-input" type="search" name="q" value={query.q ?? ''} placeholder="Name, email, town, postcode or handle" />
+    </label>
+    {
+      selects.map((s, i) => (
+        <label class:list={['crm-control', i >= PRIMARY && 'crm-extra']} data-active={query[s.name] ? '' : undefined}>
+          <span class="form-label">{s.label}</span>
+          <span class="form-select">
+            <select class="form-input" name={s.name}>
+              <option value="">{s.all}</option>
+              {s.options.map((o) => <option value={o.value} selected={query[s.name] === o.value}>{o.label}</option>)}
+            </select>
+          </span>
+        </label>
+      ))
+    }
+    <label class="crm-control">
+      <span class="form-label">Sort by</span>
+      <span class="form-select">
+        <select class="form-input" name="sort">
+          {SORTS.map((s) => <option value={s.value} selected={(query.sort ?? 'joined_desc') === s.value}>{s.label}</option>)}
+        </select>
+      </span>
+    </label>
+    <div class="crm-filter-actions">
+      <noscript><Button type="submit" variant="outline">Apply</Button></noscript>
+      {
+        selects.length > PRIMARY && (
+          <button type="button" class="type-eyebrow link-underline whitespace-nowrap" aria-expanded="false" data-more hidden>
+            More filters
+          </button>
+        )
+      }
+      <a href="?" class="type-eyebrow link-underline" data-clear hidden={!filtersOn}>Clear filters</a>
+    </div>
+  </form>
+
+  {
+    rows.length === 0 ? (
+      <div class="crm-empty">
+        <p class="type-heading">No creators yet</p>
+        <p class="type-caption muted">Applications from the join form will appear here.</p>
+      </div>
+    ) : (
+      <div class="crm-scroll">
+        <table class="crm-grid">
+          <thead>
+            <tr>
+              {tableHeaders(config).map((h) => (
+                <th scope="col" class:list={[h.sticky && 'crm-sticky', h.numeric && 'crm-num']}>{h.label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody data-rows set:html={results.map((r) => rowHtml(r, config)).join('')} />
+        </table>
+        <div class="crm-empty" data-no-match hidden={results.length > 0}>
+          <p class="type-heading">No creators match these filters</p>
+          <a href="?" class="type-eyebrow link-underline" data-clear>Clear filters</a>
+        </div>
+      </div>
+    )
+  }
+
+  <script type="application/json" data-all-rows set:html={JSON.stringify(rows).replace(/</g, '\\u003c')} />
+</div>
+
+<style>
+  .crm-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    align-items: end;
+    gap: var(--space-4) var(--space-3);
+    margin-top: var(--space-6);
+  }
+  /* Folded once the script runs, unless the filter is in use. */
+  :global(.crm-filters[data-folded]) .crm-extra:not([data-active]) {
+    display: none;
+  }
+  .crm-control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+  .crm-control .form-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .crm-search {
+    grid-column: span 2;
+  }
+  .crm-control :global(.form-input) {
+    padding: 0.6rem 2.25rem 0.6rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  .crm-search :global(.form-input) {
+    padding-right: 0.75rem;
+  }
+  .crm-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    min-height: 2.6rem;
+  }
+  .crm-filter-actions:not(:has(> :not([hidden]):not(noscript))) {
+    display: none;
+  }
+
+  .crm-filter-chip {
+    display: inline-flex;
+    gap: 0.4em;
+    padding: 0.45rem 0.9rem;
+    border: var(--hairline-width) solid var(--hairline-strong);
+    border-radius: var(--radius-pill);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  .crm-filter-chip:hover {
+    border-color: var(--ink);
+  }
+  .crm-filter-chip[aria-current='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--ground);
+  }
+  .crm-filter-chip[aria-current='true'] .muted {
+    color: inherit;
+    opacity: 0.6;
+  }
+
+  .crm-scroll {
+    margin-top: var(--space-6);
+    max-height: calc(100svh - 12rem);
+    min-height: 20rem;
+    overflow: auto;
+    border-top: var(--hairline-width) solid var(--hairline-strong);
+  }
+  .crm-grid {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    text-align: left;
+  }
+  .crm-grid th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 0.8rem 1rem;
+    background: var(--ground);
+    border-bottom: var(--hairline-width) solid var(--hairline-strong);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+  .crm-grid :global(td) {
+    padding: 0.75rem 1rem;
+    border-bottom: var(--hairline-width) solid var(--hairline);
+    background: var(--ground);
+    vertical-align: middle;
+  }
+  /* First and last columns sit on the page's edges, like the heading and
+     filters above; the inner columns keep their gutters. */
+  .crm-grid th:first-child,
+  .crm-grid :global(td:first-child) {
+    padding-left: 0;
+  }
+  .crm-grid th:last-child,
+  .crm-grid :global(td:last-child) {
+    padding-right: 0;
+  }
+  .crm-grid :global(tr[data-href]) {
+    cursor: pointer;
+  }
+  /* No row fill: the first column sits on the page edge, so a fill would
+     butt against the names. The name answers instead, as links do. */
+  .crm-grid :global(tr[data-href]:hover .crm-name) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+  }
+  /* The name stays pinned only while the table scrolls sideways. Where it
+     fits (from 1440px) it scrolls with its row, which also keeps every row
+     rule on one line. */
+  @media (max-width: 1439px) {
+    .crm-grid :global(.crm-sticky) {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+    .crm-grid th.crm-sticky {
+      z-index: 3;
+    }
+  }
+  .crm-grid :global(.crm-num) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .crm-grid :global(.crm-name) {
+    display: block;
+    max-width: 11rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .crm-grid :global(.crm-link) {
+    display: inline-block;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+  .crm-grid :global(.crm-name:hover),
+  .crm-grid :global(.crm-link:hover) {
+    color: var(--accent);
+  }
+  .crm-grid :global(.crm-muted),
+  .crm-grid :global(.crm-blank) {
+    color: var(--ink-muted);
+  }
+  .crm-grid :global(.crm-truncate) {
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .crm-grid :global(.crm-count) {
+    margin-left: 0.35em;
+    font-variant-numeric: tabular-nums;
+  }
+  .crm-grid :global(.crm-place) {
+    max-width: 11rem;
+  }
+  .crm-grid :global(.crm-nowrap) {
+    white-space: nowrap;
+  }
+  .crm-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-9) var(--space-4);
+    text-align: center;
+  }
+  .crm-empty[hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  import { parseCreatorQuery, queryCreators, type CreatorQuery, type CreatorRow } from '../../crm/query';
+  import { rowHtml } from '../../crm/table';
+  import type { CrmConfig } from '../../crm/types';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-crm-table]')) {
+    const config = JSON.parse(root.dataset.config ?? '{}') as CrmConfig;
+    const rows = JSON.parse(root.querySelector('[data-all-rows]')?.textContent ?? '[]') as CreatorRow[];
+    const form = root.querySelector<HTMLFormElement>('[data-filters]')!;
+    const tbody = root.querySelector<HTMLElement>('[data-rows]');
+    const noMatch = root.querySelector<HTMLElement>('[data-no-match]');
+    const count = root.querySelector<HTMLElement>('[data-count]')!;
+    const exportLink = root.querySelector<HTMLAnchorElement>('[data-export]')!;
+    const chips = [...root.querySelectorAll<HTMLAnchorElement>('[data-status-chips] a')];
+    const clears = [...root.querySelectorAll<HTMLAnchorElement>('[data-clear]')];
+    const more = root.querySelector<HTMLButtonElement>('[data-more]');
+    const extras = [...root.querySelectorAll<HTMLElement>('.crm-extra')];
+    if (more) {
+      more.hidden = false;
+      form.dataset.folded = '';
+      more.addEventListener('click', () => {
+        const open = form.toggleAttribute('data-folded') === false;
+        more.setAttribute('aria-expanded', String(open));
+        more.textContent = open ? 'Fewer filters' : 'More filters';
+      });
+    }
+    let query: CreatorQuery = parseCreatorQuery(new URLSearchParams(location.search), config);
+
+    const render = () => {
+      const results = queryCreators(rows, query, config);
+      const on = Object.entries(query).some(([k, v]) => k !== 'sort' && v);
+      if (tbody) tbody.innerHTML = results.map((r) => rowHtml(r, config)).join('');
+      if (noMatch) noMatch.hidden = results.length > 0;
+      count.textContent = on ? `${results.length} of ${rows.length} creators match` : `${rows.length} creators in total`;
+
+      const sp = new URLSearchParams();
+      Object.entries(query).forEach(([k, v]) => v && sp.set(k, v));
+      const qs = sp.toString();
+      history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+      exportLink.href = `/admin/creators/export/${qs ? `?${qs}` : ''}`;
+      exportLink.textContent = on ? `Export CSV (${results.length})` : 'Export CSV';
+      chips.forEach((chip) => chip.setAttribute('aria-current', String((chip.dataset.status ?? '') === (query.status ?? ''))));
+      clears.forEach((c) => (c.hidden = !on));
+      // A folded filter in use stays visible, so nothing is filtering unseen.
+      extras.forEach((el) => el.toggleAttribute('data-active', Boolean(el.querySelector('select')?.value)));
+    };
+
+    const readForm = () => {
+      const next: CreatorQuery = { status: query.status };
+      new FormData(form).forEach((v, k) => {
+        if (k !== 'status' && typeof v === 'string' && v) next[k] = v;
+      });
+      query = next;
+      render();
+    };
+
+    form.addEventListener('input', readForm);
+    form.addEventListener('change', readForm);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      readForm();
+    });
+
+    chips.forEach((chip) =>
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        query = { ...query, status: chip.dataset.status || undefined };
+        render();
+      }),
+    );
+
+    clears.forEach((c) =>
+      c.addEventListener('click', (e) => {
+        e.preventDefault();
+        form.reset();
+        form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select').forEach((el) => {
+          if (el.name === 'sort') return;
+          el.value = '';
+        });
+        query = { sort: query.sort };
+        render();
+      }),
+    );
+
+    // The whole row opens the creator; links inside it still work as links.
+    tbody?.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('a')) return;
+      const row = target.closest<HTMLElement>('tr[data-href]');
+      if (row?.dataset.href) location.href = row.dataset.href;
+    });
+  }
+</script>

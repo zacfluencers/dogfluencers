@@ -1,0 +1,105 @@
+---
+/**
+ * Homepage. Dogfluencers' own sections (src/agency/components), in the
+ * order of the brand story: the promise with its proof, what we do, why it's
+ * easy, how it works, the work, questions, the ask.
+ *
+ * Mostly paper, separated by space; one cream band (how it works) and one
+ * night band (the work) for depth. The work and campaigns are placeholders
+ * until approved and are stripped in production; the rhythm holds either
+ * way.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { agency } from '../agency/config';
+import { brandFaqs, content } from '../content';
+import { brandJourney } from '../agency/content/journeys';
+
+import Hero from '../agency/components/sections/Hero.astro';
+import Services from '../agency/components/sections/Services.astro';
+import Bento from '../agency/components/sections/Bento.astro';
+import Steps from '../agency/components/sections/Steps.astro';
+import WorkPosts from '../agency/components/sections/WorkPosts.astro';
+import CampaignCards from '../agency/components/sections/CampaignCards.astro';
+import Faq from '../agency/components/sections/Faq.astro';
+import CtaBand from '../agency/components/sections/CtaBand.astro';
+
+const [services, brands, campaigns, heroReel, work, faqs] = await Promise.all([
+  content.services(),
+  content.brands(),
+  content.campaigns(),
+  content.heroReel(),
+  content.work(),
+  brandFaqs(),
+]);
+
+const orderedServices = agency.enabledServices
+  .map((slug) => services.find((service) => service.slug === slug))
+  .filter((service): service is NonNullable<typeof service> => Boolean(service));
+
+---
+
+<BaseLayout includeSiteSchema seo={{ title: agency.seo.title, description: agency.seo.description }}>
+  <Hero
+    chip="Dog influencer marketing agency"
+    heading={agency.positioning.heroHeadline}
+    description={agency.positioning.heroDescription}
+    primaryCta={agency.ctas.primary}
+    secondaryCta={agency.ctas.secondary}
+    media={heroReel.slice(0, 3).map((clip) => clip.video)}
+    card={{ title: 'Content delivered', body: 'Within 7 days' }}
+    brands={brands}
+    brandsLabel="Trusted by pet brands"
+  />
+
+  <Services
+    eyebrow="Services"
+    heading="Four ways to get your product seen"
+    description="Volume, content you own or paid reach. It starts with the same conversation about what your product needs."
+    services={orderedServices}
+    facts={{
+      'mass-gifting': 'Up to 100 dogs',
+      ugc: '7 day delivery',
+      'creator-campaigns': 'Paid posts',
+      'product-launches': 'All in one',
+    }}
+    link={{ label: 'All services', href: '/services/' }}
+  />
+
+  <Bento
+    eyebrow="Why Dogfluencers"
+    heading="Built for the pet world"
+    description="No scrolling endless feeds for the right dogs. We match your brief to the profiles that fit, and handle everything in between."
+  />
+
+  <Steps
+    eyebrow="How it works"
+    heading="From brief to content in a week"
+    description="Choose your dogs, set the brief, and approve what comes back. Edits are unlimited until it is right."
+    steps={brandJourney}
+    cta={agency.ctas.primary}
+  />
+
+  <WorkPosts
+    eyebrow="The work"
+    heading="Real dogs. Real products."
+    description={`Content dog owners in the network have made for ${agency.niche} brands.`}
+    items={work.slice(0, 4)}
+  />
+
+  <CampaignCards eyebrow="Case studies" heading="Campaigns" campaigns={campaigns.slice(0, 3)} link={{ label: 'All campaigns', href: '/campaigns/' }} />
+
+  <Faq
+    eyebrow="FAQ"
+    heading="Questions brands ask"
+    description="Anything else, just ask."
+    faqs={faqs.slice(0, 5)}
+    link={{ label: 'Get in touch', href: '/contact/' }}
+  />
+
+  <CtaBand
+    heading="From launch to dog *content.*"
+    description="Tell us what you are launching and we will come back with the dogs, the approach and the numbers."
+    primaryCta={agency.ctas.primary}
+    secondaryCta={agency.ctas.secondary}
+  />
+</BaseLayout>

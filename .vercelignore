@@ -1,0 +1,12 @@
+# Local only: never upload
+.shipstudio
+.claude
+.astro
+.vscode
+dist
+.vercel
+.env
+.env.*
+!.env.example
+.DS_Store
+LAUNCH-CHECKLIST.md

@@ -1,0 +1,43 @@
+---
+/**
+ * Creator categories as photo cards, like the homepage service cards: the
+ * dog first, then the name and one muted line beneath. Three across.
+ */
+import type { CreatorCategory } from '../../../system/types/content';
+import SectionHead from './SectionHead.astro';
+import Photo from '../ui/Photo.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  categories: CreatorCategory[];
+  band?: 'paper' | 'cream' | 'soft';
+}
+const { eyebrow, heading, description, categories, band = 'paper' } = Astro.props;
+---
+
+{categories.length > 0 && (
+  <section class:list={['band', `band-${band}`]}>
+    <div class="wrap">
+      <SectionHead eyebrow={eyebrow} heading={heading} description={description} />
+      <ul class="dcats" data-reveal-group>
+        {categories.map((cat) => (
+          <li class="dcat lift">
+            <Photo src={cat.image?.src} alt={cat.image?.alt} ratio="4 / 5" />
+            <h3 class="d-h3 dcat-name">{cat.name}</h3>
+            {cat.description && <p class="d-body d-muted dcat-desc">{cat.description}</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .dcats { display: grid; gap: 3rem var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .dcat-name { margin-top: 1.5rem; }
+  .dcat-desc { margin-top: 0.6rem; max-width: 26rem; }
+  @media (min-width: 40rem) { .dcats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .dcats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+</style>

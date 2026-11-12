@@ -1,0 +1,147 @@
+---
+/**
+ * One portrait creator clip. Holds on its poster, and plays while on or near
+ * the screen. A clip with only a `poster` shows it as a still (for an agency
+ * with photography before it has video). With neither, the missing-media hatch.
+ *
+ * Tiles play as a group: wrap them in an element carrying `data-clip-group`,
+ * and put one `<ClipsToggle />` inside it, so a single control pauses every
+ * clip in the group (the clips loop past five seconds, WCAG 2.2.2). Under
+ * reduced motion nothing plays and the posters show.
+ */
+import type { VideoRef } from '../../types/content';
+
+interface Props {
+  video: VideoRef;
+  /** Tile shape. The source is 9:16; `4 / 5` crops it for calmer layouts. */
+  ratio?: string;
+  /** Shown on the hatch when there is no clip. */
+  fallbackLabel?: string;
+  /** Loads the poster eagerly, for tiles above the fold. */
+  priority?: boolean;
+  class?: string;
+}
+const { video, ratio = '9 / 16', fallbackLabel = 'Creator content, 9:16', priority = false, class: className = '' } =
+  Astro.props;
+---
+
+<div
+  class:list={['clip-tile', className]}
+  style={`aspect-ratio: ${ratio}`}
+  aria-hidden={video.alt ? undefined : 'true'}
+>
+  {
+    video.src ? (
+      /* The poster also sits behind the clip, so a moment where Safari blanks
+         the video as playback starts still shows it. */
+      <div class="clip-frame" style={video.poster ? `background-image: url("${video.poster}")` : undefined}>
+        <video
+          muted
+          loop
+          playsinline
+          preload={priority ? 'auto' : 'metadata'}
+          poster={video.poster}
+          aria-label={video.alt || undefined}
+          data-clip
+          data-fade-in
+        >
+          <source src={video.poster ? video.src : `${video.src}#t=0.001`} type="video/mp4" />
+        </video>
+      </div>
+    ) : video.poster ? (
+      <div class="clip-frame">
+        <img src={video.poster} alt={video.alt} loading={priority ? 'eager' : 'lazy'} decoding="async" />
+      </div>
+    ) : (
+      <div class="clip-fallback">
+        <span class="type-eyebrow muted">{fallbackLabel}</span>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .clip-tile {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .clip-frame {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+  }
+  .clip-tile video,
+  .clip-tile img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--duration) var(--ease-out);
+  }
+  /* Same diagonal hatch as Media: unmistakably a gap, never mistaken for design. */
+  .clip-fallback {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: var(--space-3);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 11px,
+      var(--hairline) 11px,
+      var(--hairline) 12px
+    );
+  }
+</style>
+
+<script>
+  import { fadeInWhenReady } from '../../lib/video';
+
+  // Each clip starts a quarter screen before it scrolls in and stops once
+  // well past, so it is already moving when seen. The group's toggle holds
+  // every clip in it.
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  for (const group of document.querySelectorAll<HTMLElement>('[data-clip-group]')) {
+    const videos = [...group.querySelectorAll<HTMLVideoElement>('video[data-clip]')];
+    if (!videos.length) continue;
+    videos.forEach(fadeInWhenReady);
+
+    const toggle = group.querySelector<HTMLButtonElement>('[data-clips-toggle]');
+    const label = group.querySelector<HTMLElement>('[data-clips-toggle-label]');
+    const near = new Set<HTMLVideoElement>();
+    let paused = false;
+
+    const sync = () => {
+      for (const video of videos) {
+        if (near.has(video) && !paused && !reduced.matches) video.play().catch(() => {});
+        else video.pause();
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const video = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) near.add(video);
+          else near.delete(video);
+        }
+        sync();
+      },
+      { rootMargin: '25% 0px' },
+    );
+    videos.forEach((video) => observer.observe(video));
+
+    if (toggle) toggle.hidden = false;
+    toggle?.addEventListener('click', () => {
+      paused = !paused;
+      toggle.setAttribute('aria-pressed', String(paused));
+      if (label) label.textContent = paused ? 'Play clips' : 'Pause clips';
+      sync();
+    });
+
+    reduced.addEventListener('change', sync);
+  }
+</script>

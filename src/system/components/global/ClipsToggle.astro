@@ -1,0 +1,30 @@
+---
+/**
+ * Pause control for a `data-clip-group` of `ClipTile`s. Hidden until the
+ * group's script finds a clip to control, and absent under reduced motion,
+ * where nothing plays.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<button type="button" class:list={['clips-toggle type-eyebrow', className]} data-clips-toggle aria-pressed="false" hidden>
+  <span class="link-underline" data-clips-toggle-label>Pause clips</span>
+</button>
+
+<style>
+  .clips-toggle {
+    color: var(--ink-muted);
+    transition: color var(--duration-fast) var(--ease);
+  }
+  .clips-toggle:hover {
+    color: var(--ink);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .clips-toggle {
+      display: none;
+    }
+  }
+</style>

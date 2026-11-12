@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { clips } from '../agency/content/clips';
+import PageHead from '../agency/components/sections/PageHead.astro';
+import Faq from '../agency/components/sections/Faq.astro';
+import { agency } from '../agency/config';
+import { brandFaqs, content } from '../content';
+import { breadcrumbSchema } from '../system/lib/seo';
+
+import ContactForm from '../system/components/sections/ContactForm.astro';
+
+const services = await content.services();
+const orderedServices = agency.enabledServices
+  .map((slug) => services.find((service) => service.slug === slug))
+  .filter((service): service is NonNullable<typeof service> => Boolean(service));
+
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Contact' }];
+---
+
+<BaseLayout
+  seo={{
+    title: 'Start a campaign',
+    description:
+      'Tell us about your product, your timeline and what you need the campaign to do. We will come back with an approach.',
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow="Contact"
+    heading="Start a *campaign.*"
+    description="The more you can tell us about the product, the audience and the timeline, the more useful our first reply will be."
+    media={[clips.labPatio, clips.goldenCar, clips.spanielsLick]}
+    card={{ title: 'Send the brief', body: 'We come back with the dogs' }}
+  />
+
+  <ContactForm
+    spacing="tight"
+    agency={agency}
+    heading="Campaign brief"
+    description="Fields marked with an asterisk are required. Everything else helps but can wait."
+    services={orderedServices}
+    endpoint="/api/contact/"
+  />
+
+  <Faq band="cream" eyebrow="FAQ" heading="Common questions" faqs={await brandFaqs()} />
+</BaseLayout>

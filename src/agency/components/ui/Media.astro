@@ -1,0 +1,100 @@
+---
+/**
+ * A rounded media tile: a short muted loop when `video.src` is set, the
+ * still otherwise. Clips play only while at least half on screen (see
+ * DogMotion) and stay on their poster under reduced motion. Stills drift
+ * very slowly while in view, so a tile waiting for its clip still feels
+ * alive. Wrap tiles in `data-clip-group` with one ClipToggle to give the
+ * group a pause control.
+ */
+import type { VideoRef } from '../../../system/types/content';
+
+interface Props {
+  video?: VideoRef;
+  ratio?: string;
+  radius?: 'lg' | 'md';
+  eager?: boolean;
+  drift?: boolean;
+  class?: string;
+  label?: string;
+  /** Offer a sound control (for full videos that have audio). */
+  sound?: boolean;
+}
+const { video, ratio = '9 / 16', radius = 'lg', eager = false, drift = true, class: className = '', label = 'Clip needed', sound = false } = Astro.props;
+const still = video?.poster;
+---
+
+<div class:list={['dmedia', `dmedia-${radius}`, drift && !video?.src && still && 'dmedia-drift', className]} style={`aspect-ratio: ${ratio}`} data-play>
+  {
+    video?.src ? (
+      <>
+        <video data-clip src={video.src} poster={still} muted loop playsinline preload={eager ? 'auto' : 'metadata'} aria-label={video.alt} />
+        {still && <img class="dmedia-poster" src={still} alt="" aria-hidden="true" loading={eager ? 'eager' : 'lazy'} decoding="async" />}
+        {sound && (
+          <button type="button" class="dmedia-sound" data-clip-sound aria-pressed="false" aria-label="Turn sound on">
+            <svg class="dmedia-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" /><path d="M16 9.5l5 5M21 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+            <svg class="dmedia-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+            <span class="dmedia-sound-label">Sound</span>
+          </button>
+        )}
+      </>
+    ) : still ? (
+      <img src={still} alt={video?.alt ?? ''} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    ) : (
+      <div class="dmedia-gap"><span class="d-ui d-muted">{label}</span></div>
+    )
+  }
+</div>
+
+<style>
+  .dmedia { position: relative; overflow: hidden; background: var(--surface); }
+  .dmedia-lg { border-radius: var(--radius-lg); }
+  .dmedia-md { border-radius: var(--radius-md); }
+  .dmedia :is(img, video) { display: block; width: 100%; height: 100%; object-fit: cover; transition: scale 600ms var(--ease-out); }
+  :global(.lift):hover .dmedia :is(img, video) { scale: 1.04; }
+  /* The still sits over the video until it is actually playing, so a tile
+     never blanks while the clip loads or seeks to its start. */
+  .dmedia-poster { position: absolute; inset: 0; pointer-events: none; transition: opacity 400ms var(--ease-out); }
+  .dmedia:global(.is-ready) .dmedia-poster { opacity: 0; }
+  .dmedia-sound {
+    position: absolute;
+    left: var(--overlay-inset);
+    bottom: var(--overlay-inset);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0 0.85rem 0 0.7rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgb(255 250 243 / 0.9);
+    backdrop-filter: blur(8px);
+    color: var(--night);
+    font: 600 0.8125rem/1 var(--font-body);
+    cursor: pointer;
+    transition: background-color 160ms ease, scale 200ms var(--bounce);
+  }
+  .dmedia-sound:hover { background: #fff; scale: 1.04; }
+  .dmedia-sound:focus-visible { outline: 2px solid var(--night); outline-offset: 2px; }
+  .dmedia-sound svg { width: 1rem; height: 1rem; }
+  .dmedia-on { display: none; }
+  .dmedia-sound[aria-pressed='true'] { background: var(--orange); color: var(--night); }
+  .dmedia-sound[aria-pressed='true'] .dmedia-on { display: block; }
+  .dmedia-sound[aria-pressed='true'] .dmedia-off { display: none; }
+  .dmedia-gap {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: 1rem;
+    background-image: repeating-linear-gradient(-45deg, transparent 0 11px, var(--hairline) 11px 12px);
+  }
+
+  /* A slow push-in, played while the tile is on screen. */
+  :global(html[data-motion]) .dmedia-drift img { animation: dmedia-drift 14s ease-in-out infinite alternate paused; }
+  :global(html[data-motion]) .dmedia-drift:global(.is-playing) img { animation-play-state: running; }
+  :global(html[data-motion][data-clips-paused]) .dmedia-drift img { animation-play-state: paused; }
+  @keyframes dmedia-drift {
+    from { transform: scale(1.02) translate3d(0, 0, 0); }
+    to { transform: scale(1.09) translate3d(-1.5%, -1.5%, 0); }
+  }
+</style>

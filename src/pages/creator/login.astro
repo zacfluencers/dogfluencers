@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { agency } from '../../agency/config';
+import { isCrmConfigured, mayEmail, safeNext, visitorClient } from '../../system/crm/supabase';
+import { emailSchema } from '../../system/crm/validation';
+
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import Section from '../../system/components/global/Section.astro';
+import Container from '../../system/components/global/Container.astro';
+import Button from '../../system/components/global/Button.astro';
+import AccountAside from '../../system/components/crm/AccountAside.astro';
+import FormField from '../../system/components/crm/FormField.astro';
+import CrmUnavailable from '../../system/components/crm/CrmUnavailable.astro';
+
+export const prerender = false;
+
+const next = safeNext(Astro.url.searchParams.get('next'), '/creator/profile/');
+let email = '';
+let message = Astro.url.searchParams.get('error') === 'link'
+  ? 'That link has expired or was opened in a different browser. Log in, or ask for a new link.'
+  : undefined;
+const errors: Record<string, string> = {};
+// Shown once the password matches an account whose email isn't confirmed.
+let offerResend = false;
+let resent = false;
+
+if (Astro.request.method === 'POST' && isCrmConfigured()) {
+  const form = await Astro.request.formData();
+  email = String(form.get('email') ?? '');
+  const parsedEmail = emailSchema.safeParse(email);
+  const password = String(form.get('password') ?? '');
+  if (!parsedEmail.success) errors.email = parsedEmail.error.issues[0].message;
+  if (!password) errors.password = 'Enter your password';
+
+  if (parsedEmail.success && password) {
+    const supabase = visitorClient(Astro.request, Astro.cookies);
+    const { data, error } = await supabase.auth.signInWithPassword({ email: parsedEmail.data, password });
+    if (!error && data.user) {
+      return Astro.redirect(safeNext(form.get('next'), '/creator/profile/'), 303);
+    }
+    if (error?.code === 'email_not_confirmed') {
+      // The password matched, so offering a new link reveals nothing about
+      // which emails have accounts. A new link needs the password again.
+      if (form.get('intent') === 'resend' && mayEmail(parsedEmail.data)) {
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email: parsedEmail.data,
+          options: { emailRedirectTo: `${Astro.url.origin}/auth/confirm/?next=${encodeURIComponent('/creator/profile/?welcome=1')}` },
+        });
+        if (resendError) console.error('confirmation resend failed', resendError.code, resendError.message);
+        resent = !resendError;
+        message = resendError
+          ? 'We couldn\'t send a new link just now. Wait a minute and try again.'
+          : `We've sent a new confirmation link to ${parsedEmail.data}. It can take a minute or two, and may land in spam.`;
+      } else {
+        offerResend = true;
+        message = 'Please confirm your email first. Can’t find the link, or has it expired? Enter your password again and choose “Send a new link”.';
+      }
+    } else {
+      message = 'That email and password don\'t match. Try again, or reset your password.';
+    }
+  }
+  Astro.response.status = 422;
+}
+---
+
+<BaseLayout seo={{ title: 'Creator login', noIndex: true }}>
+  <PageHead size="compact" heading="Creator login" description="See and update the details brands use to match you to briefs." />
+  <Section spacing="tight">
+    <Container>
+      {/* Form on the left, ways on to the right: the site's shared split. */}
+      <div class="grid gap-16 lg:grid-cols-2 lg:gap-x-10">
+      {/* Opens on a rule, like the options beside it, so both columns start on one line. */}
+      <div class="max-w-[30rem] border-t border-[var(--hairline-strong)] pt-8">
+        {
+          isCrmConfigured() ? (
+            <form method="post" novalidate class="flex flex-col gap-6">
+              {message && <p class="form-alert" role={resent ? 'status' : 'alert'}>{message}</p>}
+              <input type="hidden" name="next" value={next} />
+              <FormField name="email" label="Email" type="email" autocomplete="email" inputmode="email" value={email} error={errors.email} />
+              <FormField name="password" label="Password" type="password" autocomplete="current-password" error={errors.password} />
+              <div class="mt-2 flex flex-wrap items-center gap-6">
+                <Button type="submit" size="large">Log in</Button>
+                {(offerResend || resent) && <Button type="submit" variant="outline" size="large" name="intent" value="resend">Send a new link</Button>}
+                <a href="/creator/forgot-password/" class="type-caption link-underline">Forgotten your password?</a>
+              </div>
+            </form>
+          ) : (
+            <CrmUnavailable message="Creator logins are opening soon." email={agency.contact.email} />
+          )
+        }
+      </div>
+        <AccountAside items={[{ title: 'New here?', body: 'Joining is free and takes about five minutes.', link: { label: 'Join the creator network', href: '/join/' } }, { title: 'Joined through our old website?', body: 'Your details are already here. Set up a login with the email you joined with.', link: { label: 'Set up your login', href: '/creator/claim/' } }, { title: 'Here for a brand?', body: 'Logins are for creators in our network. Tell us what you are launching and we will come back with an approach.', link: { label: 'Start a campaign', href: '/contact/' } }]} />
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>

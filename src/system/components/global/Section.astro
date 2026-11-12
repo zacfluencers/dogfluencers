@@ -1,0 +1,128 @@
+---
+/**
+ * Vertical rhythm wrapper. Every page section goes through this so spacing
+ * stays on one scale rather than being set ad hoc per component.
+ */
+interface Props {
+  as?: string;
+  /** Renders a hairline above the section instead of relying on a shadow. */
+  divider?: boolean;
+  spacing?: 'default' | 'tight' | 'none';
+  /** Inverts to ink ground for editorial contrast blocks. Same as `tone="ink"`. */
+  invert?: boolean;
+  /**
+   * Ground colour for the section. `inverse` is the opposite of the page's
+   * current scheme: a light band on a dark page, a dark band on a light one.
+   * `raised`, `accent` and `inverse` read `--tone-*`
+   * tokens from the agency theme, so the section can reassign `--ground`,
+   * `--ink` and friends without a variable referring to itself.
+   */
+  tone?: 'default' | 'raised' | 'ink' | 'accent' | 'inverse';
+  /**
+   * Moving film grain on the ground. Reserved for the bands that should stand
+   * apart from the page — the closing call to action — so it stays a signal.
+   */
+  grain?: boolean;
+  id?: string;
+  labelledBy?: string;
+  class?: string;
+}
+const {
+  as = 'section',
+  divider = false,
+  spacing = 'default',
+  invert = false,
+  tone = invert ? 'ink' : 'default',
+  grain = false,
+  id,
+  labelledBy,
+  class: className = '',
+} = Astro.props;
+
+// A dynamic tag name loses its intrinsic attribute typing, so it is widened
+// deliberately rather than each attribute being cast at the call site.
+const Tag = as as keyof astroHTML.JSX.DefinedIntrinsicElements;
+
+const pad =
+  spacing === 'none'
+    ? ''
+    : spacing === 'tight'
+      ? 'py-[var(--section-y-tight)]'
+      : 'py-[var(--section-y)]';
+---
+
+<Tag
+  id={id}
+  aria-labelledby={labelledBy}
+  data-invert={tone === 'ink' ? 'true' : undefined}
+  data-tone={tone === 'raised' || tone === 'accent' || tone === 'inverse' ? tone : undefined}
+  class:list={[
+    pad,
+    divider && 'rule',
+    grain && 'grain',
+    className,
+  ]}
+>
+  <slot />
+</Tag>
+
+<style>
+  /* Inverted sections flip the token layer so nested components need no
+     awareness of where they sit. */
+  [data-invert='true'] {
+    --ground: var(--shadow-black);
+    --ink: var(--off-white);
+    --ink-filter: brightness(0) invert(0.965);
+    --ink-muted: #9a9a9a;
+    --surface: #131313;
+    --hairline: rgb(246 246 246 / 0.16);
+    --hairline-strong: rgb(246 246 246 / 0.32);
+    --accent: #8f92f5;
+    --grain-blend: screen;
+    --grain-opacity: 0.3;
+    --grain-texture: var(--grain-flecks-light);
+    background-color: var(--shadow-black);
+    color: var(--off-white);
+  }
+
+  [data-tone='raised'] {
+    --ground: var(--tone-raised-ground);
+    --surface: var(--tone-raised-surface);
+    background-color: var(--ground);
+    color: var(--ink);
+  }
+
+  [data-tone='inverse'] {
+    --ground: var(--tone-inverse-ground);
+    --ink: var(--tone-inverse-ink);
+    --ink-filter: var(--tone-inverse-ink-filter);
+    --ink-muted: var(--tone-inverse-ink-muted);
+    --surface: var(--tone-inverse-surface);
+    --hairline: var(--tone-inverse-hairline);
+    --hairline-strong: var(--tone-inverse-hairline-strong);
+    --accent: var(--tone-inverse-accent);
+    --grain-blend: var(--tone-inverse-grain-blend);
+    --grain-opacity: var(--tone-inverse-grain-opacity);
+    --grain-texture: var(--tone-inverse-grain-texture);
+    background-color: var(--ground);
+    color: var(--ink);
+  }
+
+  [data-tone='accent'] {
+    --ground: var(--tone-accent-ground);
+    --ink: var(--tone-accent-ink);
+    --ink-filter: var(--tone-accent-ink-filter);
+    --ink-muted: var(--tone-accent-ink);
+    --surface: var(--tone-accent-surface);
+    --hairline: var(--tone-accent-hairline);
+    --hairline-strong: var(--tone-accent-hairline-strong);
+    --accent: var(--tone-accent-ink);
+    --accent-fill: var(--tone-accent-fill);
+    --accent-ink: var(--tone-accent-fill-ink);
+    --grain-blend: overlay;
+    --grain-opacity: 0.38;
+    --grain-texture: var(--grain);
+    background-color: var(--ground);
+    color: var(--ink);
+  }
+</style>

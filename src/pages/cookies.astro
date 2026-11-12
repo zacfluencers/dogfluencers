@@ -1,0 +1,11 @@
+---
+import LegalPage from '../layouts/LegalPage.astro';
+import { cookiePolicy } from '../agency/content/legal';
+---
+
+<LegalPage
+  title="Cookie policy"
+  description="The cookies this website uses, and how to manage them."
+  body={cookiePolicy.body}
+  updated={cookiePolicy.updated}
+/>

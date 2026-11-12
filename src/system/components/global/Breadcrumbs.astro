@@ -1,0 +1,26 @@
+---
+/**
+ * Renders the visible trail. BreadcrumbList schema is emitted separately by
+ * StructuredData so the two cannot drift apart.
+ */
+interface Crumb { label: string; href?: string; }
+interface Props { items: Crumb[]; class?: string; }
+const { items, class: className = '' } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class:list={[className]}>
+  <ol class="type-eyebrow muted flex flex-wrap items-center gap-2">
+    {
+      items.map((item, index) => (
+        <li class="flex items-center gap-2">
+          {item.href && index < items.length - 1 ? (
+            <a href={item.href} class="link-underline">{item.label}</a>
+          ) : (
+            <span aria-current="page" class="text-[var(--ink)]">{item.label}</span>
+          )}
+          {index < items.length - 1 && <span aria-hidden="true">/</span>}
+        </li>
+      ))
+    }
+  </ol>
+</nav>

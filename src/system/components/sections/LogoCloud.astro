@@ -1,0 +1,47 @@
+---
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import type { Brand } from '../../types/content';
+import Container from '../global/Container.astro';
+import type { ComponentProps } from 'astro/types';
+import Section from '../global/Section.astro';
+import ContentRequired from '../dev/ContentRequired.astro';
+import LogoMarks from './LogoMarks.astro';
+
+interface Props {
+  /** Section ground; see `Section tone`. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  heading?: string;
+  brands: Brand[];
+}
+const { heading, brands, tone } = Astro.props;
+const hasBrands = brands.length > 0;
+---
+
+{
+  (hasBrands || SHOW_PLACEHOLDERS) && (
+    <Section spacing="none" tone={tone} class="py-[clamp(2.5rem,4.5vw,4rem)]">
+      <Container>
+        {heading && <h2 class="type-eyebrow muted mb-8">{heading}</h2>}
+
+        {hasBrands ? (
+          /*
+           * Left-aligned in a grid on small screens; spread edge to edge at
+           * desktop, so the first logo sits on the label's left edge and the
+           * last on the container's right, rather than each floating in the
+           * middle of its cell away from both. Marks share a centre line.
+           */
+          <LogoMarks brands={brands} />
+        ) : (
+          <ContentRequired
+            title="Client logo strip"
+            items={[
+              'Confirmed brand names and permission to display each logo',
+              'Logo files (SVG preferred)',
+              'Flag any relationship that has ended so copy stays accurate',
+            ]}
+          />
+        )}
+      </Container>
+    </Section>
+  )
+}

@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { clips } from '../../agency/content/clips';
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import CampaignCards from '../../agency/components/sections/CampaignCards.astro';
+import WorkPosts from '../../agency/components/sections/WorkPosts.astro';
+import CtaBand from '../../agency/components/sections/CtaBand.astro';
+import { agency } from '../../agency/config';
+import { content } from '../../content';
+import { breadcrumbSchema } from '../../system/lib/seo';
+
+
+const [campaigns, work] = await Promise.all([content.campaigns(), content.work()]);
+
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Campaigns' }];
+---
+
+<BaseLayout
+  seo={{
+    title: 'Campaigns',
+    description:
+      'Dog creator campaigns we have run: the brief, the approach and the verified outcome for each.',
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow="Case studies"
+    heading="Campaigns"
+    description="Gifting, UGC and creator campaigns for pet brands. Metrics shown are the ones we can evidence."
+    media={[clips.colliePark, clips.goldenBed, clips.cockerLickmat]}
+    card={{ title: 'Evidenced results', body: 'Never modelled reach' }}
+  />
+
+  <CampaignCards eyebrow="All campaigns" heading="The case studies" campaigns={campaigns} />
+
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+
+  <CtaBand
+    heading="Start a *campaign.*"
+    description="Tell us what you are launching and we will come back with the dogs, the approach and the numbers."
+    primaryCta={agency.ctas.primary}
+    secondaryCta={agency.ctas.secondary}
+  />
+</BaseLayout>

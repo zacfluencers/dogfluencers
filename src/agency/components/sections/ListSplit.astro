@@ -1,0 +1,52 @@
+---
+/**
+ * Heading on the left (sticky on wide screens), a two-up grid of filled
+ * rounded cards on the right: what a service covers, the creator tiers. Split on
+ * the site grid.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  items: { title: string; body?: string }[];
+  band?: 'paper' | 'cream' | 'soft' | 'night';
+}
+const { eyebrow, heading, description, items, band = 'paper' } = Astro.props;
+---
+
+<section class:list={['band', `band-${band}`]}>
+  <div class="wrap dsplit">
+    <div class="dsplit-head reveal-rise">
+      {eyebrow && <p class="d-ui dsplit-eyebrow">{eyebrow}</p>}
+      <h2 class="d-h2"><MarkedText text={heading} /></h2>
+      {description && <p class="d-lead d-muted mt-6 max-w-[32rem]">{description}</p>}
+    </div>
+    <ul class="dsplit-list" data-reveal-group>
+      {items.map((item, i, all) => (
+        <li class:list={[i === all.length - 1 && i % 2 === 0 && 'dsplit-wide']}>
+          <h3 class="d-h3">{item.title}</h3>
+          {item.body && <p class="d-body d-muted mt-3">{item.body}</p>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .dsplit { display: grid; gap: 3rem var(--grid-gap); align-items: start; }
+  .dsplit-eyebrow { margin-bottom: 1rem; color: var(--accent); }
+  .dsplit-list { display: grid; gap: var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .dsplit-list li { padding: var(--card-pad); border-radius: var(--radius-lg); background: var(--cream); }
+  :global(.band-cream) .dsplit-list li { background: var(--paper); }
+  .dsplit-list li::before { content: ''; display: block; width: 0.6rem; height: 0.6rem; margin-bottom: 1.25rem; border-radius: 999px; background: var(--orange); }
+  @media (min-width: 40rem) {
+    .dsplit-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dsplit-wide { grid-column: span 2; }
+  }
+  @media (min-width: 64rem) {
+    .dsplit { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dsplit-head { position: sticky; top: calc(var(--header-h) + 2rem); }
+  }
+</style>

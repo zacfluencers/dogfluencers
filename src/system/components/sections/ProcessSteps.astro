@@ -1,0 +1,45 @@
+---
+import type { ProcessStep } from '../../types/content';
+import Container from '../global/Container.astro';
+import type { ComponentProps } from 'astro/types';
+import Section from '../global/Section.astro';
+
+interface Props {
+  /** Section ground; see `Section tone`. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  steps: ProcessStep[];
+  invert?: boolean;
+}
+const { eyebrow, heading, description, steps, invert = false, tone } = Astro.props;
+---
+
+{
+  steps.length > 0 && (
+    <Section invert={invert} tone={tone}>
+      <Container>
+        <div class="grid gap-14 lg:grid-cols-2 lg:gap-x-10">
+          <div class="heading-stack lg:sticky lg:top-32 lg:self-start">
+            {eyebrow && <p class="type-eyebrow muted">{eyebrow}</p>}
+            {heading && <h2 class="reveal-mask type-display-l">{heading}</h2>}
+            {description && <p class="type-lead muted measure">{description}</p>}
+          </div>
+
+          <ol class="flex flex-col" data-reveal-group>
+            {steps.map((step) => (
+              <li class="grid items-baseline gap-x-6 gap-y-3 border-t border-[var(--hairline)] py-8 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[4rem_1fr] sm:gap-x-8">
+                <span class="type-eyebrow text-[var(--accent)]">{step.number}</span>
+                <div class="flex flex-col gap-3">
+                  <h3 class="type-heading">{step.title}</h3>
+                  <p class="type-body muted">{step.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Container>
+    </Section>
+  )
+}

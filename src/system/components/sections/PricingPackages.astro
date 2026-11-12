@@ -1,0 +1,94 @@
+---
+/**
+ * A service's priced packages, side by side. Not boxed cards: each package
+ * opens on a heavy rule (accent on hover, and for a featured package), like
+ * the site's other column sets, and subgrid rows keep names, prices,
+ * inclusion lists and buttons level across the row whatever wraps. Prices
+ * are set large and each list's leading figures in bold, so packages compare
+ * at a glance.
+ */
+import type { ComponentProps } from 'astro/types';
+import type { Link, ServicePackage } from '../../types/content';
+import Section from '../global/Section.astro';
+import Container from '../global/Container.astro';
+import SectionHeader from '../global/SectionHeader.astro';
+import Button from '../global/Button.astro';
+
+interface Props {
+  heading: string;
+  description?: string;
+  packages: ServicePackage[];
+  note?: string;
+  /** Each package's call to action, e.g. the contact page. */
+  cta?: Link;
+  tone?: ComponentProps<typeof Section>['tone'];
+}
+const { heading, description, packages, note, cta, tone } = Astro.props;
+// Every button is primary, unless one package is featured: then it alone is.
+const anyFeatured = packages.some((pkg) => pkg.featured);
+const columns = packages.length >= 4 ? 'sm:grid-cols-2 xl:grid-cols-4' : packages.length === 3 ? 'md:grid-cols-3' : 'sm:grid-cols-2';
+
+/** "150 creator dispatches" → ["150", " creator dispatches"]; no figure → [ "", text ]. */
+const split = (item: string) => {
+  const m = item.match(/^([£$€]?[\d,.]+%?)(.*)$/);
+  return m ? [m[1], m[2]] : ['', item];
+};
+---
+
+{
+  packages.length > 0 && (
+    <Section tone={tone}>
+      <Container>
+        <SectionHeader heading={heading} description={description} />
+        <ul class:list={['card-grid grid gap-x-10 gap-y-12 sm:gap-y-16', columns]} data-reveal-group>
+          {packages.map((pkg) => (
+            <li class:list={['package row-span-4 grid grid-rows-subgrid content-start gap-y-5', pkg.featured && 'is-featured']}>
+              <div class="package-head flex flex-col gap-2 pt-6">
+                {pkg.featured && pkg.badge && <p class="type-eyebrow text-[var(--accent)]">{pkg.badge}</p>}
+                <h3 class="type-heading">{pkg.name}</h3>
+                {pkg.summary && <p class="type-body muted">{pkg.summary}</p>}
+              </div>
+              <p class="flex items-baseline gap-2">
+                <span class="type-display-l font-display">{pkg.price}</span>
+                {pkg.priceNote && <span class="type-caption muted">{pkg.priceNote}</span>}
+              </p>
+              <ul class="flex flex-col">
+                {pkg.inclusions.map((item) => {
+                  const [figure, rest] = split(item);
+                  return (
+                    <li class="type-body border-t border-[var(--hairline)] py-3">
+                      {figure && <strong class="font-bold">{figure}</strong>}
+                      {rest}
+                    </li>
+                  );
+                })}
+              </ul>
+              {cta && (
+                <div class="pt-1">
+                  <Button href={cta.href} event={cta.event} variant={!anyFeatured || pkg.featured ? 'primary' : 'outline'} class="w-full justify-center">
+                    {cta.label}
+                  </Button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+        {note && <p class="type-caption muted mt-12 max-w-[46rem]">{note}</p>}
+      </Container>
+    </Section>
+  )
+}
+
+<style>
+  /* A heavy rule over each package; the accent marks the one in hand, and a
+     featured package keeps it. */
+  .package-head {
+    border-top: 3px solid var(--ink);
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  .package:hover .package-head,
+  .package:focus-within .package-head,
+  .package.is-featured .package-head {
+    border-color: var(--accent-fill);
+  }
+</style>

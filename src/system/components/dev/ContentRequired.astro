@@ -1,0 +1,32 @@
+---
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+/**
+ * Stands in for a section that has no approved content yet.
+ *
+ * In review mode (`SHOW_PLACEHOLDERS`: dev, or a review deployment) it states
+ * exactly what the business still owes. Otherwise it renders nothing, so the
+ * parent section is simply absent rather than shipping fabricated proof.
+ */
+interface Props {
+  title: string;
+  items?: string[];
+}
+const { title, items = [] } = Astro.props;
+const show = SHOW_PLACEHOLDERS;
+---
+
+{
+  show && (
+    <div class="border border-dashed border-[var(--accent)] p-6">
+      <p class="type-eyebrow text-[var(--accent)]">Content required, hidden in production</p>
+      <p class="type-subheading mt-3">{title}</p>
+      {items.length > 0 && (
+        <ul class="type-caption muted mt-3 flex list-disc flex-col gap-1 pl-5">
+          {items.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}

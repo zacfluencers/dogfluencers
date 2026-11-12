@@ -1,0 +1,495 @@
+---
+import type { AgencyConfig } from '../../types/agency';
+import ThemeToggle from './ThemeToggle.astro';
+import Button from './Button.astro';
+import Wordmark from './Wordmark.astro';
+
+interface Props { agency: AgencyConfig; }
+const { agency } = Astro.props;
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+---
+
+<header id="site-header" class="site-header sticky top-0 z-50">
+  <!--
+    Three columns at desktop, the outer two equal, so the nav sits on the
+    page's true centre line whatever the widths of the wordmark and CTA.
+    Desktop starts at xl: below ~1070px the wordmark, six nav items and the CTA
+    don't fit on one row at full size, so 1024 to 1279px keeps the menu button.
+  -->
+  <div class="wrap flex items-center justify-between gap-6 xl:grid xl:grid-cols-[1fr_auto_1fr]">
+    <a href="/" aria-label={`${agency.name} home`} class="shrink-0 justify-self-start">
+      <Wordmark logo={agency.logo} name={agency.name} priority />
+    </a>
+
+    <nav aria-label="Main" class="hidden xl:block">
+      <ul class="type-eyebrow flex items-center gap-6 2xl:gap-8">
+        {
+          agency.navigation.map((item) => (
+            <li class="nav-item relative">
+              <a
+                href={item.href}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
+                class:list={[
+                  'nav-link block py-2',
+                  isCurrent(item.href) ? 'text-[var(--accent)]' : 'text-[var(--ink)]',
+                ]}
+              >
+                <span class="link-underline">{item.label}</span>
+              </a>
+              {item.children && (
+                <ul class="nav-dropdown absolute left-0 top-full min-w-56 border border-[var(--hairline)] bg-[var(--ground)] p-2">
+                  {item.children.map((child) => (
+                    <li>
+                      <a href={child.href} class="block px-3 py-2.5">
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-4 justify-self-end">
+      {
+        agency.accountLinks?.map((link) => (
+          <a
+            href={link.href}
+            aria-current={isCurrent(link.href) ? 'page' : undefined}
+            class="account-link type-eyebrow whitespace-nowrap"
+          >
+            {link.shortLabel ?? link.label}
+          </a>
+        ))
+      }
+      <ThemeToggle />
+
+      <!--
+        Visibility lives on a wrapper: putting `hidden` on the Button itself
+        collides with its own `inline-flex`, and Tailwind resolves that by
+        stylesheet order rather than attribute order.
+      -->
+      <div class="hidden sm:block">
+        <Button
+          href={agency.ctas.primary.href}
+          event={agency.ctas.primary.event}
+          class="whitespace-nowrap"
+        >
+          {agency.ctas.primary.label}
+        </Button>
+      </div>
+
+      <!--
+        Fixed 44px square: a meets the touch-target minimum, and b means the
+        button occupies identical space open or closed, so nothing beside it
+        shifts when the label changes.
+      -->
+      <button
+        type="button"
+        id="nav-toggle"
+        class="nav-toggle -mr-3 xl:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Open menu"
+      >
+        <span class="nav-toggle-icon" aria-hidden="true">
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile navigation. One panel, no duplicated desktop markup. -->
+  <div
+    id="mobile-nav"
+    hidden
+    data-state="closed"
+    class="mobile-nav xl:hidden"
+  >
+    <nav aria-label="Mobile" class="wrap py-8">
+      <ul class="flex flex-col">
+        {
+          agency.navigation.map((item, index) => (
+            <li class="border-b border-[var(--hairline)]">
+              <div class="flex items-center justify-between gap-6">
+                <a
+                  href={item.href}
+                  aria-current={isCurrent(item.href) ? 'page' : undefined}
+                  class="type-display-m block grow py-5"
+                >
+                  {item.label}
+                </a>
+                {/*
+                  The label stays a link to the section's index page; the
+                  children fold away behind a separate toggle.
+                */}
+                {item.children && (
+                  <button
+                    type="button"
+                    class="subnav-toggle -mr-3"
+                    aria-expanded="false"
+                    aria-controls={`mobile-subnav-${index}`}
+                    aria-label={`${item.label} pages`}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path d="M6.5 0v13" class="subnav-toggle-bar" />
+                      <path d="M0 6.5h13" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              {item.children && (
+                <div id={`mobile-subnav-${index}`} class="subnav" inert>
+                  <div class="overflow-hidden">
+                    <ul class="flex flex-col gap-4 pb-6">
+                      {item.children.map((child) => (
+                        <li>
+                          <a href={child.href} class="type-eyebrow muted link-underline">
+                            {child.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="mt-8 flex flex-col gap-3">
+        <Button href={agency.ctas.primary.href} event={agency.ctas.primary.event} size="large">
+          {agency.ctas.primary.label}
+        </Button>
+        <Button
+          href={agency.ctas.secondary.href}
+          event={agency.ctas.secondary.event}
+          variant="outline"
+          size="large"
+        >
+          {agency.ctas.secondary.label}
+        </Button>
+      </div>
+
+      {
+        agency.accountLinks?.length && (
+          <ul class="mt-8 border-t border-[var(--hairline)]">
+            {agency.accountLinks.map((link) => (
+              <li class="border-b border-[var(--hairline)]">
+                <a href={link.href} class="type-eyebrow flex min-h-14 items-center">{link.label}</a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </nav>
+  </div>
+</header>
+
+<style>
+  /*
+   * At the top of the page the header is invisible — no rule, no blur, sitting
+   * in the page's own whitespace. It only asserts itself once content is
+   * passing underneath it.
+   */
+  /* Clear at the top of the page, so the page's light runs up behind it with
+     no edge; it takes on ground, rule and blur once content passes under. */
+  .site-header {
+    view-transition-name: site-header;
+    background-color: transparent;
+    border-bottom: var(--hairline-width) solid transparent;
+    transition:
+      border-color var(--duration) var(--ease-out),
+      backdrop-filter var(--duration) var(--ease-out),
+      background-color var(--duration) var(--ease-out);
+  }
+
+  /* One height at every scroll position: the rule and blur signal scrolling,
+     the size doesn't change. */
+  .site-header > .wrap {
+    height: var(--header-h);
+  }
+
+  .site-header[data-scrolled='true'] {
+    background-color: color-mix(in srgb, var(--ground) 82%, transparent);
+    border-bottom-color: var(--hairline);
+    backdrop-filter: saturate(150%) blur(12px);
+  }
+
+  /* Open, header and panel read as one solid surface. */
+  .site-header[data-menu-open='true'] {
+    background-color: var(--ground);
+    backdrop-filter: none;
+  }
+
+  /* Nav items settle into place on hover rather than only changing colour. */
+  .nav-link {
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  /*
+   * The dropdown scales from its top edge so it reads as unfolding from the
+   * nav item rather than appearing next to it.
+   */
+  .nav-dropdown {
+    transform-origin: top left;
+    transform: translateY(-2px) scaleY(0.98);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out),
+      visibility 0s var(--duration-fast);
+  }
+
+  .nav-item:hover .nav-dropdown,
+  .nav-item:focus-within .nav-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+
+  .nav-dropdown a {
+    transition:
+      background-color var(--duration-instant) var(--ease-out),
+      color var(--duration-instant) var(--ease-out),
+      padding-left var(--duration-fast) var(--ease-out);
+  }
+
+  .nav-dropdown a:hover {
+    background-color: var(--ink);
+    color: var(--ground);
+    padding-left: calc(var(--space-3) + 4px);
+  }
+
+  /*
+   * Account links join the desktop row only where the nav can still sit on
+   * the page's centre line beside them (from 1440px). Below xl they live in
+   * the menu; between 1280 and 1439 in the footer only. Muted, so they read
+   * as a utility beside the CTA rather than a seventh nav item, with a 44px
+   * tall hit area that doesn't change the row's height.
+   */
+  .account-link {
+    display: none;
+    padding-block: 15px;
+    margin-block: -15px;
+    color: var(--ink-muted);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .account-link:hover,
+  .account-link[aria-current='page'] {
+    color: var(--ink);
+  }
+  @media (min-width: 1440px) {
+    .account-link {
+      display: inline-block;
+    }
+  }
+
+  /* --- Menu toggle ------------------------------------------------------ */
+  /*
+   * The breakpoint lives here, not in a `xl:hidden` utility: Astro's scoped
+   * styles are unlayered and so outrank Tailwind's utilities layer, which would
+   * leave the toggle visible on desktop.
+   */
+  .nav-toggle {
+    display: grid;
+    place-items: center;
+    inline-size: 44px;
+    block-size: 44px;
+    flex: none;
+    color: var(--ink);
+  }
+
+  @media (min-width: 1280px) {
+    .nav-toggle {
+      display: none;
+    }
+  }
+
+  .nav-toggle-icon {
+    position: relative;
+    display: block;
+    inline-size: 20px;
+    block-size: 14px;
+  }
+
+  .nav-toggle-bar {
+    position: absolute;
+    inset-inline: 0;
+    block-size: 1.5px;
+    background-color: currentColor;
+    transition:
+      transform var(--duration) var(--ease-out),
+      opacity var(--duration-instant) var(--ease-out);
+  }
+
+  .nav-toggle-bar:nth-child(1) { top: 0; }
+  .nav-toggle-bar:nth-child(2) { top: 50%; transform: translateY(-50%); }
+  .nav-toggle-bar:nth-child(3) { bottom: 0; }
+
+  /* The outer bars travel to the centre, then cross. The middle one leaves. */
+  .nav-toggle[aria-expanded='true'] .nav-toggle-bar:nth-child(1) {
+    transform: translateY(6.25px) rotate(45deg);
+  }
+  .nav-toggle[aria-expanded='true'] .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .nav-toggle[aria-expanded='true'] .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-6.25px) rotate(-45deg);
+  }
+
+  /*
+   * Fixed overlay directly under the header. Out of flow, so opening it never
+   * pushes the page down or moves the scroll position. It covers the viewport
+   * to the bottom edge whatever the device, and scrolls on its own without
+   * chaining to the page behind.
+   */
+  .mobile-nav {
+    position: fixed;
+    inset: var(--header-h) 0 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: var(--ground);
+    border-top: var(--hairline-width) solid var(--hairline);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+  .mobile-nav > nav {
+    transform: translateY(-0.5rem);
+    transition: transform var(--duration) var(--ease-out);
+  }
+  .mobile-nav[data-state='open'] {
+    opacity: 1;
+  }
+  .mobile-nav[data-state='open'] > nav {
+    transform: none;
+  }
+
+  /* --- Mobile sub-navigation accordion ---------------------------------- */
+  .subnav-toggle {
+    display: grid;
+    place-items: center;
+    inline-size: 44px;
+    block-size: 44px;
+    flex: none;
+    color: var(--ink-muted);
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      transform var(--duration) var(--ease-out);
+  }
+
+  .subnav-toggle:hover,
+  .subnav-toggle[aria-expanded='true'] {
+    color: var(--accent);
+  }
+
+  /* Plus becomes minus, matching the FAQ. */
+  .subnav-toggle-bar {
+    transform-origin: center;
+    transition: transform var(--duration) var(--ease-out);
+  }
+  .subnav-toggle[aria-expanded='true'] {
+    transform: rotate(180deg);
+  }
+  .subnav-toggle[aria-expanded='true'] .subnav-toggle-bar {
+    transform: scaleY(0);
+  }
+
+  /* 0fr → 1fr animates to the list's natural height without measuring it. */
+  .subnav {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--duration) var(--ease-out);
+  }
+  .subnav[data-open='true'] {
+    grid-template-rows: 1fr;
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById('nav-toggle');
+  const panel = document.getElementById('mobile-nav');
+  const header = document.getElementById('site-header');
+
+  if (header) {
+    // A sentinel beats a scroll listener: no work on the main thread per frame.
+    const sentinel = document.createElement('div');
+    sentinel.setAttribute('aria-hidden', 'true');
+    sentinel.style.cssText = 'position:absolute;top:0;height:1px;width:1px;pointer-events:none';
+    document.body.prepend(sentinel);
+
+    new IntersectionObserver(
+      ([entry]) => {
+        header.dataset.scrolled = String(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    ).observe(sentinel);
+  }
+
+  if (toggle && panel) {
+    let closeTimer: number | undefined;
+    const isOpen = () => panel.dataset.state === 'open';
+
+    // Open and close run the same transition in opposite directions. `hidden`
+    // is only set once the fade has finished, so closing doesn't just vanish.
+    const setOpen = (open: boolean) => {
+      window.clearTimeout(closeTimer);
+      if (open) {
+        panel.hidden = false;
+        // Commit the closed styles before switching, or there is nothing to transition from.
+        void panel.offsetHeight;
+        panel.dataset.state = 'open';
+      } else {
+        panel.dataset.state = 'closed';
+        closeTimer = window.setTimeout(() => {
+          if (!isOpen()) panel.hidden = true;
+        }, 420);
+      }
+      // aria-expanded drives both the announcement and the icon's morph.
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      if (header) header.dataset.menuOpen = String(open);
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+    };
+
+    toggle.addEventListener('click', () => setOpen(!isOpen()));
+
+    // Sub-navigation accordions. `inert` keeps collapsed links out of the tab order.
+    panel.querySelectorAll<HTMLButtonElement>('.subnav-toggle').forEach((button) => {
+      const list = document.getElementById(button.getAttribute('aria-controls') ?? '');
+      if (!list) return;
+
+      button.addEventListener('click', () => {
+        const open = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', String(open));
+        list.dataset.open = String(open);
+        list.inert = !open;
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && isOpen()) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    // Reset when crossing into the desktop breakpoint.
+    const desktop = window.matchMedia('(min-width: 1280px)');
+    desktop.addEventListener('change', (event) => {
+      if (event.matches) setOpen(false);
+    });
+  }
+</script>

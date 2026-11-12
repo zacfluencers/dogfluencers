@@ -1,0 +1,159 @@
+---
+import type { ImageRef, Link, ReelClip, Statistic } from '../../types/content';
+import Container from '../global/Container.astro';
+import Button from '../global/Button.astro';
+import Media from '../global/Media.astro';
+import HeroReel from './HeroReel.astro';
+import MarkedText from '../global/MarkedText.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  primaryCta?: Link;
+  secondaryCta?: Link;
+  media?: ImageRef;
+  /** Portrait clips shown as a drifting reel. Takes the place of `media`. */
+  reel?: ReelClip[];
+  /** Optional supporting figures. Only approved ones are passed in. */
+  stats?: Statistic[];
+  variant?: 'editorial' | 'centred' | 'compact';
+}
+const {
+  eyebrow,
+  heading,
+  description,
+  primaryCta,
+  secondaryCta,
+  media,
+  reel = [],
+  stats = [],
+  variant = 'editorial',
+} = Astro.props;
+
+const isCompact = variant === 'compact';
+const isCentred = variant === 'centred';
+const hasReel = !isCompact && reel.length > 0;
+const hasMedia = !isCompact && !hasReel && Boolean(media);
+---
+
+{/* Pulled up under the header, which is clear at the top of the page, so the
+    grain runs to the top of the viewport instead of starting at a seam. */}
+<section
+  class:list={[
+    'hero grain -mt-[var(--header-h)] pt-[calc(var(--header-h)+clamp(2.5rem,6vw,6rem))] pb-[var(--section-y-tight)]',
+    hasReel && 'hero-split',
+  ]}
+>
+  <Container>
+    {/* With a reel: from xl the reel fills the right of the band, under the
+        header to the bottom edge and off the side of the viewport, and the
+        copy takes the left. Below xl the reel follows the copy. */}
+    <div>
+      <div class:list={[hasReel && 'xl:max-w-[54%]']}>
+        {eyebrow && <p class="type-eyebrow muted enter enter-1 mb-8">{eyebrow}</p>}
+
+        <h1
+          class:list={[
+            'enter enter-2',
+            isCompact ? 'type-display-l' : 'type-display-xl',
+            // Half the width, so a step down to hold the line count near five.
+            hasReel && 'xl:text-[clamp(3rem,4.4vw,4.75rem)]',
+            !isCompact && 'max-w-[20ch]',
+            isCentred && 'mx-auto max-w-5xl text-center',
+          ]}
+        >
+          <MarkedText text={heading} />
+        </h1>
+
+        <div
+          class:list={[
+            'mt-14 grid gap-12',
+            // Two columns only once the text column can hold both CTAs on one
+            // row. Narrower, they would wrap into a ragged stack of two widths.
+            hasMedia && 'xl:grid-cols-[1.1fr_1fr] xl:items-start xl:gap-20',
+            isCentred && 'justify-items-center text-center',
+          ]}
+        >
+          <div class:list={['enter enter-3 flex flex-col gap-8', isCentred && 'items-center']}>
+            {description && <p class="type-lead measure">{description}</p>}
+
+            {
+              (primaryCta || secondaryCta) && (
+                <div class="grid gap-3 sm:flex sm:flex-wrap sm:items-center">
+                  {primaryCta && (
+                    <Button href={primaryCta.href} event={primaryCta.event} size="large">
+                      {primaryCta.label}
+                    </Button>
+                  )}
+                  {secondaryCta && (
+                    <Button
+                      href={secondaryCta.href}
+                      event={secondaryCta.event}
+                      variant="outline"
+                      size="large"
+                    >
+                      {secondaryCta.label}
+                    </Button>
+                  )}
+                </div>
+              )
+            }
+
+            {
+              stats.length > 0 && (
+                <dl class="mt-2 grid grid-cols-2 gap-x-10 gap-y-6 sm:grid-cols-3">
+                  {stats.map((stat) => (
+                    <div class="border-t border-[var(--hairline)] pt-4">
+                      <dt class="type-eyebrow muted">{stat.label}</dt>
+                      <dd class="type-heading mt-2 font-display">{stat.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )
+            }
+          </div>
+
+          {
+            hasMedia && (
+              <div class="enter enter-4">
+                <Media
+                  media={media}
+                  ratio="4 / 3"
+                  priority
+                  class="hero-media"
+                  fallbackLabel="Hero image required"
+                  sizes="(min-width: 1024px) 55vw, 100vw"
+                />
+              </div>
+            )
+          }
+        </div>
+      </div>
+      {
+        hasReel && (
+          <div class="hero-reel mt-14 xl:mt-0">
+            <HeroReel clips={reel} />
+          </div>
+        )
+      }
+    </div>
+  </Container>
+</section>
+
+<style>
+  @media (min-width: 1280px) {
+    .hero-split {
+      display: grid;
+      align-content: center;
+      min-height: clamp(44rem, 100svh, 64rem);
+    }
+    .hero-reel {
+      position: absolute;
+      top: var(--header-h);
+      right: 0;
+      bottom: 0;
+      width: 42vw;
+    }
+  }
+</style>

@@ -1,0 +1,43 @@
+---
+/**
+ * Numbers in rounded cream cards, four across. Figures are placeholders
+ * ("TBC") until verified, and placeholder stats are stripped from
+ * production, so the band disappears rather than show an invented number.
+ */
+import type { Statistic } from '../../../system/types/content';
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading?: string;
+  stats: Statistic[];
+  band?: 'paper' | 'cream' | 'soft';
+}
+const { eyebrow, heading, stats, band = 'paper' } = Astro.props;
+---
+
+{stats.length > 0 && (
+  <section class:list={['band', `band-${band}`]}>
+    <div class="wrap">
+      {heading && <SectionHead eyebrow={eyebrow} heading={heading} />}
+      <ul class="dstats" data-reveal-group>
+        {stats.map((stat) => (
+          <li class="dstat">
+            <p class="dstat-value">{stat.value}</p>
+            <p class="d-ui mt-4">{stat.label}</p>
+            {stat.context && <p class="d-small d-muted mt-1">{stat.context}</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .dstats { display: grid; gap: var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .dstat { padding: var(--card-pad); border-radius: var(--radius-lg); background: var(--cream); }
+  :global(.band-cream) .dstat { background: var(--paper); }
+  .dstat-value { margin: 0; font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: clamp(3rem, 5vw, 4.5rem); line-height: 0.9; letter-spacing: -0.05em; color: var(--orange-text); }
+  @media (min-width: 40rem) { .dstats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .dstats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+</style>

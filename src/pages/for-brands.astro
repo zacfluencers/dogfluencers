@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { clips } from '../agency/content/clips';
+import { agency } from '../agency/config';
+import { brandFaqs, content } from '../content';
+import { brandJourney } from '../agency/content/journeys';
+import { breadcrumbSchema } from '../system/lib/seo';
+
+import PageHead from '../agency/components/sections/PageHead.astro';
+import LogoStrip from '../agency/components/sections/LogoStrip.astro';
+import Feature from '../agency/components/sections/Feature.astro';
+import Deal from '../agency/components/sections/Deal.astro';
+import CampaignCards from '../agency/components/sections/CampaignCards.astro';
+import Services from '../agency/components/sections/Services.astro';
+import Steps from '../agency/components/sections/Steps.astro';
+import WorkPosts from '../agency/components/sections/WorkPosts.astro';
+import Faq from '../agency/components/sections/Faq.astro';
+import CtaBand from '../agency/components/sections/CtaBand.astro';
+
+const [services, brands, campaigns, work] = await Promise.all([
+  content.services(),
+  content.brands(),
+  content.campaigns(),
+  content.work(),
+]);
+
+const orderedServices = agency.enabledServices
+  .map((slug) => services.find((service) => service.slug === slug))
+  .filter((service): service is NonNullable<typeof service> => Boolean(service));
+
+// The masthead is dogs, not products: the stills from the dog library.
+const mastheadMedia = [clips.goldenToy, clips.beagle, clips.goldensPair];
+const whyMedia = clips.cockerLickmat;
+
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'For Brands' }];
+---
+
+<BaseLayout
+  seo={{
+    title: 'For pet brands',
+    description:
+      'How pet brands run dog creator campaigns with us: gifting to 100 dogs at a time, UGC and ad content in 7 days, paid creator posts, and reporting you can put in front of your team.',
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow="For pet brands"
+    heading="Built for the pet *world.*"
+    description={agency.brandAudience.description}
+    primaryCta={agency.ctas.primary}
+    media={mastheadMedia}
+    card={{ title: 'Approved by you', body: 'Before anyone is contacted' }}
+  />
+
+  <Deal
+    label="The offer"
+    heading="Less admin. More dog *content.*"
+    description="You approve the dogs and the content. We handle everything in between."
+    stats={[
+      { value: '7', label: 'Days from product to content' },
+      { value: '100', label: 'Dogs in a single drop' },
+      { value: '∞', label: 'Rounds of edits' },
+      { value: '100%', label: 'Yours to use, for life' },
+    ]}
+    footLabel="We handle"
+    requirements={['Sourcing', 'Outreach', 'Dispatch', 'Briefing', 'Chasing', 'Reporting']}
+    cta={agency.ctas.primary}
+  />
+
+  <LogoStrip label="Brands we have worked with" brands={brands} />
+
+  <Feature
+    band="cream"
+    eyebrow="Why Dogfluencers"
+    heading="Matched on the dog, not the follower count"
+    lead="Pet products are bought on trust. Owners want to see a dog like theirs eat it, wear it or chew it before they spend. A general influencer list cannot tell you which accounts have a reactive spaniel, a senior lurcher or a raw-fed puppy. Ours can."
+    video={whyMedia}
+    items={[
+      { title: 'Matched on the dog', body: 'Breed, size, age, diet and lifestyle, as well as audience. Not follower count alone.' },
+      { title: 'We do the work', body: 'Sourcing, outreach, dispatch, briefing, chasing and edits. You approve; we handle the rest.' },
+      { title: 'Approval before contact', body: 'You see and approve the creator list before we approach anyone.' },
+      { title: 'Content you own', body: 'UGC delivered in 7 days, unlimited edits, and lifetime ownership included.' },
+    ]}
+  />
+
+  <Services
+    eyebrow="Services"
+    heading="What we run"
+    services={orderedServices}
+    facts={{ 'mass-gifting': 'Up to 100 dogs', ugc: '7 day delivery', 'creator-campaigns': 'Paid posts', 'product-launches': 'All in one' }}
+    link={{ label: 'Service detail', href: '/services/' }}
+  />
+
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+
+  <Steps band="cream" eyebrow="How it works" heading="From brief to content in a week" steps={brandJourney} cta={agency.ctas.primary} />
+
+  <CampaignCards eyebrow="Case studies" heading="Campaigns" campaigns={campaigns.slice(0, 3)} link={{ label: 'All campaigns', href: '/campaigns/' }} />
+
+  <Faq band="soft" eyebrow="FAQ" heading="Common questions" faqs={await brandFaqs()} link={{ label: 'Get in touch', href: '/contact/' }} />
+
+  <CtaBand
+    heading="Ready for your first *campaign?*"
+    description="Tell us what you are launching and we will come back with the dogs, the approach and the numbers."
+    primaryCta={agency.ctas.primary}
+    secondaryCta={{ label: 'See the services', href: '/services/' }}
+  />
+</BaseLayout>

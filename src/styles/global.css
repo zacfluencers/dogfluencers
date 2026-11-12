@@ -1,0 +1,34 @@
+@import "tailwindcss";
+@import "../system/styles/system.css";
+@import "../agency/theme.css";
+
+/* Expose the token layer to Tailwind utilities. Names here are semantic, so
+   the same utility classes work for any agency theme. */
+@theme inline {
+  --color-ground: var(--ground);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-ink: var(--accent-ink);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  --radius-none: var(--radius);
+  --radius-pill: var(--radius-pill);
+
+  --spacing-section: var(--section-y);
+  --spacing-section-tight: var(--section-y-tight);
+  --spacing-gutter: var(--gutter);
+}
+
+/* Tailwind's font-display utility sets the family only. Agencies whose
+   display face is a width of the body family (a condensed cut) set
+   --font-display-stretch in their theme. */
+@layer utilities {
+  .font-display { font-stretch: var(--font-display-stretch, normal); }
+}

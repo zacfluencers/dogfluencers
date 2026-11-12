@@ -1,0 +1,64 @@
+---
+/**
+ * Pill button in the body face, sentence case. `solid` takes the band's
+ * button colours from theme.css (night with cream text; cream with night
+ * text on orange and night bands); `outline` a hairline ring;
+ * `ghost` text with an arrow. The playful edge is a small nudge of the
+ * arrow on hover, nothing more.
+ */
+interface Props {
+  href?: string;
+  type?: 'button' | 'submit';
+  variant?: 'solid' | 'outline' | 'ghost';
+  size?: 'default' | 'large';
+  event?: string;
+  external?: boolean;
+  arrow?: boolean;
+  class?: string;
+}
+const { href, type = 'button', variant = 'solid', size = 'default', event, external = false, arrow = false, class: className = '' } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  data-event={event}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+  class:list={['dbtn', `dbtn-${variant}`, size === 'large' && 'dbtn-large', className]}
+>
+  <slot />{(arrow || variant === 'ghost') && <span class="dbtn-arrow" aria-hidden="true">→</span>}
+</Tag>
+
+<style>
+  .dbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45em;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, translate 160ms ease;
+  }
+  .dbtn-large { min-height: 3.25rem; padding-inline: 1.6rem; font-size: 1rem; }
+  .dbtn-solid { background: var(--btn-fill); color: var(--btn-ink); }
+  .dbtn-solid:hover { background: var(--btn-hover); color: var(--btn-hover-ink); }
+  .dbtn-outline { border-color: var(--hairline-strong); color: var(--ink); background: transparent; }
+  .dbtn-outline:hover { border-color: var(--ink); }
+  .dbtn-ghost { padding-inline: 0.25rem; color: var(--ink); }
+  .dbtn-ghost:hover { color: var(--accent); }
+  .dbtn-arrow { display: inline-block; transition: translate 200ms var(--bounce); }
+  .dbtn:hover .dbtn-arrow { translate: 3px 0; }
+  .dbtn:active { translate: 0 1px; }
+  .dbtn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+</style>

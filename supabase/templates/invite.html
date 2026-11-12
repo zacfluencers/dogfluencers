@@ -1,0 +1,13 @@
+<!-- Supabase > Authentication > Emails > Invite user. Subject: Set up your Dogfluencers login. Sent when a creator from the old website asks for a login. -->
+<!doctype html>
+<html>
+  <body style="margin:0;padding:40px 24px;background:#fffaf3;color:#1a1412;font-family:'Open Sans',Arial,Helvetica,sans-serif">
+    <div style="max-width:520px;margin:0 auto;padding:40px 32px;background:#ffffff;border-radius:24px">
+      <p style="margin:0 0 28px;font-size:13px;font-weight:700;color:#f53d0c">Dogfluencers</p>
+      <h1 style="margin:0 0 20px;font-family:'Open Sans Condensed','Arial Narrow',Arial,sans-serif;font-stretch:condensed;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.02em;text-transform:uppercase">Set up your login</h1>
+      <p style="margin:0 0 32px;font-size:16px;line-height:1.6;color:#1a1412">You joined our creator network through our old website, and your details are safe with us. Choose a password to log in, then check your and your dog&#8217;s details are still right: brands are matched against them.</p>
+      <a href="{{ .SiteURL }}/auth/confirm/?token_hash={{ .TokenHash }}&amp;type=invite&amp;next=/creator/reset-password/%3Fclaim%3D1" style="display:inline-block;padding:15px 28px;background:#1a1412;color:#f9ead0;text-decoration:none;font-size:15px;font-weight:600;border-radius:999px">Choose a password</a>
+      <p style="margin:36px 0 0;font-size:13px;line-height:1.5;color:#6b5d55">The link works once, for 24 hours. If you didn&#8217;t ask for it, you can ignore this email.</p>
+    </div>
+  </body>
+</html>

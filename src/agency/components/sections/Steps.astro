@@ -1,0 +1,70 @@
+---
+/**
+ * How it works, as a split: the heading, a line and a CTA held on the left
+ * (sticky at desktop), the steps on the right as hairline rows, each with a
+ * small orange numeral disc.
+ */
+import type { Link, ProcessStep } from '../../../system/types/content';
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  steps: ProcessStep[];
+  cta?: Link;
+  band?: 'paper' | 'cream' | 'soft';
+}
+const { eyebrow, heading, description, steps, cta, band = 'cream' } = Astro.props;
+---
+
+<section class:list={['band', `band-${band}`]}>
+  <div class="wrap dsteps">
+    <div class="dsteps-intro reveal-rise">
+      {eyebrow && <p class="d-ui dsteps-eyebrow">{eyebrow}</p>}
+      <h2 class="d-h2"><MarkedText text={heading} /></h2>
+      {description && <p class="d-lead d-muted mt-5 max-w-[26rem]">{description}</p>}
+      {cta && <div class="mt-8"><Button href={cta.href} event={cta.event} arrow>{cta.label}</Button></div>}
+    </div>
+    <ol class="dsteps-list" data-reveal-group>
+      {steps.map((step, i) => (
+        <li data-play>
+          <span class="dsteps-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <div>
+            <h3 class="d-h3">{step.title}</h3>
+            {step.description && <p class="d-body d-muted mt-2">{step.description}</p>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .dsteps { display: grid; gap: 3rem var(--grid-gap); }
+  .dsteps-eyebrow { margin-bottom: 1rem; color: var(--accent); }
+  .dsteps-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--hairline-strong); }
+  .dsteps-list li { display: grid; grid-template-columns: 3.25rem 1fr; gap: 1.25rem; padding-block: 1.75rem; border-bottom: 1px solid var(--hairline-strong); }
+  .dsteps-n {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: rgb(245 61 12 / 0.12);
+    color: var(--orange-text);
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+  /* Each number fills orange as its row is read: the week, step by step. */
+  .dsteps-n { transition: background-color 500ms var(--ease-out), color 500ms var(--ease-out), scale 500ms var(--bounce); }
+  :global(html[data-motion]) li.is-in .dsteps-n { background: var(--orange); color: var(--night); }
+  @media (min-width: 64rem) {
+    .dsteps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--grid-gap); align-items: start; }
+    .dsteps-intro { position: sticky; top: calc(var(--header-h) + 3rem); }
+  }
+</style>

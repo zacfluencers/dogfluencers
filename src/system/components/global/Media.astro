@@ -1,0 +1,71 @@
+---
+/**
+ * Image with an honest fallback. When no source exists the component renders a
+ * tinted hairline surface rather than a broken image or stock photography
+ * standing in for creator content.
+ */
+import type { ImageRef } from '../../types/content';
+
+interface Props {
+  media?: ImageRef;
+  ratio?: string;
+  /** Above-the-fold media should not lazy-load. */
+  priority?: boolean;
+  /** Shown inside the fallback surface to say what belongs here. */
+  fallbackLabel?: string;
+  class?: string;
+  sizes?: string;
+}
+const {
+  media,
+  ratio = '4 / 5',
+  priority = false,
+  fallbackLabel = 'Image required',
+  class: className = '',
+  sizes = '(min-width: 1024px) 33vw, 100vw',
+} = Astro.props;
+
+const hasImage = Boolean(media?.src);
+---
+
+<div
+  class:list={['relative overflow-hidden bg-[var(--surface)]', className]}
+  style={`aspect-ratio: ${ratio}`}
+>
+  {
+    hasImage ? (
+      <img
+        src={media!.src}
+        alt={media!.alt}
+        width={media!.width}
+        height={media!.height}
+        sizes={sizes}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding={priority ? 'sync' : 'async'}
+        fetchpriority={priority ? 'high' : undefined}
+        class="h-full w-full object-cover"
+      />
+    ) : (
+      <div
+        class="media-fallback flex h-full w-full items-end p-4"
+        role="img"
+        aria-label={media?.alt || fallbackLabel}
+      >
+        <span class="type-eyebrow muted">{fallbackLabel}</span>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  /* Diagonal hairlines: unmistakably a placeholder, never mistaken for design. */
+  .media-fallback {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 11px,
+      var(--hairline) 11px,
+      var(--hairline) 12px
+    );
+  }
+</style>

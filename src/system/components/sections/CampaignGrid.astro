@@ -1,0 +1,74 @@
+---
+import type { ComponentProps } from 'astro/types';
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import type { Campaign, Link } from '../../types/content';
+import Container from '../global/Container.astro';
+import Section from '../global/Section.astro';
+import CampaignCard from './CampaignCard.astro';
+import SectionHeader from '../global/SectionHeader.astro';
+import ContentRequired from '../dev/ContentRequired.astro';
+
+interface Props {
+  /** Section ground. `raised` gives a white band for rhythm down a page. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  campaigns: Campaign[];
+  /** Defaults to the count: two or four sit two across, anything else three. */
+  columns?: 2 | 3;
+  link?: Link;
+  /** Renders the dev content notice when empty. */
+  requireContent?: boolean;
+  /** `tight` straight after a type-only masthead on the same ground. */
+  spacing?: ComponentProps<typeof Section>['spacing'];
+}
+const {
+  eyebrow,
+  heading,
+  description,
+  campaigns,
+  columns: columnsProp,
+  link,
+  requireContent = true,
+  tone,
+  spacing,
+} = Astro.props;
+
+const columns = columnsProp ?? (campaigns.length <= 2 || campaigns.length === 4 ? 2 : 3);
+const grid = columns === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3';
+const hasCampaigns = campaigns.length > 0;
+---
+
+{
+  (hasCampaigns || (requireContent && SHOW_PLACEHOLDERS)) && (
+    <Section tone={tone} spacing={spacing}>
+      <Container>
+        <SectionHeader
+          eyebrow={eyebrow}
+          heading={heading}
+          description={description}
+          link={hasCampaigns ? link : undefined}
+        />
+
+        {hasCampaigns ? (
+          <div class:list={['card-grid grid gap-x-10', grid]}>
+            {campaigns.map((campaign) => (
+              <CampaignCard campaign={campaign} />
+            ))}
+          </div>
+        ) : (
+          <ContentRequired
+            title="Campaign case studies"
+            items={[
+              'Brand name and written permission to reference the work',
+              'Objective, approach and outcome in the brand’s own terms where possible',
+              'Verified metrics only: creator counts, content volumes, reach',
+              'Campaign imagery and creator content, with usage rights cleared',
+            ]}
+          />
+        )}
+      </Container>
+    </Section>
+  )
+}

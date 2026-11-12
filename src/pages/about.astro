@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { clips } from '../agency/content/clips';
+import WorkPosts from '../agency/components/sections/WorkPosts.astro';
+import PageHead from '../agency/components/sections/PageHead.astro';
+import Feature from '../agency/components/sections/Feature.astro';
+import StatRow from '../agency/components/sections/StatRow.astro';
+import CtaBand from '../agency/components/sections/CtaBand.astro';
+import MarkedText from '../system/components/global/MarkedText.astro';
+import { agency } from '../agency/config';
+import { content } from '../content';
+import { breadcrumbSchema } from '../system/lib/seo';
+
+
+const [statistics, work] = await Promise.all([content.statistics(), content.work()]);
+const clip = clips.goldenCar;
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'About' }];
+
+/** The category each sister agency is built around. */
+const niches: Record<string, string> = {
+  Beautyfluencers: 'Beauty',
+  Gymfluencers: 'Fitness',
+  ParentPR: 'Parenting',
+  Travelfluencers: 'Travel',
+  Meowfluencers: 'Cats',
+  Foodiefluencers: 'Food',
+};
+
+/** How the agency works. Nothing here claims history, size or awards. */
+const principles = [
+  {
+    title: 'The list is the campaign',
+    body: 'Most of the outcome is decided before anything ships. We spend the time on creator selection, and you approve it.',
+  },
+  {
+    title: 'Evidence over estimates',
+    body: 'We report what can be evidenced: what shipped, what published, and platform figures. Not modelled reach.',
+  },
+  {
+    title: 'Dogs first',
+    body: 'A raw-fed spaniel and a senior greyhound need different products. We match on the dog, never send anything unsuitable, and every owner can say no.',
+  },
+  {
+    title: 'Creators are the product',
+    body: 'A network is only worth what the relationships in it are worth. Briefs are matched, not blasted.',
+  },
+];
+---
+
+<BaseLayout
+  seo={{
+    title: 'About',
+    description:
+      'Dogfluencers is a specialist creator marketing agency for pet brands, connecting brands with dog owners and their dogs. How we work, and what we believe.',
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead breadcrumbs={breadcrumbs} eyebrow="About" heading="Connecting brands with top *dogs.*" description={agency.positioning.long} media={[clips.ownerUnbox, clips.pomsBowls, clips.beagle]} card={{ title: 'Part of Fluencers Group', body: 'Specialist creator agencies' }} />
+
+  <Feature band="cream" eyebrow="How we work" heading="Four things we hold to" video={clip} items={principles} />
+
+  <StatRow eyebrow="The network" heading="In numbers" stats={statistics} />
+
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+
+  <section class="band band-soft">
+    <div class="wrap">
+      <div class="dgroup-head reveal-rise">
+        <div>
+          <p class="d-ui dgroup-eyebrow">Fluencers Group</p>
+          <h2 class="d-h2"><MarkedText text="One of a *family.*" /></h2>
+        </div>
+        <p class="d-lead d-muted dgroup-intro">
+          {agency.name} is part of Fluencers Group, the group behind a family of specialist creator agencies, each
+          built around a single category rather than spread across all of them.
+        </p>
+      </div>
+      {agency.sisterAgencies && agency.sisterAgencies.length > 0 && (
+        <ul class="dgroup-grid" data-reveal-group>
+          {agency.sisterAgencies.map((sister) => {
+            const Tag = sister.href ? 'a' : 'div';
+            return (
+              <li>
+                <Tag class="dgroup-tile" href={sister.href} target={sister.href ? '_blank' : undefined} rel={sister.href ? 'noopener noreferrer' : undefined}>
+                  <span class="dgroup-logo">
+                    <img src={sister.logo.src} alt={sister.logo.alt} width={sister.logo.width} height={sister.logo.height} loading="lazy" style={`width: ${Math.round(Math.sqrt(4800 * ((sister.logo.width ?? 5) / (sister.logo.height ?? 1))) * (sister.logoScale ?? 1))}px`} />
+                  </span>
+                  <span class="dgroup-meta">
+                    <span class="d-small d-muted">{niches[sister.name] ?? ''}</span>
+                    {sister.href && <span class="dgroup-visit d-small" aria-hidden="true">Visit →</span>}
+                  </span>
+                </Tag>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <CtaBand
+    heading="Start a *campaign.*"
+    description="Tell us what you are launching and we will come back with the dogs, the approach and the numbers."
+    primaryCta={agency.ctas.primary}
+    secondaryCta={agency.ctas.secondary}
+  />
+</BaseLayout>
+
+<style>
+  .dgroup-head { display: grid; gap: 1.5rem var(--grid-gap); align-items: end; margin-bottom: clamp(2.5rem, 5vw, 3.75rem); }
+  .dgroup-eyebrow { margin-bottom: 1rem; color: var(--accent); }
+  .dgroup-intro { max-width: 34rem; }
+  .dgroup-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .dgroup-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    height: 100%;
+    min-height: clamp(9rem, 14vw, 11rem);
+    padding: var(--card-pad);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    color: inherit;
+    text-decoration: none;
+    transition: translate 300ms var(--ease-out), box-shadow 300ms var(--ease-out);
+  }
+  a.dgroup-tile:hover { translate: 0 -3px; box-shadow: 0 14px 30px -18px rgb(26 20 18 / 0.35); }
+  .dgroup-logo { display: flex; align-items: center; flex: 1; }
+  .dgroup-logo img { display: block; width: auto; height: auto; max-width: 80%; height: auto; object-fit: contain; filter: var(--ink-filter); }
+  .dgroup-meta { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--hairline); }
+  .dgroup-visit { font-weight: 600; color: var(--night); }
+  a.dgroup-tile:hover .dgroup-visit { color: var(--orange-text); }
+  @media (min-width: 64rem) {
+    .dgroup-head { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dgroup-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

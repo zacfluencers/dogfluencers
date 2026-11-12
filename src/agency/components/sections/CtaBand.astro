@@ -1,0 +1,50 @@
+---
+/**
+ * The closing ask: an inset, rounded orange panel on the paper page, the
+ * headline in cream with a night bar under its marked words, and one big
+ * outline paw tucked into the corner.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import type { Link } from '../../../system/types/content';
+import Button from '../ui/Button.astro';
+import Paw from '../ui/Paw.astro';
+
+interface Props {
+  heading: string;
+  description?: string;
+  primaryCta?: Link;
+  secondaryCta?: Link;
+}
+const { heading, description, primaryCta, secondaryCta } = Astro.props;
+---
+
+<section class="band band-paper">
+  <div class="wrap">
+    <div class="band-orange dcta reveal-rise">
+      <Paw class="dcta-paw" />
+      <div class="relative max-w-[44rem]">
+        <h2 class="d-h1"><MarkedText text={heading} /></h2>
+        {description && <p class="d-lead mt-6 max-w-[36rem]">{description}</p>}
+        <div class="mt-8 flex flex-wrap gap-3">
+          {primaryCta && <Button href={primaryCta.href} event={primaryCta.event} size="large" arrow>{primaryCta.label}</Button>}
+          {secondaryCta && <Button href={secondaryCta.href} event={secondaryCta.event} variant="outline" size="large">{secondaryCta.label}</Button>}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .dcta { position: relative; overflow: hidden; padding: clamp(2.5rem, 6vw, 5rem); border-radius: var(--radius-lg); }
+  :global(.dcta-paw) { position: absolute; right: -3rem; bottom: -4rem; width: clamp(14rem, 26vw, 22rem); color: var(--cream); opacity: 0.28; rotate: -14deg; pointer-events: none; }
+  /* The paw turns and rises a little as the panel scrolls through. */
+  @supports (animation-timeline: view()) {
+    :global(html[data-motion]) :global(.dcta-paw) { animation: dcta-paw linear both; animation-timeline: view(); animation-range: entry 0% exit 60%; }
+    @keyframes dcta-paw { from { rotate: -28deg; translate: 0 2.5rem; } to { rotate: -6deg; translate: 0 -0.5rem; } }
+  }
+  /* On phones the buttons fill the panel, so the paw tucks into the top
+     corner instead of sitting behind them. */
+  @media (max-width: 40rem) {
+    :global(.dcta-paw) { top: -2.5rem; bottom: auto; right: -2.5rem; width: 9rem; opacity: 0.2; }
+  }
+</style>

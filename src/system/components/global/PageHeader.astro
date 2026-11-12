@@ -1,0 +1,118 @@
+---
+/**
+ * Interior page masthead. One H1 per page lives here.
+ *
+ * With `media`, the masthead splits: copy on the left, up to three portrait
+ * clips on the right, staggered like a contact sheet and playing while on
+ * screen. It is the interior page's counterpart to the homepage reel, so it
+ * is the page's one ambient moment. Without `media` the masthead is type
+ * alone, which keeps pages that open on a grid of images from doubling up.
+ */
+import type { VideoRef } from '../../types/content';
+import Container from './Container.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import ClipTile from './ClipTile.astro';
+import ClipsToggle from './ClipsToggle.astro';
+import MarkedText from './MarkedText.astro';
+
+interface Crumb { label: string; href?: string; }
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  breadcrumbs?: Crumb[];
+  /**
+   * The title outranks every section heading (display-l) on the page:
+   * display-xl by default. `compact` keeps display-l for account and
+   * utility pages, where a short form follows. `large` is the same as the
+   * default, kept for existing pages.
+   */
+  size?: 'default' | 'large' | 'compact';
+  /** Portrait clips beside the copy. The first three are used. */
+  media?: VideoRef[];
+}
+const { eyebrow, heading, description, breadcrumbs, size = 'default', media = [] } = Astro.props;
+const clips = media.slice(0, 3);
+const hasMedia = clips.length > 0;
+---
+
+{/* The interior page's hero band: moving grain, pulled up under the clear
+    header so the texture reaches the top of the viewport. */}
+<header
+  class="page-header grain -mt-[var(--header-h)] pt-[calc(var(--header-h)+2.5rem)] pb-[var(--section-y-tight)]"
+  data-clip-group={hasMedia ? '' : undefined}
+>
+  <Container>
+    {breadcrumbs && breadcrumbs.length > 0 && <Breadcrumbs items={breadcrumbs} class="mb-12" />}
+    <div class:list={[hasMedia && 'page-header-split']}>
+      <div>
+        {eyebrow && <p class="type-eyebrow muted mb-7">{eyebrow}</p>}
+        <h1
+          class:list={[
+            size === 'compact' ? 'type-display-l' : 'type-display-xl',
+            hasMedia ? 'page-header-title-media' : 'max-w-5xl',
+          ]}
+        >
+          <MarkedText text={heading} />
+        </h1>
+        {/* Ink rather than muted: lead copy sits on the densest grain. */}
+        {description && <p class:list={['type-lead measure', size === 'compact' ? 'mt-6' : 'mt-10']}>{description}</p>}
+      </div>
+
+      {
+        hasMedia && (
+          <div class="page-header-media">
+            <div class="page-header-sheet enter enter-3" data-count={clips.length}>
+              {clips.map((video, i) => (
+                <ClipTile video={video} priority={i === 0} />
+              ))}
+            </div>
+            <div class="mt-6 flex justify-end">
+              <ClipsToggle />
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </Container>
+</header>
+
+<style>
+  .page-header-split {
+    display: grid;
+    gap: var(--space-7);
+  }
+  .page-header-sheet {
+    display: grid;
+    grid-template-columns: repeat(var(--count, 3), minmax(0, 1fr));
+    gap: var(--space-2);
+    align-items: start;
+  }
+  .page-header-sheet[data-count='1'] { --count: 1; max-width: 16rem; margin-left: auto; }
+  .page-header-sheet[data-count='2'] { --count: 2; max-width: 28rem; margin-left: auto; }
+  /* Staggered tops, so the clips read as a set laid down by hand rather than
+     a row of thumbnails. The offsets live in the tiles' margins, not in a
+     transform, so the band grows to hold them. */
+  .page-header-sheet[data-count='3'] > :global(:nth-child(1)) { margin-top: 12%; }
+  .page-header-sheet[data-count='3'] > :global(:nth-child(3)) { margin-top: 24%; }
+  .page-header-sheet[data-count='2'] > :global(:nth-child(2)) { margin-top: 16%; }
+
+  /* Beside the clips the title has half the width, so it steps between
+     display-l and display-xl: still above every section heading, without
+     running to six lines. */
+  .page-header-title-media {
+    font-size: clamp(2.25rem, 4.6vw, 4.25rem);
+  }
+
+  @media (min-width: 1024px) {
+    .page-header-split {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      align-items: center;
+      gap: var(--space-9);
+    }
+    .page-header-sheet {
+      gap: var(--space-3);
+    }
+  }
+</style>

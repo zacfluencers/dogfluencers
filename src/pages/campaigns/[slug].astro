@@ -1,0 +1,146 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import CampaignCards from '../../agency/components/sections/CampaignCards.astro';
+import WorkPosts from '../../agency/components/sections/WorkPosts.astro';
+import CtaBand from '../../agency/components/sections/CtaBand.astro';
+import Photo from '../../agency/components/ui/Photo.astro';
+import { agency } from '../../agency/config';
+import { content } from '../../content';
+import { breadcrumbSchema } from '../../system/lib/seo';
+
+
+export const getStaticPaths = (async () => {
+  const campaigns = await content.campaigns();
+  return campaigns.map((campaign) => ({ params: { slug: campaign.slug }, props: { campaign } }));
+}) satisfies GetStaticPaths;
+
+const { campaign } = Astro.props;
+const campaigns = await content.campaigns();
+
+const related = campaigns.filter((item) => item.slug !== campaign.slug).slice(0, 3);
+
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Campaigns', href: '/campaigns/' },
+  { label: campaign.title },
+];
+
+/** Optional blocks are omitted rather than rendered empty. */
+const detailBlocks = [
+  { heading: 'Objective', body: campaign.objective },
+  { heading: 'Approach', body: campaign.solution },
+  { heading: 'Outcome', body: campaign.results },
+].filter((block) => Boolean(block.body));
+---
+
+<BaseLayout
+  seo={campaign.seo ?? {
+    title: `${campaign.brand ? `${campaign.brand}: ` : ''}${campaign.title}`,
+    description: campaign.summary,
+  }}
+  schemas={[breadcrumbSchema(agency, breadcrumbs)]}
+>
+  <PageHead
+    breadcrumbs={breadcrumbs}
+    eyebrow={[campaign.brand, campaign.campaignType].filter(Boolean).join(', ') || 'Case study'}
+    heading={campaign.title.replace(/(\S+)$/, "*$1*")}
+    description={campaign.summary}
+    media={campaign.heroImage ? [{ poster: campaign.heroImage.src, alt: campaign.heroImage.alt }] : []}
+  />
+
+
+  {campaign.metrics && campaign.metrics.length > 0 && (
+    <section class="band band-cream">
+      <div class="wrap">
+        <p class="d-ui dcase-eyebrow">Results</p>
+        <dl class="dcase-metrics" data-reveal-group>
+          {campaign.metrics.map((metric) => (
+            <div class="dcase-metric">
+              <dd class="dcase-value">{metric.value}</dd>
+              <dt class="d-ui mt-4">{metric.label}</dt>
+              {metric.context && <p class="d-small d-muted mt-1">{metric.context}</p>}
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  )}
+
+  {detailBlocks.length > 0 && (
+    <section class="band band-paper">
+      <div class="wrap">
+        <div class="dcase-blocks">
+          {detailBlocks.map((block) => (
+            <div class="dcase-block reveal-rise">
+              <h2 class="d-h2">{block.heading}</h2>
+              <p class="d-lead">{block.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {campaign.videos && campaign.videos.length > 0 && (
+    <WorkPosts
+      eyebrow="The work"
+      heading="What the dogs made"
+      items={campaign.videos.map((video, index) => ({ id: `${campaign.slug}-${index}`, video, status: campaign.status }))}
+    />
+  )}
+
+  {campaign.testimonial && (
+    <section class="band band-paper">
+      <div class="wrap">
+        <figure class="dcase-quote reveal-rise">
+          <blockquote class="d-h1">&ldquo;{campaign.testimonial.quote}&rdquo;</blockquote>
+          <figcaption class="d-ui mt-8">
+            {campaign.testimonial.person}
+            {(campaign.testimonial.role || campaign.testimonial.company) && (
+              <span class="d-muted">, {[campaign.testimonial.role, campaign.testimonial.company].filter(Boolean).join(', ')}</span>
+            )}
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+  )}
+
+  {campaign.gallery && campaign.gallery.length > 0 && (
+    <section class="band band-paper">
+      <div class="wrap">
+        <ul class="dcase-gallery" data-reveal-group>
+          {campaign.gallery.map((image) => <li><Photo src={image.src} alt={image.alt} ratio="4 / 5" /></li>)}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <CampaignCards band="cream" eyebrow="More case studies" heading="Other campaigns" campaigns={related} link={{ label: 'All campaigns', href: '/campaigns/' }} />
+
+  <CtaBand
+    heading="Run something like *this.*"
+    description="Tell us what you are launching and we will come back with an approach."
+    primaryCta={agency.ctas.primary}
+  />
+</BaseLayout>
+
+<style>
+  .dcase-eyebrow { margin-bottom: 1.5rem; color: var(--accent); }
+  .dcase-metrics { display: grid; gap: var(--grid-gap); margin: 0; }
+  .dcase-metric { padding: var(--card-pad); border-radius: var(--radius-lg); background: var(--paper); }
+  .dcase-value { margin: 0; font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: clamp(2.75rem, 4.5vw, 4rem); line-height: 0.9; letter-spacing: -0.05em; color: var(--orange-text); }
+  .dcase-blocks { display: grid; gap: clamp(3rem, 6vw, 4.5rem); }
+  .dcase-block { display: grid; gap: 1.25rem var(--grid-gap); padding-top: 2rem; border-top: 1px solid var(--hairline-strong); }
+  .dcase-block p { max-width: 36rem; }
+  .dcase-quote { margin: 0; max-width: 60rem; }
+  .dcase-quote blockquote { margin: 0; }
+  .dcase-gallery { display: grid; gap: var(--grid-gap); margin: 0; padding: 0; list-style: none; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (min-width: 40rem) { .dcase-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) {
+    .dcase-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .dcase-block { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dcase-gallery { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+</style>

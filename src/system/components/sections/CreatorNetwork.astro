@@ -1,0 +1,72 @@
+---
+import type { CreatorCategory, Link, Statistic } from '../../types/content';
+import Container from '../global/Container.astro';
+import type { ComponentProps } from 'astro/types';
+import Section from '../global/Section.astro';
+import Button from '../global/Button.astro';
+import CreatorCategoryGrid from './CreatorCategoryGrid.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description: string;
+  categories?: CreatorCategory[];
+  stats?: Statistic[];
+  cta?: Link;
+  invert?: boolean;
+  /** Overrides `invert` when set. */
+  tone?: ComponentProps<typeof Section>['tone'];
+}
+const {
+  eyebrow,
+  heading,
+  description,
+  categories = [],
+  stats = [],
+  cta,
+  invert = true,
+  tone,
+} = Astro.props;
+---
+
+<Section invert={invert} tone={tone}>
+  <Container>
+    <div class="grid gap-14 lg:grid-cols-2 lg:gap-x-10">
+      <div class="heading-stack">
+        {eyebrow && <p class="type-eyebrow muted">{eyebrow}</p>}
+        <h2 class="reveal-mask type-display-l">{heading}</h2>
+        <p class="type-lead muted measure">{description}</p>
+
+        {
+          stats.length > 0 && (
+            <dl class="grid grid-cols-2 gap-8">
+              {stats.map((stat) => (
+                <div class="border-t border-[var(--hairline-strong)] pt-4">
+                  <dd class="type-display-m font-display">{stat.value}</dd>
+                  <dt class="type-eyebrow muted mt-2">{stat.label}</dt>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+
+        {
+          cta && (
+            <div>
+              <Button href={cta.href} event={cta.event} size="large">{cta.label}</Button>
+            </div>
+          )
+        }
+      </div>
+
+      {
+        categories.length > 0 && (
+          <div>
+            <h3 class="type-eyebrow muted mb-6">Creator categories</h3>
+            <CreatorCategoryGrid categories={categories} variant="list" />
+          </div>
+        )
+      }
+    </div>
+  </Container>
+</Section>

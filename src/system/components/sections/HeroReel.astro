@@ -1,0 +1,276 @@
+---
+/**
+ * Hero reel: portrait clips in three columns that drift endlessly, the middle
+ * column against the other two, each starting at a different point so the
+ * tops never line up. On scroll the columns also part at different rates.
+ *
+ * Built for 9:16 clips. A clip with only a `poster` drifts as a still; with
+ * neither, it renders the missing-media hatch.
+ *
+ * Each column repeats its clips four times and the track slides up one
+ * repeat (25%) per cycle, which is seamless as long as one repeat is taller
+ * than the gap it has to cover. Every tile carries its own bottom margin
+ * rather than a flex gap, so a repeat is exactly a quarter of the track.
+ *
+ * Videos only play while on screen. Reduced motion stops the drift and the
+ * clips (posters show instead), and the pause button stops both for anyone.
+ */
+import type { ReelClip } from '../../types/content';
+import PlaceholderMark from '../dev/PlaceholderMark.astro';
+
+interface Props {
+  clips: ReelClip[];
+}
+const { clips } = Astro.props;
+
+const COLUMNS = 3;
+const COPIES = 4;
+const columns = Array.from({ length: COLUMNS }, (_, i) => clips.filter((_, n) => n % COLUMNS === i)).filter(
+  (column) => column.length > 0,
+);
+const hasPlaceholder = clips.some((clip) => clip.status === 'placeholder');
+// Drift speed, as seconds per clip in a column. Slow enough to read as ambient,
+// so attention stays on the clips rather than the movement.
+const SECONDS_PER_CLIP = 21;
+// Scroll parallax per column, in rem over the first viewport of scroll.
+const parallax = ['-3rem', '4rem', '-6rem'];
+---
+
+<div class="reel" data-reel>
+  <div class="reel-window">
+    {
+      columns.map((column, i) => {
+        const duration = column.length * SECONDS_PER_CLIP + i * 3;
+        return (
+          <div class="reel-col enter" style={`animation-delay: ${420 + i * 120}ms`}>
+            <div class="reel-parallax" style={`--reel-parallax: ${parallax[i % parallax.length]}`}>
+              <div
+                class:list={['reel-track', i % 2 === 1 && 'reel-track-reverse']}
+                style={`--reel-duration: ${duration}s; --reel-delay: -${(duration * (0.2 + i * 0.3)).toFixed(1)}s`}
+              >
+                {Array.from({ length: COPIES }, (_, copy) =>
+                  column.map((clip) => {
+                    const hidden = copy > 0 || !clip.video.alt;
+                    return (
+                      <div class="reel-tile" aria-hidden={hidden ? 'true' : undefined}>
+                        {clip.video.src ? (
+                          <video
+                            class="reel-video"
+                            muted
+                            loop
+                            playsinline
+                            preload="none"
+                            poster={clip.video.poster}
+                            aria-label={hidden ? undefined : clip.video.alt}
+                            data-reel-video
+                            data-fade-in
+                          >
+                            <source src={clip.video.src} type="video/mp4" />
+                          </video>
+                        ) : clip.video.poster ? (
+                          <img
+                            class="reel-video"
+                            src={clip.video.poster}
+                            alt={hidden ? '' : clip.video.alt}
+                            loading={copy === 0 ? 'eager' : 'lazy'}
+                            decoding="async"
+                          />
+                        ) : (
+                          <div class="reel-fallback">
+                            <span class="type-eyebrow muted">Creator video, 9:16</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }),
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })
+    }
+  </div>
+
+  <div class="reel-foot">
+    {hasPlaceholder && <PlaceholderMark reason="Hero clips awaiting real creator content" />}
+    <button type="button" class="reel-toggle type-eyebrow" data-reel-toggle aria-pressed="false">
+      <span class="link-underline" data-reel-toggle-label>Pause motion</span>
+    </button>
+  </div>
+</div>
+
+<style>
+  .reel {
+    --reel-gap: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .reel-window {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--reel-gap);
+    height: clamp(26rem, 72svh, 34rem);
+    overflow: hidden;
+  }
+  /* From xl the hero places the reel in a full-height slot: fill it, with
+     the foot clear of the bottom edge and the viewport side. */
+  @media (min-width: 1280px) {
+    .reel {
+      height: 100%;
+      padding-bottom: var(--space-4);
+    }
+    .reel-window {
+      flex: 1;
+      height: auto;
+      min-height: 0;
+    }
+    .reel-foot {
+      padding-right: var(--gutter);
+    }
+  }
+
+  .reel-track {
+    display: flex;
+    flex-direction: column;
+    animation: reel-drift var(--reel-duration) linear var(--reel-delay) infinite;
+    will-change: transform;
+  }
+  .reel-track-reverse {
+    animation-direction: reverse;
+  }
+  @keyframes reel-drift {
+    to { transform: translateY(-25%); }
+  }
+
+  .reel[data-paused] .reel-track,
+  .reel[data-offscreen] .reel-track {
+    animation-play-state: paused;
+  }
+  @media (hover: hover) {
+    .reel-window:hover .reel-track {
+      animation-play-state: paused;
+    }
+  }
+
+  /* Columns part as the page scrolls. `translate`, not `transform`, so it
+     never competes with the drift or the entrance. */
+  @supports (animation-timeline: scroll()) {
+    :global(html[data-motion]) .reel-parallax {
+      animation: reel-parallax linear both;
+      animation-timeline: scroll();
+      animation-range: 0 100vh;
+    }
+    @keyframes reel-parallax {
+      to { translate: 0 var(--reel-parallax); }
+    }
+  }
+
+  .reel-tile {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    margin-bottom: var(--reel-gap);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .reel-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--duration-reveal) var(--ease-out);
+  }
+  /* Same diagonal hatch as Media: unmistakably a gap, never mistaken for design. */
+  .reel-fallback {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: var(--space-3);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 11px,
+      var(--hairline) 11px,
+      var(--hairline) 12px
+    );
+  }
+
+  .reel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .reel-toggle {
+    margin-left: auto;
+    color: var(--ink-muted);
+    transition: color var(--duration-fast) var(--ease);
+  }
+  .reel-toggle:hover {
+    color: var(--ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reel-track,
+    .reel-parallax {
+      animation: none !important;
+    }
+    .reel-toggle {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { fadeInWhenReady } from '../../lib/video';
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  for (const reel of document.querySelectorAll<HTMLElement>('[data-reel]')) {
+    const videos = [...reel.querySelectorAll<HTMLVideoElement>('[data-reel-video]')];
+    const toggle = reel.querySelector<HTMLButtonElement>('[data-reel-toggle]');
+    const label = reel.querySelector<HTMLElement>('[data-reel-toggle-label]');
+    const visible = new Set<HTMLVideoElement>();
+    videos.forEach(fadeInWhenReady);
+
+    const sync = () => {
+      const stopped = reduced.matches || reel.hasAttribute('data-paused');
+      for (const video of videos) {
+        if (!stopped && visible.has(video)) video.play().catch(() => {});
+        else video.pause();
+      }
+    };
+
+    // Play a clip only while it is in or about to drift into view, so at most
+    // a handful decode at once, and each has started before it is seen.
+    const clipObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const video = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) visible.add(video);
+          else visible.delete(video);
+        }
+        sync();
+      },
+      { rootMargin: '25% 0px' },
+    );
+    videos.forEach((video) => clipObserver.observe(video));
+
+    // Stop the drift entirely once the hero is scrolled away.
+    new IntersectionObserver(([entry]) => {
+      reel.toggleAttribute('data-offscreen', !entry.isIntersecting);
+    }).observe(reel);
+
+    toggle?.addEventListener('click', () => {
+      const paused = !reel.hasAttribute('data-paused');
+      reel.toggleAttribute('data-paused', paused);
+      toggle.setAttribute('aria-pressed', String(paused));
+      if (label) label.textContent = paused ? 'Play motion' : 'Pause motion';
+      sync();
+    });
+
+    reduced.addEventListener('change', sync);
+  }
+</script>

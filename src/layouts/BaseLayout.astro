@@ -1,0 +1,74 @@
+---
+import '../styles/global.css';
+import { agency } from '../agency/config';
+import type { Seo } from '../system/types/content';
+import SeoHead from '../system/components/seo/SeoHead.astro';
+import StructuredData from '../system/components/seo/StructuredData.astro';
+// Dogfluencers' own header and footer, in place of the system defaults.
+import Header from '../agency/components/Header.astro';
+import Footer from '../agency/components/Footer.astro';
+import Motion from '../system/components/global/Motion.astro';
+import DogMotion from '../agency/components/DogMotion.astro';
+import ThemeScript from '../system/components/global/ThemeScript.astro';
+import { organizationSchema, websiteSchema } from '../system/lib/seo';
+
+interface Props {
+  seo?: Seo;
+  ogType?: 'website' | 'article';
+  /** Page-specific JSON-LD, appended to the site-wide Organization + WebSite. */
+  schemas?: Record<string, unknown>[];
+  /** Homepage emits Organization and WebSite; interior pages do not repeat them. */
+  includeSiteSchema?: boolean;
+}
+const { seo, ogType = 'website', schemas = [], includeSiteSchema = false } = Astro.props;
+
+const siteSchemas = includeSiteSchema
+  ? [organizationSchema(agency), websiteSchema(agency)]
+  : [];
+---
+
+<!doctype html>
+<html lang={agency.site.locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <ThemeScript />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#f9ead0" />
+
+    <SeoHead agency={agency} seo={seo} ogType={ogType} />
+    <StructuredData schemas={[...siteSchemas, ...schemas]} />
+    <Motion />
+    <DogMotion />
+  </head>
+
+  <body>
+    <a href="#main" class="skip-link type-eyebrow">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      /**
+       * Analytics bridge. Anything with data-event dispatches a `site:event`
+       * CustomEvent. No provider is assumed — subscribe to this one event to
+       * forward to GA4, Plausible, Segment or anything else.
+       */
+      document.addEventListener('click', (event) => {
+        const target = (event.target as HTMLElement | null)?.closest('[data-event]');
+        if (!target) return;
+        document.dispatchEvent(
+          new CustomEvent('site:event', {
+            detail: { name: target.getAttribute('data-event') },
+          })
+        );
+      });
+    </script>
+  </body>
+</html>

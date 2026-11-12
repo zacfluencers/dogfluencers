@@ -1,0 +1,114 @@
+---
+/**
+ * The signed-in creator's own profile: every answer from the join form, on
+ * one page, editable. They can never see the team's status or notes.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { agency } from '../../agency/config';
+import { crm } from '../../agency/crm';
+import { ownProfile, updateOwnProfile } from '../../system/crm/server';
+import { buildSchemas, formToInput, recordToValues, type FieldErrors } from '../../system/crm/validation';
+
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import Section from '../../system/components/global/Section.astro';
+import Container from '../../system/components/global/Container.astro';
+import Button from '../../system/components/global/Button.astro';
+import CreatorFields from '../../system/components/crm/CreatorFields.astro';
+
+export const prerender = false;
+
+// The middleware has already sent anyone signed out to the login page.
+const { supabase, user } = Astro.locals.session!;
+// Imported profiles are linked only in /auth/confirm/, when an emailed link
+// proves the creator owns the address. Never here: a login alone proves
+// nothing if email confirmation is ever switched off.
+const profile = await ownProfile(supabase, user!);
+
+let values = profile ? recordToValues(profile as unknown as Record<string, unknown>) : {};
+let errors: FieldErrors = {};
+let message: string | undefined;
+let saved = false;
+
+if (Astro.request.method === 'POST' && profile) {
+  const form = await Astro.request.formData();
+  const result = await updateOwnProfile(supabase, user!, form, crm);
+  if (result.ok) return Astro.redirect('/creator/profile/?saved=1', 303);
+  values = formToInput(form, crm) as Record<string, string | string[]>;
+  errors = result.fieldErrors ?? {};
+  message = result.message;
+  Astro.response.status = 422;
+}
+
+const params = Astro.url.searchParams;
+if (params.has('saved')) saved = true;
+const welcome = params.has('welcome');
+const passwordUpdated = params.has('password');
+
+// Every step but the consent, which was given once, at joining.
+const sections = buildSchemas(crm).steps.map(({ id, title }) => ({ id, title: id === 'account' ? 'Your name' : title }));
+---
+
+<BaseLayout seo={{ title: 'Your profile', noIndex: true }}>
+  <PageHead size="compact"
+    heading={welcome ? `Welcome${profile?.first_name ? `, ${profile.first_name}` : ''}` : 'Your profile'}
+    description={welcome
+      ? 'You\'re in. Check your details below: brands are matched to briefs against them.'
+      : 'Keep these up to date, so the briefs that reach you fit.'}
+  />
+
+  <Section spacing="tight">
+    <Container>
+      {
+        !profile ? (
+          <div class="flex max-w-[46rem] flex-col gap-6">
+            <p class="form-alert">
+              We couldn't find a creator profile for {user!.email}. If you've just applied, try again in a minute. Otherwise
+              email <a href={`mailto:${agency.contact.email}`} class="link-underline">{agency.contact.email}</a>.
+            </p>
+            <form method="post" action="/auth/logout/">
+              <Button type="submit" variant="outline">Log out</Button>
+            </form>
+          </div>
+        ) : (
+          <div class="grid gap-16 lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-24">
+            <form method="post" novalidate class="flex max-w-[46rem] flex-col">
+              {saved && <p class="form-alert mb-10" role="status">Saved. Your profile is up to date.</p>}
+              {passwordUpdated && <p class="form-alert mb-10" role="status">Your password has been changed.</p>}
+              {message && <p class="form-alert mb-10" role="alert">{message}</p>}
+
+              {sections.map((section, i) => (
+                <section id={section.id} class:list={['flex flex-col gap-8', i > 0 && 'mt-16 border-t border-[var(--hairline-strong)] pt-10']}>
+                  <h2 class="type-display-m">{section.title}</h2>
+                  <CreatorFields step={section.id} config={crm} values={values} errors={errors} mode="profile" />
+                </section>
+              ))}
+
+              <div class="sticky bottom-0 mt-14 flex items-center gap-6 border-t border-[var(--hairline)] bg-[var(--ground)] py-5">
+                <Button type="submit" size="large">Save changes</Button>
+              </div>
+            </form>
+
+            <aside class="flex flex-col gap-8 lg:sticky lg:top-32 lg:self-start">
+              <div class="flex flex-col gap-2 border-t border-[var(--hairline-strong)] pt-5">
+                <p class="form-label">Email</p>
+                <p class="[overflow-wrap:anywhere]">{profile.email}</p>
+                <p class="form-hint">To change it, email {agency.contact.email}.</p>
+              </div>
+              <nav class="flex flex-col gap-3 border-t border-[var(--hairline-strong)] pt-5" aria-label="Profile sections">
+                {sections.map((section) => (
+                  <a href={`#${section.id}`} class="type-caption link-underline self-start">{section.title}</a>
+                ))}
+              </nav>
+              <div class="flex flex-col items-start gap-4 border-t border-[var(--hairline-strong)] pt-5">
+                <a href="/creator/reset-password/" class="type-caption link-underline">Change password</a>
+                <form method="post" action="/auth/logout/">
+                  <button type="submit" class="type-caption link-underline">Log out</button>
+                </form>
+              </div>
+            </aside>
+          </div>
+        )
+      }
+    </Container>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,120 @@
+---
+/**
+ * One form field, labelled, with its hint and an error slot that both the
+ * server and the step script write into. Every input points at its hint and
+ * error with aria-describedby, and is marked invalid while it has an error.
+ */
+import type { Option } from '../../crm/types';
+
+interface Props {
+  name: string;
+  label: string;
+  type?: 'text' | 'email' | 'password' | 'tel' | 'date' | 'textarea' | 'select' | 'multi' | 'radio';
+  options?: Option[];
+  value?: string | string[];
+  error?: string;
+  hint?: string;
+  required?: boolean;
+  autocomplete?: string;
+  inputmode?: 'text' | 'numeric' | 'decimal' | 'email' | 'tel' | 'url';
+  placeholder?: string;
+  max?: number;
+  /** Placeholder for a select's empty option. */
+  empty?: string;
+  class?: string;
+}
+const {
+  name,
+  label,
+  type = 'text',
+  options = [],
+  value,
+  error,
+  hint,
+  required = false,
+  autocomplete,
+  inputmode,
+  placeholder,
+  max,
+  empty = 'Choose one',
+  class: className = '',
+} = Astro.props;
+
+const id = `f-${name.replace(/[^a-z0-9_-]/gi, '-')}`;
+const hintId = hint ? `${id}-hint` : undefined;
+const errorId = `${id}-error`;
+const describedBy = [hintId, errorId].filter(Boolean).join(' ');
+const single = Array.isArray(value) ? value[0] ?? '' : value ?? '';
+const many = Array.isArray(value) ? value : value ? [value] : [];
+const invalid = error ? 'true' : undefined;
+const isGroup = type === 'multi' || type === 'radio';
+const text = `${label}${required ? ' *' : ''}`;
+---
+
+<div class:list={['flex flex-col gap-2', className]} data-field={name}>
+  {
+    isGroup ? (
+      <fieldset class="flex flex-col gap-3" aria-describedby={describedBy} aria-invalid={invalid}>
+        <legend class="form-label mb-3">{text}</legend>
+        <div class:list={['grid gap-x-8 gap-y-3', options.length > 3 && 'sm:grid-cols-2']}>
+          {options.map((option) => (
+            <label class="flex cursor-pointer items-start gap-3">
+              <input
+                class="form-check"
+                type={type === 'multi' ? 'checkbox' : 'radio'}
+                name={name}
+                value={option.value}
+                checked={type === 'multi' ? many.includes(option.value) : single === option.value}
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    ) : (
+      <>
+        <label class="form-label" for={id}>{text}</label>
+        {type === 'textarea' ? (
+          <textarea
+            class="form-input"
+            id={id}
+            name={name}
+            rows="4"
+            maxlength={max}
+            placeholder={placeholder}
+            aria-describedby={describedBy}
+            aria-invalid={invalid}
+          >{single}</textarea>
+        ) : type === 'select' ? (
+          <div class="form-select">
+            <select class="form-input" id={id} name={name} aria-describedby={describedBy} aria-invalid={invalid}>
+              <option value="">{empty}</option>
+              {options.map((option) => (
+                <option value={option.value} selected={single === option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <input
+            class="form-input"
+            id={id}
+            name={name}
+            type={type}
+            value={type === 'password' ? undefined : single}
+            autocomplete={autocomplete}
+            inputmode={inputmode}
+            placeholder={placeholder}
+            maxlength={max}
+            spellcheck={type === 'email' || type === 'password' ? 'false' : undefined}
+            autocapitalize={type === 'email' ? 'none' : undefined}
+            aria-describedby={describedBy}
+            aria-invalid={invalid}
+          />
+        )}
+      </>
+    )
+  }
+  {/* The error sits straight under the field, above any hint. */}
+  <p class="form-error" id={errorId} data-error-for={name}>{error}</p>
+  {hint && <p class="form-hint" id={hintId}>{hint}</p>}
+</div>

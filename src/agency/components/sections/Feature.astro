@@ -1,0 +1,87 @@
+---
+/**
+ * A media tile beside a hairline list: the "why" bands. The tile stays put
+ * (sticky) while the list scrolls past it on wide screens. Split on the
+ * site grid, so the list starts on the same line as every right column.
+ * Each row's tick fills orange as it is read, like the steps.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import type { VideoRef } from '../../../system/types/content';
+import Media from '../ui/Media.astro';
+import ClipToggle from '../ui/ClipToggle.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  lead?: string;
+  video?: VideoRef;
+  items: { title: string; body: string }[];
+  /** Which side the media sits on, on wide screens. */
+  side?: 'left' | 'right';
+  band?: 'paper' | 'cream' | 'soft' | 'night';
+}
+const { eyebrow, heading, lead, video, items, side = 'left', band = 'cream' } = Astro.props;
+const hasMedia = Boolean(video?.src || video?.poster);
+---
+
+<section class:list={['band', `band-${band}`]}>
+  <div class:list={['wrap dfeat', side === 'right' && 'dfeat-right', !hasMedia && 'dfeat-plain']}>
+    <div class="dfeat-aside">
+      {hasMedia ? (
+        <div class="dfeat-media">
+          <Media video={video} ratio="4 / 5" />
+          {video?.src && <ClipToggle class="dfeat-toggle" />}
+        </div>
+      ) : (
+        <div class="reveal-rise">
+          {eyebrow && <p class="d-ui dfeat-eyebrow">{eyebrow}</p>}
+          <h2 class="d-h2"><MarkedText text={heading} /></h2>
+          {lead && <p class="d-lead d-muted mt-6 max-w-[34rem]">{lead}</p>}
+        </div>
+      )}
+    </div>
+
+    <div class="dfeat-main">
+      {hasMedia && (
+        <div class="reveal-rise mb-10">
+          {eyebrow && <p class="d-ui dfeat-eyebrow">{eyebrow}</p>}
+          <h2 class="d-h2"><MarkedText text={heading} /></h2>
+          {lead && <p class="d-lead d-muted mt-6">{lead}</p>}
+        </div>
+      )}
+      <ul class="dfeat-list" data-reveal-group>
+        {items.map((item) => (
+          <li data-play>
+            <span class="dfeat-tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </span>
+            <div>
+              <h3 class="d-h3">{item.title}</h3>
+              <p class="d-body d-muted mt-2">{item.body}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .dfeat { display: grid; gap: 3rem var(--grid-gap); align-items: start; }
+  .dfeat-eyebrow { margin-bottom: 1rem; color: var(--accent); }
+  .dfeat-media { position: relative; max-width: 30rem; }
+  :global(.dfeat-toggle) { position: absolute; right: var(--overlay-inset); bottom: var(--overlay-inset); }
+  .dfeat-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--hairline-strong); }
+  .dfeat-list li { display: grid; grid-template-columns: 2.25rem 1fr; gap: 1.25rem; padding-block: 1.6rem; border-bottom: 1px solid var(--hairline-strong); }
+  .dfeat-tick { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 999px; background: rgb(245 61 12 / 0.12); color: var(--orange-text); transition: background-color 500ms var(--ease-out), color 500ms var(--ease-out); }
+  .dfeat-tick svg { width: 1rem; height: 1rem; }
+  :global(html[data-motion]) .dfeat-list li:global(.is-in) .dfeat-tick { background: var(--orange); color: var(--night); }
+  :global(.band-night) .dfeat-tick { background: rgb(245 61 12 / 0.2); color: var(--orange); }
+
+  @media (min-width: 64rem) {
+    .dfeat { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dfeat-aside { position: sticky; top: calc(var(--header-h) + 2rem); }
+    .dfeat-right .dfeat-aside { order: 2; }
+    .dfeat-right .dfeat-media { margin-left: auto; }
+  }
+</style>

@@ -1,0 +1,323 @@
+---
+import type { ComponentProps } from 'astro/types';
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import type { Campaign, Testimonial } from '../../types/content';
+import Container from '../global/Container.astro';
+import Section from '../global/Section.astro';
+import SectionHeader from '../global/SectionHeader.astro';
+import ContentRequired from '../dev/ContentRequired.astro';
+import PlaceholderMark from '../dev/PlaceholderMark.astro';
+import TextLink from '../global/TextLink.astro';
+
+interface Props {
+  /** Section ground. `raised` gives a white band for rhythm down a page. */
+  tone?: ComponentProps<typeof Section>['tone'];
+  eyebrow?: string;
+  /** Visible in the grid. The featured quote is its own headline, so there it
+   *  is kept for assistive technology only. */
+  heading?: string;
+  testimonials: Testimonial[];
+  /** Published campaigns, to resolve a quote's `campaign` slug for the detail strip. */
+  campaigns?: Campaign[];
+  /**
+   * `featured`: one pull quote (the record marked `featured`, else the first)
+   * beside a clip of the work made for that client. `grid`: every quote.
+   */
+  variant?: 'featured' | 'grid';
+}
+const { eyebrow, heading, testimonials, campaigns = [], variant = 'featured', tone } = Astro.props;
+const hasTestimonials = testimonials.length > 0;
+const featured = testimonials.find((testimonial) => testimonial.featured) ?? testimonials[0];
+const showFeatured = variant === 'featured' && featured;
+
+const video = featured?.video;
+// The work clip shows when there is one, and as a labelled gap in review mode.
+const showVideo = Boolean(video?.src) || SHOW_PLACEHOLDERS;
+
+// Words of the quote, each filled in turn as the quote scrolls through the
+// viewport. Ranges overlap a little so the fill reads as a sweep, not a tick.
+const words = featured ? `“${featured.quote}”`.split(/\s+/) : [];
+const FILL_START = 10;
+const FILL_SPAN = 35;
+const wordRange = (index: number) => {
+  const step = FILL_SPAN / words.length;
+  const start = FILL_START + index * step;
+  return `--word-start: ${start.toFixed(2)}%; --word-end: ${(start + step * 3).toFixed(2)}%`;
+};
+
+// Detail strip: only facts the records hold. Nothing is derived or estimated.
+const campaign = featured?.campaign ? campaigns.find((item) => item.slug === featured.campaign) : undefined;
+const details = [
+  { label: 'Client', value: featured?.company },
+  { label: 'Service', value: campaign?.campaignType },
+  { label: 'Campaign', value: campaign?.title },
+].filter((detail): detail is { label: string; value: string } => Boolean(detail.value));
+---
+
+{
+  (hasTestimonials || SHOW_PLACEHOLDERS) && (
+    <Section tone={tone}>
+      <Container>
+        {showFeatured ? (
+          heading && <h2 class="sr-only">{heading}</h2>
+        ) : (
+          <SectionHeader eyebrow={eyebrow} heading={heading} />
+        )}
+
+        {!hasTestimonials ? (
+          <ContentRequired
+            title="Testimonials"
+            items={[
+              'Real quotes only, with the client’s approval to publish',
+              'Name, role and company for each quote',
+              'Company logo where permitted',
+            ]}
+          />
+        ) : (
+          <div class="flex flex-col gap-16">
+            {showFeatured && (
+              <figure class:list={['featured-quote', showVideo && 'has-video']}>
+                <div class="flex flex-col gap-10">
+                  <blockquote class="quote type-display-l font-display uppercase">
+                    {words.map((word, index) => (
+                      <>
+                        <span class="quote-word" style={wordRange(index)}>{word}</span>{' '}
+                      </>
+                    ))}
+                  </blockquote>
+
+                  <figcaption class="type-eyebrow muted flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <span class="text-[var(--ink)]">{featured.person}</span>
+                    {featured.role && <span>{featured.role}</span>}
+                    {featured.status === 'placeholder' && <PlaceholderMark reason="Unapproved testimonial" />}
+                  </figcaption>
+
+                  {details.length > 0 && (
+                    <dl class="quote-details" style={`--detail-cells: ${details.length}`}>
+                      {details.map((detail) => (
+                        <div class="quote-detail">
+                          <dt class="type-eyebrow muted">{detail.label}</dt>
+                          <dd class="type-body">{detail.value}</dd>
+                        </div>
+                      ))}
+                      {campaign && (
+                        <div class="quote-detail quote-detail-link">
+                          <TextLink href={`/campaigns/${campaign.slug}/`}>See the campaign</TextLink>
+                        </div>
+                      )}
+                    </dl>
+                  )}
+                </div>
+
+                {showVideo && (
+                  <div class="quote-media-wrap" data-quote-media>
+                    <div class="quote-media" aria-hidden={video?.alt ? undefined : 'true'}>
+                      {video?.src ? (
+                        <video
+                          muted
+                          loop
+                          playsinline
+                          preload="none"
+                          poster={video.poster}
+                          aria-label={video.alt || undefined}
+                          data-quote-video
+                        >
+                          <source src={video.src} type="video/mp4" />
+                        </video>
+                      ) : (
+                        <div class="quote-media-fallback">
+                          <span class="type-eyebrow muted">The work, 9:16</span>
+                        </div>
+                      )}
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                      {featured.company && <p class="type-eyebrow muted">Made for {featured.company}</p>}
+                      {video?.src && (
+                        <button type="button" class="quote-toggle type-eyebrow" data-quote-toggle aria-pressed="false">
+                          <span class="link-underline" data-quote-toggle-label>Pause</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </figure>
+            )}
+
+            {variant === 'grid' && (
+              <ul class="grid gap-x-10 gap-y-12 md:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+                {testimonials.map((testimonial) => (
+                  <li class="flex flex-col gap-5 border-t border-[var(--hairline-strong)] pt-6">
+                    <blockquote class="type-body">&ldquo;{testimonial.quote}&rdquo;</blockquote>
+                    <figcaption class="type-eyebrow muted mt-auto flex flex-col gap-1.5">
+                      <span class="text-[var(--ink)]">{testimonial.person}</span>
+                      {testimonial.role && <span>{testimonial.role}</span>}
+                      {testimonial.company && <span>{testimonial.company}</span>}
+                      {testimonial.status === 'placeholder' && <PlaceholderMark reason="Unapproved testimonial" />}
+                    </figcaption>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </Container>
+    </Section>
+  )
+}
+
+<style>
+  /* Quote left, the work right, from lg, their top edges on one line. The
+     clip is capped by height so a 9:16 frame never runs past the viewport. */
+  .featured-quote {
+    display: grid;
+    gap: var(--space-8);
+  }
+  @media (min-width: 1024px) {
+    .featured-quote.has-video {
+      grid-template-columns: minmax(0, 1fr) min(22rem, calc(80svh * 9 / 16));
+      align-items: start;
+      column-gap: clamp(3rem, 6vw, 7rem);
+    }
+  }
+
+  /* Each word fills from muted to full ink as the quote crosses the
+     viewport, so it reads at the pace of the scroll. Without scroll-driven
+     animation, or with reduced motion, the quote is simply full ink. */
+  .quote {
+    view-timeline-name: --quote;
+  }
+  @supports (animation-timeline: view()) {
+    :global(html[data-motion]) .quote-word {
+      animation: word-fill linear both;
+      animation-timeline: --quote;
+      animation-range: cover var(--word-start) cover var(--word-end);
+    }
+    @keyframes word-fill {
+      from { opacity: 0.18; }
+    }
+  }
+
+  /* Linear-style detail strip: hairline cells, label over value. */
+  .quote-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--hairline-strong);
+    margin: 0;
+  }
+  /* One equal column per fact, and the campaign link sized to its text. */
+  @media (min-width: 640px) {
+    .quote-details {
+      grid-template-columns: repeat(var(--detail-cells), minmax(0, 1fr)) auto;
+    }
+  }
+  .quote-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-4) var(--space-4) 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .quote-detail dd {
+    margin: 0;
+  }
+  @media (min-width: 640px) {
+    .quote-detail + .quote-detail {
+      padding-left: var(--space-4);
+      border-left: 1px solid var(--hairline);
+    }
+  }
+  .quote-detail-link {
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+
+  .quote-media-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    /* Phones: a portrait clip at full width would be most of a screen tall. */
+    width: min(100%, 16rem);
+  }
+  @media (min-width: 1024px) {
+    .has-video .quote-media-wrap {
+      width: 100%;
+    }
+  }
+  .quote-media {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .quote-media video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Same diagonal hatch as Media: unmistakably a gap, never mistaken for design. */
+  .quote-media-fallback {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: var(--space-3);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 11px,
+      var(--hairline) 11px,
+      var(--hairline) 12px
+    );
+  }
+  .quote-toggle {
+    margin-left: auto;
+    color: var(--ink-muted);
+    transition: color var(--duration-fast) var(--ease);
+  }
+  .quote-toggle:hover {
+    color: var(--ink);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .quote-toggle {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // The clip plays while it is on screen, so it answers the scroll that
+  // brought it into view, and stops when scrolled away. Never under reduced
+  // motion. The pause control holds it for anyone.
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  for (const wrap of document.querySelectorAll<HTMLElement>('[data-quote-media]')) {
+    const video = wrap.querySelector<HTMLVideoElement>('[data-quote-video]');
+    if (!video) continue;
+    const toggle = wrap.querySelector<HTMLButtonElement>('[data-quote-toggle]');
+    const label = wrap.querySelector<HTMLElement>('[data-quote-toggle-label]');
+    let inView = false;
+    let paused = false;
+
+    const sync = () => {
+      if (inView && !paused && !reduced.matches) video.play().catch(() => {});
+      else video.pause();
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        sync();
+      },
+      { threshold: 0.5 },
+    ).observe(video);
+
+    toggle?.addEventListener('click', () => {
+      paused = !paused;
+      toggle.setAttribute('aria-pressed', String(paused));
+      if (label) label.textContent = paused ? 'Play' : 'Pause';
+      sync();
+    });
+
+    reduced.addEventListener('change', sync);
+  }
+</script>

@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import Container from '../../system/components/global/Container.astro';
+import Section from '../../system/components/global/Section.astro';
+import Button from '../../system/components/global/Button.astro';
+
+export const prerender = false;
+
+// `claim`: the email belongs to a creator imported from the old site, so we
+// sent a set-up link rather than creating a second profile.
+const claim = Astro.url.searchParams.get('kind') === 'claim';
+---
+
+<BaseLayout seo={{ title: 'Check your inbox', noIndex: true }}>
+  <PageHead size="compact"
+    heading="Check your inbox"
+    description={claim
+      ? "You're already in our creator network from our old website, so your details are safe with us. We've emailed you a link to set up your login: open it to choose a password and check your details are up to date."
+      : "Thanks for applying. We've sent you a link to confirm your email address: open it to finish setting up your profile."}
+  />
+  <Section spacing="tight">
+    <Container>
+      <p class="type-body muted">Can't see it? Check your spam or promotions folder.</p>
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Button href="/" size="large">Back to home</Button>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>

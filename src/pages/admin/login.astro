@@ -1,0 +1,59 @@
+---
+import { agency } from '../../agency/config';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { isAdmin, isCrmConfigured, safeNext, visitorClient } from '../../system/crm/supabase';
+import { emailSchema } from '../../system/crm/validation';
+import Button from '../../system/components/global/Button.astro';
+import FormField from '../../system/components/crm/FormField.astro';
+import CrmUnavailable from '../../system/components/crm/CrmUnavailable.astro';
+
+export const prerender = false;
+
+const next = safeNext(Astro.url.searchParams.get('next'), '/admin/creators/');
+let email = '';
+let message = Astro.url.searchParams.get('error') === 'forbidden' ? 'This account doesn\'t have team access.' : undefined;
+
+if (Astro.request.method === 'POST' && isCrmConfigured()) {
+  const form = await Astro.request.formData();
+  email = String(form.get('email') ?? '');
+  const parsed = emailSchema.safeParse(email);
+  const password = String(form.get('password') ?? '');
+  const supabase = visitorClient(Astro.request, Astro.cookies);
+  const { error } = parsed.success && password
+    ? await supabase.auth.signInWithPassword({ email: parsed.data, password })
+    : { error: true };
+
+  if (!error && (await isAdmin(supabase))) return Astro.redirect(safeNext(form.get('next'), '/admin/creators/'), 303);
+  if (!error) {
+    await supabase.auth.signOut();
+    message = 'This account doesn\'t have team access.';
+  } else {
+    message = 'That email and password don\'t match.';
+  }
+  Astro.response.status = 422;
+}
+---
+
+<AdminLayout title="Log in" signedIn={false}>
+  <div class="flex max-w-[30rem] flex-col gap-10 py-[var(--section-y-tight)]">
+    <div class="flex flex-col gap-3">
+      <h1 class="type-display-m">Team login</h1>
+      <p class="type-body muted">For the {agency.name} team. Access is set up by an admin. Creators use the <a href="/creator/login/" class="link-underline text-[var(--ink)]">creator login</a>.</p>
+    </div>
+    {
+      isCrmConfigured() ? (
+        <form method="post" novalidate class="flex flex-col gap-6">
+          {message && <p class="form-alert" role="alert">{message}</p>}
+          <input type="hidden" name="next" value={next} />
+          <FormField name="email" label="Email" type="email" autocomplete="username" inputmode="email" value={email} />
+          <FormField name="password" label="Password" type="password" autocomplete="current-password" />
+          <div class="mt-2">
+            <Button type="submit" size="large">Log in</Button>
+          </div>
+        </form>
+      ) : (
+        <CrmUnavailable message="The CRM isn't connected yet." />
+      )
+    }
+  </div>
+</AdminLayout>

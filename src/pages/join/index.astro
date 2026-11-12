@@ -1,0 +1,119 @@
+---
+/**
+ * Creator application. On demand: it posts to itself, so a failed check comes
+ * back with the creator's answers and the errors in place.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { clips } from '../../agency/content/clips';
+import { agency } from '../../agency/config';
+import { crm } from '../../agency/crm';
+import { isCrmConfigured, visitorClient } from '../../system/crm/supabase';
+import { registerCreator } from '../../system/crm/server';
+import { formToInput, type FieldErrors } from '../../system/crm/validation';
+import { SHOW_PLACEHOLDERS } from '../../system/content/source';
+
+import PageHead from '../../agency/components/sections/PageHead.astro';
+import Section from '../../system/components/global/Section.astro';
+import Container from '../../system/components/global/Container.astro';
+import JoinForm from '../../system/components/crm/JoinForm.astro';
+import CrmUnavailable from '../../system/components/crm/CrmUnavailable.astro';
+
+export const prerender = false;
+
+let values: Record<string, string | string[]> = {};
+let errors: FieldErrors = {};
+let message: string | undefined;
+
+if (Astro.request.method === 'POST' && isCrmConfigured()) {
+  const form = await Astro.request.formData();
+  const supabase = Astro.locals.session?.supabase ?? visitorClient(Astro.request, Astro.cookies);
+  const result = await registerCreator(supabase, form, Astro.url.origin, crm);
+  if (result.ok) {
+    if (result.kind === 'signed_in') return Astro.redirect('/creator/profile/?welcome=1', 303);
+    return Astro.redirect(`/join/thanks/?kind=${result.kind}`, 303);
+  }
+  // Keep every answer except the password.
+  const { password: _password, ...rest } = formToInput(form, crm) as Record<string, string | string[]>;
+  values = rest;
+  errors = result.fieldErrors ?? {};
+  message = result.message;
+  Astro.response.status = 422;
+} else if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const { password: _password, ...rest } = formToInput(form, crm) as Record<string, string | string[]>;
+  values = rest;
+  message = 'Your answers passed every check, but submissions are not connected yet, so nothing was saved.';
+  Astro.response.status = 503;
+}
+
+const points = [
+  { title: 'Free to join', body: 'No fee and no commission. You need 1,000 or more followers and 2.5% engagement or higher.' },
+  { title: 'No obligation', body: 'Every brief is yours to accept or turn down.' },
+  { title: 'Matched to your dog', body: 'Briefs are matched to your dog: breed, size, age and diet.' },
+];
+---
+
+<BaseLayout
+  seo={{
+    title: 'Join the creator network',
+    description: `Apply to join the ${agency.name} creator network. Free to join, with no commission.`,
+    noIndex: true,
+  }}
+>
+  <PageHead
+    breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'For Creators', href: '/for-creators/' }, { label: 'Join' }]}
+    eyebrow="For dog owners"
+    heading="Join the creator *network.*"
+    description="A few short steps, about five minutes in all. You can update your details whenever you like."
+    media={[clips.goldenToy, clips.beagle, clips.cockerLickmat]}
+    card={{ title: 'About five minutes', body: 'Six short steps' }}
+  />
+
+  <Section spacing="tight">
+    <Container>
+      <div class="grid gap-16 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-24">
+        <div class="max-w-[46rem]" id="apply">
+          {
+            // In review mode the form shows before the database is connected,
+            // so its steps can be checked; it says submissions aren't wired up.
+            isCrmConfigured() || SHOW_PLACEHOLDERS ? (
+              <>
+                {!isCrmConfigured() && (
+                  <div class="mb-12">
+                    <CrmUnavailable message="Applications are opening soon." />
+                  </div>
+                )}
+                <JoinForm config={crm} values={values} errors={errors} message={message} loginHref="/creator/login/" />
+              </>
+            ) : (
+              <CrmUnavailable message="Applications are opening soon." email={agency.contact.email} />
+            )
+          }
+        </div>
+
+        <aside class="flex flex-col gap-10 lg:sticky lg:top-32 lg:self-start">
+          <ul class="djoin-points">
+            {
+              points.map((point) => (
+                <li class="djoin-point">
+                  <h2 class="d-h3">{point.title}</h2>
+                  <p class="d-small d-muted mt-2">{point.body}</p>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="d-small d-muted">
+            Joined through our old website? Your details are already here.
+            <a href="/creator/claim/" class="link-underline font-bold text-[var(--ink)]">Set up your login</a>
+            instead of applying again.
+          </p>
+        </aside>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .djoin-points { display: grid; gap: var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .djoin-point { padding: var(--card-pad); border-radius: var(--radius-lg); background: var(--cream); }
+</style>

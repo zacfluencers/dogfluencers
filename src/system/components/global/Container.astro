@@ -1,0 +1,24 @@
+---
+interface Props {
+  as?: string;
+  width?: 'full' | 'text';
+  class?: string;
+}
+const { as: Tag = 'div', width = 'full', class: className = '' } = Astro.props;
+---
+
+{
+  /* Text width keeps the page's left edge, so prose lines up with the
+     heading above it; only the line length is capped. */
+  width === 'text' ? (
+    <Tag class:list={['wrap', className]}>
+      <div class="measure">
+        <slot />
+      </div>
+    </Tag>
+  ) : (
+    <Tag class:list={['wrap', className]}>
+      <slot />
+    </Tag>
+  )
+}

@@ -1,0 +1,81 @@
+---
+/**
+ * Services as clean cards: a rounded photo carrying one fact chip, the
+ * name, one line, and a link that appears in full on hover. The whole card
+ * links; the photo zooms a touch.
+ */
+import type { Link, Service } from '../../../system/types/content';
+import SectionHead from './SectionHead.astro';
+import Media from '../ui/Media.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  services: Service[];
+  /** One short fact per service slug, shown on its photo. */
+  facts?: Record<string, string>;
+  link?: Link;
+  band?: 'paper' | 'cream' | 'soft';
+}
+const { eyebrow, heading, description, services, facts = {}, link, band = 'paper' } = Astro.props;
+---
+
+<section class:list={['band', `band-${band}`]}>
+  <div class="wrap">
+    <SectionHead eyebrow={eyebrow} heading={heading} description={description} link={link} />
+    <ul class="dserv" data-reveal-group>
+      {services.map((service) => (
+        <li>
+          <a href={`/services/${service.slug}/`} class="lift dserv-card">
+            <div class="dserv-media">
+              <Media video={service.video} ratio="4 / 5" label="Service clip" />
+              {facts[service.slug] && <span class="dserv-fact d-ui">{facts[service.slug]}</span>}
+            </div>
+            <h3 class="d-h3 mt-6">{service.title}</h3>
+            <p class="d-body d-muted mt-2">{service.shortDescription}</p>
+            <span class="dserv-more d-ui">Explore <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .dserv { display: grid; gap: 3rem var(--grid-gap); margin: 0; padding: 0; list-style: none; }
+  .dserv-card { display: flex; flex-direction: column; height: 100%; color: inherit; text-decoration: none; }
+  .dserv-media { position: relative; }
+  .dserv-fact {
+    position: absolute;
+    left: var(--overlay-inset);
+    bottom: var(--overlay-inset);
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgb(255 250 243 / 0.92);
+    backdrop-filter: blur(8px);
+    font-size: 0.8125rem;
+    color: var(--night);
+  }
+  .dserv-more { margin-top: auto; padding-top: 1.25rem; color: var(--night); }
+  .dserv-more span { display: inline-block; transition: translate 200ms var(--bounce); }
+  .dserv-card:hover .dserv-more { color: var(--orange-text); }
+  .dserv-card:hover .dserv-more span { translate: 4px 0; }
+  /* Phones: a swipeable row that snaps to each card, the next one peeking. */
+  @media (max-width: 39.99rem) {
+    .dserv {
+      display: flex;
+      gap: var(--grid-gap);
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      scrollbar-width: none;
+    }
+    .dserv::-webkit-scrollbar { display: none; }
+    .dserv > li { flex: 0 0 78%; scroll-snap-align: start; }
+  }
+  @media (min-width: 40rem) { .dserv { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 72rem) { .dserv { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+</style>

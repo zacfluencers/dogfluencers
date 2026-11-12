@@ -1,0 +1,25 @@
+---
+/**
+ * The hand-drawn arrow from the statics. Draws in currentColor. `direction`
+ * picks which way it bends; size it with a width class.
+ */
+interface Props { direction?: 'down-right' | 'down-left' | 'down' | 'right'; class?: string }
+const { direction = 'down-right', class: className = '' } = Astro.props;
+const turn = { 'down-right': 0, down: 38, 'down-left': 90, right: -42 }[direction];
+const flip = direction === 'down-left';
+---
+
+<svg
+  class:list={['darrow', className]}
+  viewBox="0 0 120 100"
+  fill="none"
+  aria-hidden="true"
+  style={`rotate: ${flip ? 0 : turn}deg; ${flip ? 'scale: -1 1;' : ''}`}
+>
+  <path d="M8 16 C 38 6, 84 18, 97 72" stroke="currentColor" stroke-width="7" stroke-linecap="round" />
+  <path d="M76 58 L97 76 L108 50" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
+
+<style>
+  .darrow { display: block; overflow: visible; }
+</style>

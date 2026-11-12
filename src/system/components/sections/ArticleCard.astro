@@ -1,0 +1,46 @@
+---
+import type { Article } from '../../types/content';
+import Media from '../global/Media.astro';
+
+interface Props {
+  article: Article;
+  showImage?: boolean;
+}
+const { article, showImage = true } = Astro.props;
+
+const formattedDate = article.publishDate
+  ? new Date(article.publishDate).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  : undefined;
+---
+
+<!--
+  Subgrid rows (image, meta, title, excerpt) are shared across the grid row,
+  so a title that wraps to three lines doesn't drop its excerpt below its
+  neighbours'.
+-->
+<article
+  class:list={[
+    'group relative grid grid-rows-subgrid content-start gap-y-3',
+    showImage ? 'row-span-4' : 'row-span-3',
+  ]}
+>
+  {showImage && <Media media={article.featuredImage} ratio="16 / 10" fallbackLabel="Article image" class="mb-2" />}
+
+  <div class="type-eyebrow muted flex flex-wrap items-center gap-x-3 gap-y-1">
+    {article.category && <span class="text-[var(--accent)]">{article.category}</span>}
+    {formattedDate && <time datetime={article.publishDate}>{formattedDate}</time>}
+  </div>
+
+  <h3 class="type-heading">
+    <a href={`/insights/${article.slug}/`}>
+      <span class="absolute inset-0" aria-hidden="true"></span>
+      <span class="link-underline">{article.title}</span>
+    </a>
+  </h3>
+
+  <p class="type-caption muted">{article.excerpt}</p>
+</article>

@@ -1,0 +1,118 @@
+---
+/**
+ * Square, uppercase, tracked. Renders an <a> when given href, a <button>
+ * otherwise, so semantics follow behaviour rather than appearance.
+ */
+interface Props {
+  href?: string;
+  type?: 'button' | 'submit';
+  variant?: 'primary' | 'outline' | 'ghost';
+  size?: 'default' | 'large';
+  /** Analytics event name; dispatched as a `site:event` CustomEvent. */
+  event?: string;
+  external?: boolean;
+  class?: string;
+  'aria-label'?: string;
+  disabled?: boolean;
+  /** Submitted with the form, to tell one submit button from another. */
+  name?: string;
+  value?: string;
+  /** Hooks for scripts, passed straight through. */
+  [data: `data-${string}`]: string | boolean | undefined;
+}
+const {
+  href,
+  type = 'button',
+  variant = 'primary',
+  size = 'default',
+  event,
+  external = false,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+/*
+ * Press state is a 1px settle rather than a scale — at this weight of type a
+ * scale transform softens the letterforms, and the nudge reads as physical
+ * without touching the glyphs.
+ */
+/*
+ * Every variant carries a 1px border, transparent where unseen, so a primary
+ * and an outline button set side by side are the same height to the pixel.
+ */
+const base =
+  'btn inline-flex items-center justify-center border border-transparent font-display uppercase font-bold ' +
+  'tracking-[0.1em] text-center select-none';
+
+const sizes = {
+  default: 'px-6 py-3.5 text-[0.75rem]',
+  large: 'min-h-14 px-8 py-4 text-[0.8125rem]',
+};
+
+const variants = {
+  primary: 'btn-primary',
+  outline: 'btn-outline',
+  ghost: 'btn-ghost',
+};
+
+const Tag = href ? 'a' : 'button';
+const classes = [base, sizes[size], variants[variant], className];
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  data-event={event}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+  class:list={classes}
+  {...rest}
+>
+  <slot />
+</Tag>
+
+<style>
+  .btn {
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out),
+      transform var(--duration-instant) var(--ease-out);
+  }
+
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  .btn-primary {
+    background-color: var(--accent-fill);
+    color: var(--accent-ink);
+  }
+  .btn-primary:hover {
+    background-color: var(--ink);
+    color: var(--ground);
+  }
+
+  .btn-outline {
+    border: var(--hairline-width) solid var(--hairline-strong);
+    color: var(--ink);
+  }
+  .btn-outline:hover {
+    background-color: var(--ink);
+    border-color: var(--ink);
+    color: var(--ground);
+  }
+
+  .btn-ghost {
+    padding-inline: 0;
+    color: var(--ink);
+  }
+  .btn-ghost:hover {
+    color: var(--accent);
+  }
+</style>

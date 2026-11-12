@@ -1,0 +1,109 @@
+---
+/**
+ * The service menu at full size: one row per service, its example clip on
+ * alternating sides, with the title, description and the first few things it
+ * covers. The editorial counterpart to `ServiceGrid`, for a page whose whole
+ * job is the services, where four narrow cards would undersell each one.
+ */
+import type { ComponentProps } from 'astro/types';
+import type { Service } from '../../types/content';
+import { SHOW_PLACEHOLDERS } from '../../content/source';
+import Container from '../global/Container.astro';
+import Section from '../global/Section.astro';
+import ClipTile from '../global/ClipTile.astro';
+import ClipsToggle from '../global/ClipsToggle.astro';
+import TextLink from '../global/TextLink.astro';
+import { hasVisual } from '../../lib/video';
+
+interface Props {
+  tone?: ComponentProps<typeof Section>['tone'];
+  services: Service[];
+  /** How many of each service's features to list. */
+  features?: number;
+}
+const { tone, services, features = 4 } = Astro.props;
+---
+
+{
+  services.length > 0 && (
+    <Section tone={tone}>
+      <Container>
+        <div class="flex flex-col" data-clip-group>
+          {services.map((service) => {
+            const showMedia = hasVisual(service.video) || SHOW_PLACEHOLDERS;
+            const covers = (service.features ?? []).slice(0, features);
+            return (
+              <article class:list={['service-row', showMedia && 'service-row-media']}>
+                {showMedia && (
+                  <a href={`/services/${service.slug}/`} class="service-row-clip" tabindex="-1" aria-hidden="true">
+                    <ClipTile video={service.video ?? { alt: '' }} ratio="4 / 5" fallbackLabel="Service video, 9:16" />
+                  </a>
+                )}
+
+                <div class="flex flex-col gap-10">
+                  <div class="heading-stack">
+                    <h2 class="reveal-mask type-display-l">
+                      <a href={`/services/${service.slug}/`}>{service.title}</a>
+                    </h2>
+                    <p class="reveal-rise type-lead measure" style="--reveal-delay: 120ms">
+                      {service.shortDescription}
+                    </p>
+                  </div>
+
+                  {covers.length > 0 && (
+                    <ul class="grid gap-x-10 sm:grid-cols-2" data-reveal-group>
+                      {covers.map((feature) => (
+                        <li class="type-body border-t border-[var(--hairline)] py-4">{feature.title}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <div>
+                    <TextLink href={`/services/${service.slug}/`}>View {service.title.toLowerCase()}</TextLink>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+
+          <div class="mt-10 flex justify-end">
+            <ClipsToggle />
+          </div>
+        </div>
+      </Container>
+    </Section>
+  )
+}
+
+<style>
+  .service-row {
+    display: grid;
+    gap: var(--space-7);
+    padding-block: var(--space-9);
+    border-top: 1px solid var(--hairline-strong);
+  }
+  .service-row:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .service-row-clip {
+    display: block;
+    max-width: 22rem;
+  }
+  /* The site's shared split: two equal halves, second column on the 4-up
+     grid's third column line. The clip is capped within its half. */
+  @media (min-width: 1024px) {
+    .service-row-media {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2.5rem;
+      align-items: center;
+    }
+    .service-row-media:nth-child(even) > .service-row-clip {
+      order: 2;
+    }
+    .service-row-clip {
+      max-width: 26rem;
+      width: 100%;
+    }
+  }
+</style>
