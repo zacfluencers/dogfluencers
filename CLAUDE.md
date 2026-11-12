@@ -216,12 +216,12 @@ recipient is `contact.enquiries` in `src/agency/config.ts` (to confirm).
 
 ## Deployment
 
-Vercel project `dogfluencers`, deployed with the CLI for now (no Git repo yet).
-Review builds are previews behind Vercel login, built with
-`--build-env PUBLIC_SHOW_PLACEHOLDERS=true`. The first deploy went to production
-and made `dogfluencers.vercel.app` public with unconfirmed content for a couple of
-minutes; that alias was removed. After any deploy, check it hasn't returned.
-dogfluencers.agency still points at the old WordPress site.
+GitHub `zacfluencers/dogfluencers` (private) → Vercel project `dogfluencers`
+(connected 12 November 2026). Push to `main` deploys production at
+`dogfluencers.vercel.app`, public by the client's choice before launch; any other
+branch gets a preview. `PUBLIC_SHOW_PLACEHOLDERS=true` is set for Preview only,
+so previews show unconfirmed content and production never does. Never set it on
+Production. dogfluencers.agency still points at the old WordPress site.
 
 `LAUNCH-CHECKLIST.md` lists everything before go-live.
 

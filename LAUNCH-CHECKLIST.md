@@ -16,11 +16,11 @@ what stands between that and dogfluencers.agency going live.
 
 ## 1. Git and Vercel (do first; everything else deploys through it)
 
-- [ ] Create the private GitHub repo `zacfluencers/dogfluencers` and push.
-- [ ] Connect it to the `dogfluencers` Vercel project, so `main` deploys production
+- [x] Create the private GitHub repo `zacfluencers/dogfluencers` and push (12 Nov).
+- [x] Connect it to the `dogfluencers` Vercel project, so `main` deploys production
       and branches get previews (replaces deploying by CLI).
 - [ ] Upgrade the Vercel CLI (`npm i -g vercel@latest`): 54.14 can't add preview env vars.
-- [ ] Set `PUBLIC_SHOW_PLACEHOLDERS=true` for **Preview only** until launch.
+- [x] Set `PUBLIC_SHOW_PLACEHOLDERS=true` for **Preview only** until launch.
 - [ ] Check `dogfluencers.vercel.app` stays off or protected: the first deploy made it
       public for a couple of minutes with unconfirmed content.
 
