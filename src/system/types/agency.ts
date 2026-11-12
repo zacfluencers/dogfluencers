@@ -58,7 +58,8 @@ export interface AgencyCtas {
 }
 
 export interface AgencyNavItem extends Link {
-  children?: Link[];
+  /** A dropdown's links; `description` is a one-line hint under each. */
+  children?: (Link & { description?: string })[];
 }
 
 export type HomepageSection =

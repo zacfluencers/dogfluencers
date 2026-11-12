@@ -6,6 +6,7 @@
  */
 import { agency } from '../config';
 import Button from './ui/Button.astro';
+import Paw from './ui/Paw.astro';
 
 const path = Astro.url.pathname;
 const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
@@ -20,9 +21,37 @@ const account = agency.accountLinks?.[0];
 
     <nav aria-label="Main" class="dhead-nav">
       <ul>
-        {agency.navigation.map((item) => (
-          <li><a class="d-ui" href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a></li>
-        ))}
+        {agency.navigation.map((item, i) =>
+          item.children?.length ? (
+            <li class="dhead-drop" data-drop>
+              <div class="dhead-drop-trigger">
+                <a class="d-ui" href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+                <button type="button" class="dhead-drop-btn" aria-expanded="false" aria-controls={`drop-${i}`} data-drop-btn>
+                  <span class="sr-only">Show {item.label.toLowerCase()}</span>
+                  <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </button>
+              </div>
+              <div class="dhead-panel" id={`drop-${i}`} data-drop-panel>
+                <ul class="dhead-panel-list">
+                  {item.children.map((child) => (
+                    <li>
+                      <a href={child.href} class="dhead-panel-link" aria-current={isCurrent(child.href) ? 'page' : undefined}>
+                        <span class="dhead-panel-paw" aria-hidden="true"><Paw class="w-[60%]" /></span>
+                        <span>
+                          <span class="d-ui block">{child.label}</span>
+                          {child.description && <span class="d-small d-muted block">{child.description}</span>}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <a href={item.href} class="dhead-panel-all d-ui">All {item.label.toLowerCase()} <span aria-hidden="true">→</span></a>
+              </div>
+            </li>
+          ) : (
+            <li><a class="d-ui" href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a></li>
+          ),
+        )}
       </ul>
     </nav>
 
@@ -40,7 +69,16 @@ const account = agency.accountLinks?.[0];
     <nav aria-label="Menu" class="wrap">
       <ul class="dmenu-list">
         {agency.navigation.map((item) => (
-          <li><a href={item.href} class="d-h2" aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a></li>
+          <li>
+            <a href={item.href} class="d-h2" aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+            {item.children?.length && (
+              <ul class="dmenu-sub">
+                {item.children.map((child) => (
+                  <li><a href={child.href} class="d-ui" aria-current={isCurrent(child.href) ? 'page' : undefined}>{child.label}</a></li>
+                ))}
+              </ul>
+            )}
+          </li>
         ))}
       </ul>
       <div class="dmenu-foot">
@@ -57,16 +95,25 @@ const account = agency.accountLinks?.[0];
     position: sticky;
     top: 0;
     z-index: 50;
-    background: color-mix(in srgb, var(--paper) 88%, transparent);
-    backdrop-filter: saturate(140%) blur(12px);
     border-bottom: 1px solid transparent;
     transition: border-color 200ms ease;
+  }
+  /* The frosted glass sits on a layer behind the header, not on the header
+     itself: a backdrop-filter makes an element the containing block for
+     fixed children, which shrank the full-screen menu to the header's height. */
+  .dhead::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(12px);
   }
   .dhead[data-scrolled] { border-bottom-color: var(--hairline); }
   .dhead-row { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: var(--header-h); }
   .dhead-logo img { display: block; width: clamp(8.5rem, 12vw, 10rem); height: auto; }
   .dhead-nav { display: none; }
-  .dhead-nav ul { display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; }
+  .dhead-nav > ul { display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; }
   .dhead-nav a {
     display: block;
     padding: 0.55rem 0.8rem;
@@ -109,6 +156,49 @@ const account = agency.accountLinks?.[0];
   .dmenu-list li { border-bottom: 1px solid var(--hairline); }
   .dmenu-list a { display: block; padding-block: 0.9rem; color: var(--night); text-decoration: none; }
   .dmenu-list a[aria-current='page'] { color: var(--orange-text); }
+  .dmenu-sub { display: grid; gap: 0.1rem; margin: -0.35rem 0 0; padding: 0 0 0.9rem; list-style: none; }
+  .dmenu-list .dmenu-sub li { border: 0; }
+  .dmenu-list .dmenu-sub a { padding-block: 0.4rem; color: var(--night-muted); }
+
+  /* Services dropdown: opens on hover, on the chevron, or when a link inside
+     has focus. The label itself still goes to the services page. */
+  .dhead-drop { position: relative; }
+  .dhead-drop-trigger { display: flex; align-items: center; border-radius: 999px; transition: background-color 160ms ease; }
+  .dhead-nav .dhead-drop-trigger a { padding-right: 0.25rem; background: transparent; }
+  .dhead-drop:hover .dhead-drop-trigger,
+  .dhead-drop[data-open] .dhead-drop-trigger,
+  .dhead-drop:has(> .dhead-drop-trigger a[aria-current='page']) .dhead-drop-trigger { background: var(--cream); }
+  .dhead-drop-btn { display: grid; place-items: center; width: 1.75rem; height: 2.25rem; margin-right: 0.3rem; padding: 0; border: 0; background: transparent; color: var(--night); cursor: pointer; }
+  .dhead-drop-btn svg { width: 0.8rem; height: 0.8rem; transition: rotate 220ms var(--ease-out); }
+  .dhead-drop[data-open] .dhead-drop-btn svg { rotate: 180deg; }
+  .dhead-drop-btn:focus-visible { outline: 2px solid var(--night); outline-offset: -2px; border-radius: 999px; }
+  .dhead-panel {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: -0.5rem;
+    width: 23rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--hairline), 0 18px 40px -16px rgb(26 20 18 / 0.28);
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 -6px;
+    transition: opacity 180ms ease, translate 220ms var(--ease-out), visibility 0s linear 220ms;
+  }
+  /* A bridge across the gap, so the pointer can travel down to the panel. */
+  .dhead-panel::before { content: ''; position: absolute; inset: -0.75rem 0 auto; height: 0.75rem; }
+  .dhead-drop[data-open] .dhead-panel { opacity: 1; visibility: visible; translate: 0 0; transition: opacity 180ms ease, translate 220ms var(--ease-out), visibility 0s; }
+  .dhead-panel-list { display: grid; margin: 0; padding: 0; list-style: none; }
+  .dhead-nav .dhead-panel-link { display: grid; grid-template-columns: 2.25rem 1fr; gap: 0.8rem; align-items: center; padding: 0.65rem 0.75rem; border-radius: var(--radius-md); }
+  .dhead-nav .dhead-panel-link:hover,
+  .dhead-nav .dhead-panel-link:focus-visible,
+  .dhead-nav .dhead-panel-link[aria-current='page'] { background: var(--cream-soft); }
+  .dhead-panel-paw { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 999px; background: var(--cream); color: var(--orange); transition: background-color 160ms ease, color 160ms ease; }
+  .dhead-panel-link:hover .dhead-panel-paw { background: var(--orange); color: var(--cream); }
+  .dhead-nav .dhead-panel-all { display: flex; justify-content: space-between; margin-top: 0.35rem; padding: 0.8rem 0.75rem 0.6rem; border-top: 1px solid var(--hairline); border-radius: 0; color: var(--night); }
+  .dhead-nav .dhead-panel-all:hover { background: transparent; color: var(--orange-text); }
+  @media (prefers-reduced-motion: reduce) { .dhead-panel { translate: none; } }
   .dmenu-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 2rem; }
   @media (min-width: 64rem) { .dmenu { display: none; } }
 </style>
@@ -138,4 +228,35 @@ const account = agency.accountLinks?.[0];
     }
   });
   window.matchMedia('(min-width: 64rem)').addEventListener('change', (mq) => mq.matches && setOpen(false));
+
+  // Dropdowns: hover (with a short grace period on the way out), the chevron,
+  // and keyboard focus. Escape or a click elsewhere closes them.
+  document.querySelectorAll<HTMLElement>('[data-drop]').forEach((drop) => {
+    const btn = drop.querySelector<HTMLButtonElement>('[data-drop-btn]')!;
+    let timer = 0;
+    const set = (open: boolean) => {
+      window.clearTimeout(timer);
+      drop.toggleAttribute('data-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    };
+    const hover = window.matchMedia('(hover: hover)');
+    drop.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && hover.matches && set(true));
+    drop.addEventListener('pointerleave', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      timer = window.setTimeout(() => set(false), 180);
+    });
+    btn.addEventListener('click', () => set(!drop.hasAttribute('data-open')));
+    drop.addEventListener('focusout', (e) => {
+      if (!drop.contains(e.relatedTarget as Node | null)) set(false);
+    });
+    drop.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && drop.hasAttribute('data-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!drop.contains(e.target as Node)) set(false);
+    });
+  });
 </script>
