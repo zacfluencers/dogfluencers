@@ -21,8 +21,12 @@ interface Props {
   note?: string;
   cta: Link;
   band?: 'paper' | 'cream' | 'soft';
+  /** The service these packages belong to: "Get started" opens the brief with it and the package chosen. */
+  service?: string;
 }
-const { heading, description, packages, note, cta, band = 'paper' } = Astro.props;
+const { heading, description, packages, note, cta, band = 'paper', service } = Astro.props;
+const startHref = (pkg: ServicePackage) =>
+  service ? `${cta.href}?${new URLSearchParams({ service, package: pkg.name })}#enquiry` : cta.href;
 
 /** "1,000 dogs gifted" → { figure: '1,000', rest: ' dogs gifted' }. */
 const lead = (item: string) => {
@@ -69,7 +73,7 @@ const biggest = Math.max(...packages.map(scaleOf));
               })}
             </ul>
             <div class="dplan-foot">
-              <Button href={cta.href} event={cta.event} variant={pkg.featured ? 'solid' : 'outline'} class="w-full" arrow>{cta.label}</Button>
+              <Button href={startHref(pkg)} event={cta.event} variant={pkg.featured ? 'solid' : 'outline'} class="w-full" arrow>{cta.label}</Button>
             </div>
           </li>
         );

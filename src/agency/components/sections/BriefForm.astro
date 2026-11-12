@@ -1,0 +1,428 @@
+---
+/**
+ * The campaign brief: Dogfluencers' enquiry form. Posts the same fields as
+ * the system form to the same endpoint (src/system/lib/enquiry.ts), laid out
+ * for a brand filling it in quickly.
+ *
+ * Left: what happens next, and the email address. Right: one white card in
+ * four numbered sections. Choices are tap-to-pick (radio pills and tiles)
+ * rather than dropdowns, so every option is visible. Choosing a service with
+ * packages offers them, with their prices; a pricing table's "Get started"
+ * arrives with ?service= and ?package= and both are already chosen.
+ *
+ * Without JavaScript the browser's own required checks run and the form
+ * posts normally. With it, errors appear under each field, the first one
+ * takes focus, and the form sends in the background.
+ */
+import type { Service } from '../../../system/types/content';
+import { HONEYPOT_FIELD } from '../../../system/lib/enquiry';
+import { agency } from '../../config';
+import Button from '../ui/Button.astro';
+import Paw from '../ui/Paw.astro';
+
+interface Props {
+  services: Service[];
+  endpoint: string;
+}
+const { services, endpoint } = Astro.props;
+
+// One-line hints, shared with the header's services dropdown.
+const hints = new Map(
+  agency.navigation.flatMap((item) => item.children ?? []).map((child) => [child.href, child.description]),
+);
+const hintFor = (slug: string) => hints.get(`/services/${slug}/`);
+
+const budgets = ['Under £5,000', '£5,000 to £15,000', '£15,000 to £50,000', '£50,000+', 'Not sure yet'];
+const timings = ['As soon as possible', 'In 1 to 3 months', 'In 3 to 6 months', 'Planning ahead'];
+const categories = [...agency.brandAudience.categories, 'Something else'];
+const steps = [
+  { title: 'Send the brief', body: 'About two minutes. Only five things are required.' },
+  { title: 'We match the dogs', body: 'Breed, size, age and diet, against your product and audience.' },
+  { title: 'We come back with an approach', body: 'The dogs, the plan and the numbers, by email.' },
+];
+---
+
+<section class="band band-paper dbrief-band" id="enquiry">
+  <div class="wrap dbrief">
+    <aside class="dbrief-aside">
+      <h2 class="d-h1">The <span class="text-mark">brief.</span></h2>
+      <p class="d-lead d-muted mt-5">Tell us what you're launching. The more we know, the more useful our first reply.</p>
+      <ol class="dbrief-steps">
+        {steps.map((step, i) => (
+          <li>
+            <span class="dbrief-step-n" aria-hidden="true">{i + 1}</span>
+            <span>
+              <span class="d-ui block">{step.title}</span>
+              <span class="d-small d-muted block">{step.body}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+      <div class="dbrief-mail">
+        <span class="dbrief-mail-paw" aria-hidden="true"><Paw class="w-[55%]" /></span>
+        <span>
+          <span class="d-small d-muted block">Rather email?</span>
+          <a href={`mailto:${agency.contact.email}`} class="d-ui dbrief-link">{agency.contact.email}</a>
+        </span>
+      </div>
+    </aside>
+
+    <form id="enquiry-form" class="dbrief-card" action={endpoint} method="post" data-endpoint={endpoint} data-brief>
+      <p class="dbrief-alert" role="alert" data-alert hidden></p>
+
+      <fieldset class="dbrief-section">
+        <legend class="dbrief-legend"><span class="dbrief-n">1</span>About you</legend>
+        <div class="dbrief-grid">
+          <div class="dbrief-field" data-field="name">
+            <label for="name">Name <span class="dbrief-req" aria-hidden="true">*</span></label>
+            <input id="name" name="name" type="text" required autocomplete="name" aria-describedby="name-error" />
+            <p class="dbrief-error" id="name-error" data-error-for="name"></p>
+          </div>
+          <div class="dbrief-field" data-field="company">
+            <label for="company">Company <span class="dbrief-req" aria-hidden="true">*</span></label>
+            <input id="company" name="company" type="text" required autocomplete="organization" aria-describedby="company-error" />
+            <p class="dbrief-error" id="company-error" data-error-for="company"></p>
+          </div>
+          <div class="dbrief-field" data-field="email">
+            <label for="email">Work email <span class="dbrief-req" aria-hidden="true">*</span></label>
+            <input id="email" name="email" type="email" required autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="email-error" />
+            <p class="dbrief-error" id="email-error" data-error-for="email"></p>
+          </div>
+          <div class="dbrief-field" data-field="website">
+            <label for="website">Website</label>
+            <input id="website" name="website" type="text" inputmode="url" autocomplete="url" placeholder="yourbrand.com" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="dbrief-section" data-field="service" aria-describedby="service-error">
+        <legend class="dbrief-legend"><span class="dbrief-n">2</span>What do you need? <span class="dbrief-req" aria-hidden="true">*</span></legend>
+        <div class="dbrief-tiles">
+          {services.map((service) => (
+            <label class="dbrief-tile">
+              <input type="radio" name="service" value={service.slug} required data-has-packages={service.packages?.length ? '' : undefined} />
+              <span class="dbrief-tile-body">
+                <span class="d-ui block">{service.title}</span>
+                {hintFor(service.slug) && <span class="d-small d-muted block">{hintFor(service.slug)}</span>}
+              </span>
+              <span class="dbrief-radio" aria-hidden="true"></span>
+            </label>
+          ))}
+          <label class="dbrief-tile dbrief-tile-wide">
+            <input type="radio" name="service" value="not-sure" required />
+            <span class="dbrief-tile-body">
+              <span class="d-ui block">Not sure yet</span>
+              <span class="d-small d-muted block">Tell us the goal and we'll suggest the mix</span>
+            </span>
+            <span class="dbrief-radio" aria-hidden="true"></span>
+          </label>
+        </div>
+        <p class="dbrief-error" id="service-error" data-error-for="service"></p>
+
+        {services.filter((s) => s.packages?.length).map((service) => (
+          <div class="dbrief-packages" data-packages-for={service.slug} hidden>
+            <p class="dbrief-sublabel">Have a package in mind? <span class="d-muted">Optional</span></p>
+            <div class="dbrief-pills">
+              {service.packages!.map((pkg) => (
+                <label class="dbrief-pill">
+                  <input type="radio" name="package" value={`${pkg.name} (${pkg.price}${pkg.priceNote ? ` ${pkg.priceNote}` : ''})`} data-package-name={pkg.name} disabled />
+                  <span>{pkg.name} <span class="dbrief-pill-price">{pkg.price}</span></span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </fieldset>
+
+      <fieldset class="dbrief-section">
+        <legend class="dbrief-legend"><span class="dbrief-n">3</span>The campaign <span class="dbrief-opt">Optional</span></legend>
+        <div class="dbrief-group">
+          <p class="dbrief-sublabel" id="category-label">Product category</p>
+          <div class="dbrief-pills" role="radiogroup" aria-labelledby="category-label">
+            {categories.map((c) => <label class="dbrief-pill"><input type="radio" name="category" value={c} /><span>{c}</span></label>)}
+          </div>
+        </div>
+        <div class="dbrief-group">
+          <p class="dbrief-sublabel" id="budget-label">Budget</p>
+          <div class="dbrief-pills" role="radiogroup" aria-labelledby="budget-label">
+            {budgets.map((b) => <label class="dbrief-pill"><input type="radio" name="budget" value={b} /><span>{b}</span></label>)}
+          </div>
+        </div>
+        <div class="dbrief-group">
+          <p class="dbrief-sublabel" id="timing-label">When would you like to start?</p>
+          <div class="dbrief-pills" role="radiogroup" aria-labelledby="timing-label">
+            {timings.map((t) => <label class="dbrief-pill"><input type="radio" name="timing" value={t} /><span>{t}</span></label>)}
+          </div>
+        </div>
+        <div class="dbrief-grid">
+          <div class="dbrief-field">
+            <label for="quantity">Product units available</label>
+            <input id="quantity" name="quantity" type="text" inputmode="numeric" placeholder="500" />
+          </div>
+          <div class="dbrief-field">
+            <label for="audience">Who is it for?</label>
+            <input id="audience" name="audience" type="text" placeholder="Owners of small, older dogs" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="dbrief-section">
+        <legend class="dbrief-legend"><span class="dbrief-n">4</span>The brief</legend>
+        <div class="dbrief-field" data-field="objective">
+          <label for="objective">What should the campaign do? <span class="dbrief-req" aria-hidden="true">*</span></label>
+          <textarea id="objective" name="objective" rows="4" required aria-describedby="objective-hint objective-error" placeholder="We're launching a grain-free puppy food in March and want it in front of puppy owners, with content we can use in ads."></textarea>
+          <p class="dbrief-error" id="objective-error" data-error-for="objective"></p>
+          <p class="dbrief-hint" id="objective-hint">The product, the goal, and any dates that matter.</p>
+        </div>
+        <div class="dbrief-field">
+          <label for="notes">Anything else</label>
+          <textarea id="notes" name="notes" rows="3" placeholder="Breeds to include or avoid, past campaigns, links to the product."></textarea>
+        </div>
+      </fieldset>
+
+      <!-- Spam trap: hidden from people and assistive tech, filled by bots. -->
+      <div class="absolute -left-[9999px]" aria-hidden="true">
+        <label for={HONEYPOT_FIELD}>Leave this empty</label>
+        <input id={HONEYPOT_FIELD} name={HONEYPOT_FIELD} type="text" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <div class="dbrief-foot">
+        <Button type="submit" size="large" event="contact_form_submit" arrow>Send the brief</Button>
+        <p class="d-small d-muted" id="form-status" role="status" aria-live="polite">We reply by email, to the address you give.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<style>
+  .dbrief-band { padding-top: clamp(1rem, 3vw, 2rem); }
+  .dbrief { display: grid; gap: 2.5rem var(--grid-gap); align-items: start; }
+
+  .dbrief-steps { display: grid; gap: 1.25rem; margin: 2.25rem 0 0; padding: 1.75rem 0 0; list-style: none; border-top: 1px solid var(--hairline); }
+  .dbrief-steps li { display: grid; grid-template-columns: 2rem 1fr; gap: 0.9rem; align-items: start; }
+  .dbrief-step-n { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--orange); color: var(--night); font-weight: 800; font-size: 0.875rem; }
+  .dbrief-mail { display: flex; align-items: center; gap: 0.9rem; margin-top: 2rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: var(--cream); }
+  .dbrief-mail-paw { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: 999px; background: var(--orange); color: #fff; }
+  .dbrief-link { color: var(--night); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; overflow-wrap: anywhere; }
+  .dbrief-link:hover { color: var(--orange-text); }
+
+  /* The card */
+  .dbrief-card {
+    padding: clamp(1.25rem, 3.5vw, 2.75rem);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--hairline), 0 24px 48px -32px rgb(26 20 18 / 0.25);
+  }
+  .dbrief-section { min-width: 0; margin: 0; padding: 0; border: 0; }
+  .dbrief-section + .dbrief-section { margin-top: 2.25rem; padding-top: 2.25rem; border-top: 1px solid var(--hairline); }
+  /* Floated, the legend becomes ordinary content: unfloated, browsers draw it
+     on the fieldset's top border, so the divider ran through the heading. */
+  .dbrief-legend { float: left; width: 100%; display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.5rem; padding: 0; font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: 1.5rem; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; }
+  .dbrief-n { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; background: var(--cream); font-family: var(--font-body); font-stretch: 100%; font-size: 0.8125rem; letter-spacing: 0; }
+  .dbrief-legend + * { clear: both; }
+  .dbrief-req { color: var(--orange-text); }
+  .dbrief-opt { margin-left: auto; font-family: var(--font-body); font-stretch: 100%; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--night-muted); }
+
+  .dbrief-grid { display: grid; gap: 1.25rem var(--grid-gap); }
+  .dbrief-group + .dbrief-group, .dbrief-group + .dbrief-grid { margin-top: 1.5rem; }
+  .dbrief-field { display: grid; gap: 0.5rem; }
+  .dbrief-field + .dbrief-field { margin-top: 1.25rem; }
+  .dbrief-grid .dbrief-field + .dbrief-field { margin-top: 0; }
+  .dbrief-field label, .dbrief-sublabel { font-size: 0.875rem; font-weight: 600; color: var(--night); }
+  .dbrief-sublabel { margin: 0 0 0.75rem; }
+
+  .dbrief-field :is(input, textarea) {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    color: var(--night);
+    font: inherit;
+    font-size: 1rem;
+  }
+  .dbrief-field textarea { min-height: 7.5rem; resize: vertical; line-height: 1.5; }
+  .dbrief-field :is(input, textarea)::placeholder { color: rgb(107 93 85 / 0.7); }
+  .dbrief-field :is(input, textarea):hover { border-color: rgb(26 20 18 / 0.45); }
+  .dbrief-field :is(input, textarea):focus-visible { border-color: var(--orange); outline: none; background: #fff; box-shadow: 0 0 0 3px rgb(245 61 12 / 0.18); }
+  .dbrief-field :is(input, textarea)[aria-invalid='true'] { border-color: var(--orange-text); background: #fff; }
+  .dbrief-error { margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--orange-text); }
+  .dbrief-error:empty { display: none; }
+  .dbrief-section > .dbrief-error { margin-top: 0.75rem; }
+  .dbrief-hint { margin: 0; font-size: 0.8125rem; color: var(--night-muted); }
+
+  /* Service tiles */
+  .dbrief-tiles { display: grid; gap: 0.75rem; }
+  .dbrief-tile {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-md);
+    background: var(--paper);
+    cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  }
+  .dbrief-tile:hover { border-color: rgb(26 20 18 / 0.45); }
+  .dbrief-tile input, .dbrief-pill input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .dbrief-radio { width: 1.25rem; height: 1.25rem; border: 1.5px solid var(--hairline-strong); border-radius: 999px; background: #fff; transition: border 160ms ease; }
+  .dbrief-tile:has(input:checked) { border-color: var(--night); background: #fff; box-shadow: inset 0 0 0 1px var(--night); }
+  .dbrief-tile:has(input:checked) .dbrief-radio { border: 6px solid var(--orange); }
+  .dbrief-tile:has(input:focus-visible), .dbrief-pill:has(input:focus-visible) { outline: 2px solid var(--orange); outline-offset: 2px; }
+  [data-field='service'][data-invalid] .dbrief-tile { border-color: var(--orange-text); }
+
+  /* Pills */
+  .dbrief-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .dbrief-pill { position: relative; cursor: pointer; }
+  .dbrief-pill > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    background: var(--paper);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+  }
+  .dbrief-pill:hover > span { border-color: rgb(26 20 18 / 0.45); }
+  .dbrief-pill:has(input:checked) > span { border-color: var(--night); background: var(--night); color: var(--cream); }
+  .dbrief-pill-price { font-weight: 700; }
+  .dbrief-packages { margin-top: 1.25rem; padding: 1.1rem 1.2rem; border-radius: var(--radius-md); background: var(--cream-soft); }
+
+  .dbrief-alert { margin: 0 0 1.75rem; padding: 0.9rem 1.1rem; border-radius: var(--radius-md); background: rgb(245 61 12 / 0.1); color: var(--night); font-weight: 600; }
+  .dbrief-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--hairline); }
+  .dbrief-foot p { margin: 0; }
+
+  @media (min-width: 40rem) {
+    .dbrief-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dbrief-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dbrief-tile-wide { grid-column: span 2; }
+  }
+  @media (min-width: 64rem) {
+    .dbrief { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .dbrief-aside { position: sticky; top: calc(var(--header-h) + 2rem); padding-right: clamp(1rem, 3vw, 3rem); }
+  }
+  @media (max-width: 39.99rem) {
+    .dbrief-foot :global(.dbtn) { width: 100%; }
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('form[data-brief]');
+  if (form) {
+    const endpoint = form.dataset.endpoint;
+    const status = form.querySelector<HTMLElement>('#form-status')!;
+    const alertBox = form.querySelector<HTMLElement>('[data-alert]')!;
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const defaultStatus = status.textContent ?? '';
+    form.noValidate = true;
+
+    const showAlert = (message: string) => {
+      alertBox.textContent = message;
+      alertBox.hidden = !message;
+    };
+    if (new URLSearchParams(location.search).has('error')) {
+      showAlert('Something went wrong sending that. Please try again, or email us and we will pick it up.');
+    }
+
+    // Packages follow the chosen service; only the shown set can be sent.
+    const syncPackages = () => {
+      const service = (form.querySelector<HTMLInputElement>('input[name="service"]:checked')?.value) ?? '';
+      form.querySelectorAll<HTMLElement>('[data-packages-for]').forEach((group) => {
+        const on = group.dataset.packagesFor === service;
+        group.hidden = !on;
+        group.querySelectorAll<HTMLInputElement>('input').forEach((input) => {
+          input.disabled = !on;
+          if (!on) input.checked = false;
+        });
+      });
+    };
+
+    // Arriving from a pricing table: ?service=mass-gifting&package=Creator%20Impact
+    const params = new URLSearchParams(location.search);
+    const wanted = params.get('service');
+    if (wanted) {
+      const radio = form.querySelector<HTMLInputElement>(`input[name="service"][value="${CSS.escape(wanted)}"]`);
+      if (radio) radio.checked = true;
+      syncPackages();
+      const pkg = params.get('package');
+      if (pkg) {
+        const pkgRadio = [...form.querySelectorAll<HTMLInputElement>('input[name="package"]')].find((i) => i.dataset.packageName === pkg && !i.disabled);
+        if (pkgRadio) pkgRadio.checked = true;
+      }
+    }
+    form.addEventListener('change', (event) => {
+      if ((event.target as HTMLInputElement).name === 'service') syncPackages();
+    });
+
+    const setError = (name: string, message: string) => {
+      const slot = form.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+      if (slot) slot.textContent = message;
+      const holder = form.querySelector<HTMLElement>(`[data-field="${name}"]`);
+      holder?.toggleAttribute('data-invalid', Boolean(message));
+      holder?.querySelectorAll<HTMLElement>('input:not([type="radio"]), textarea').forEach((el) => {
+        if (message) el.setAttribute('aria-invalid', 'true');
+        else el.removeAttribute('aria-invalid');
+      });
+    };
+    const value = (name: string) => String(new FormData(form).get(name) ?? '').trim();
+    const checks: [string, () => string][] = [
+      ['name', () => (value('name') ? '' : 'Add your name')],
+      ['company', () => (value('company') ? '' : 'Add your company')],
+      ['email', () => (!value('email') ? 'Add your email' : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value('email')) ? '' : 'That email doesn’t look right')],
+      ['service', () => (value('service') ? '' : 'Choose a service, or Not sure yet')],
+      ['objective', () => (value('objective') ? '' : 'Tell us what the campaign should do')],
+    ];
+
+    form.addEventListener('input', (event) => {
+      const holder = (event.target as HTMLElement).closest<HTMLElement>('[data-field]');
+      if (holder?.dataset.field) setError(holder.dataset.field, '');
+    });
+    form.addEventListener('change', (event) => {
+      const holder = (event.target as HTMLElement).closest<HTMLElement>('[data-field]');
+      if (holder?.dataset.field) setError(holder.dataset.field, '');
+    });
+
+    let started = false;
+    form.addEventListener('input', () => {
+      if (started) return;
+      started = true;
+      document.dispatchEvent(new CustomEvent('site:event', { detail: { name: 'contact_form_start' } }));
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      showAlert('');
+      let first: string | null = null;
+      for (const [name, check] of checks) {
+        const message = check();
+        setError(name, message);
+        if (message && !first) first = name;
+      }
+      if (first) {
+        const holder = form.querySelector<HTMLElement>(`[data-field="${first}"]`);
+        holder?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+        holder?.querySelector<HTMLElement>('input, textarea')?.focus({ preventScroll: true });
+        return;
+      }
+      if (!endpoint) return;
+      if (submit) submit.disabled = true;
+      status.textContent = 'Sending your brief…';
+      try {
+        const response = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error(String(response.status));
+        location.assign('/contact/thanks/');
+      } catch {
+        status.textContent = defaultStatus;
+        showAlert('Something went wrong sending that. Please try again, or email us and we will pick it up.');
+        if (submit) submit.disabled = false;
+      }
+    });
+  }
+</script>

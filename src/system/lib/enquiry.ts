@@ -13,6 +13,7 @@ const FIELDS = [
   { name: 'email', label: 'Email', required: true, max: 320 },
   { name: 'website', label: 'Website', required: false, max: 500 },
   { name: 'service', label: 'Service required', required: true, max: 200 },
+  { name: 'package', label: 'Package', required: false, max: 200 },
   { name: 'category', label: 'Product category', required: false, max: 200 },
   { name: 'budget', label: 'Budget', required: false, max: 200 },
   { name: 'timing', label: 'Campaign timing', required: false, max: 200 },
