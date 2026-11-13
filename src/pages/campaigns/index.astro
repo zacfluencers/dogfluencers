@@ -1,4 +1,5 @@
 ---
+import { workRow } from '../../agency/content/work';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { clips } from '../../agency/content/clips';
 import PageHead from '../../agency/components/sections/PageHead.astro';
@@ -34,7 +35,7 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Campaigns' }];
 
   <CampaignCards eyebrow="All campaigns" heading="The case studies" campaigns={campaigns} />
 
-  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={workRow(work, 1)} />
 
   <CtaBand
     heading="Start a *campaign.*"

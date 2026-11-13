@@ -1,4 +1,5 @@
 ---
+import { workRow } from '../agency/content/work';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { clips } from '../agency/content/clips';
 import WorkPosts from '../agency/components/sections/WorkPosts.astro';
@@ -82,7 +83,7 @@ const opportunities = [
 
   <Steps band="paper" eyebrow="Joining" heading="What happens next" steps={creatorJourney} cta={{ label: 'Join the network', href: agency.creatorNetwork.joinUrl, event: 'creator_signup_click' }} />
 
-  <WorkPosts eyebrow="Made by owners" heading="Owners like *you.*" description="Content dog owners in the network have made for pet brands." items={work.slice(0, 4)} />
+  <WorkPosts eyebrow="Made by owners" heading="Owners like *you.*" description="Content dog owners in the network have made for pet brands." items={workRow(work, 3)} />
 
   <Categories band="soft" eyebrow="Who we work with" heading="Every breed, size and age" description="If your dog fits any of these, they are in scope." categories={creatorCategories} />
 

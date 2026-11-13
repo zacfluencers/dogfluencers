@@ -1,4 +1,5 @@
 ---
+import { workRow } from '../agency/content/work';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { clips } from '../agency/content/clips';
 import { agency } from '../agency/config';
@@ -92,7 +93,7 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'For Brands' }];
     link={{ label: 'Service detail', href: '/services/' }}
   />
 
-  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={workRow(work, 1)} />
 
   <Steps band="cream" eyebrow="How it works" heading="From brief to content in 12 days" steps={brandJourney} cta={agency.ctas.primary} />
 

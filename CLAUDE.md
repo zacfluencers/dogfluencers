@@ -124,7 +124,9 @@ Every paw is the logo paw (`components/ui/Paw.astro`).
 - `CallStrip`: a night strip fixed to the bottom with "Book a call with
   Jonathan" (Calendly), hidden on creator pages (`ctaStrip.hideOn`).
 - `WorkPosts`: full creator videos with an optional sound button, no text under
-  them. `Bento`, `Steps`, `Feature`, `ListSplit`, `Categories`, `CampaignCards`,
+  them. `work.ts` holds four rows of four, mixing brands (Omni,
+  Adaptil, Zesty Paws, Poppy's Picnic); each page shows its own row via
+  `workRow(work, n)`, so the section changes across the site. `Bento`, `Steps`, `Feature`, `ListSplit`, `Categories`, `CampaignCards`,
   `Pricing`, `StatRow`, `Faq`, `CtaBand`.
 
 ### Video and motion

@@ -1,4 +1,5 @@
 ---
+import { workRow } from '../../agency/content/work';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { clips } from '../../agency/content/clips';
 import PageHead from '../../agency/components/sections/PageHead.astro';
@@ -38,7 +39,7 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Services' }];
 
   <ServiceRows services={orderedServices} facts={{ 'mass-gifting': 'Up to 1,000 dogs', ugc: '12 day delivery', 'creator-campaigns': 'Paid posts', 'product-launches': 'All in one' }} />
 
-  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+  <WorkPosts eyebrow="The work" heading="Real dogs. Real *products.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={workRow(work, 2)} />
 
   <Faq eyebrow="FAQ" heading="Common questions" faqs={await brandFaqs()} link={{ label: 'Get in touch', href: '/contact/' }} />
 

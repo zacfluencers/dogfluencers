@@ -1,4 +1,5 @@
 ---
+import { workRow } from '../agency/content/work';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { clips } from '../agency/content/clips';
 import PageHead from '../agency/components/sections/PageHead.astro';
@@ -64,7 +65,7 @@ const tiers = [
 
   <ListSplit eyebrow="Creator tiers" heading="From UGC makers to big accounts" description="Every campaign mixes tiers to fit the brief: volume, craft or a single moment of scale." items={tiers} />
 
-  <WorkPosts eyebrow="The work" heading="Made by the *network.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={work.slice(0, 4)} />
+  <WorkPosts eyebrow="The work" heading="Made by the *network.*" description={`Content dog owners in the network have made for ${agency.niche} brands.`} items={workRow(work, 3)} />
 
   <CtaBand
     heading="Work with the *network.*"
