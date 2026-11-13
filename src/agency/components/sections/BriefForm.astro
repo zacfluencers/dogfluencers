@@ -34,6 +34,8 @@ const hintFor = (slug: string) => hints.get(`/services/${slug}/`);
 
 const budgets = ['Under £5,000', '£5,000 to £15,000', '£15,000 to £50,000', '£50,000+', 'Not sure yet'];
 const timings = ['As soon as possible', 'In 1 to 3 months', 'In 3 to 6 months', 'Planning ahead'];
+/** The Book a call link from the bottom strip, so both routes sit beside the form. */
+const call = agency.ctaStrip?.link;
 const categories = [...agency.brandAudience.categories, 'Something else'];
 const steps = [
   { title: 'Send the brief', body: 'About two minutes. Only five things are required.' },
@@ -58,12 +60,25 @@ const steps = [
           </li>
         ))}
       </ol>
-      <div class="dbrief-mail">
-        <span class="dbrief-mail-paw" aria-hidden="true"><Paw class="w-[55%]" /></span>
-        <span>
-          <span class="d-small d-muted block">Rather email?</span>
-          <a href={`mailto:${agency.contact.email}`} class="d-ui dbrief-link">{agency.contact.email}</a>
-        </span>
+      <div class="dbrief-contact">
+        {call && (
+          <div class="dbrief-mail">
+            <span class="dbrief-mail-paw" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M3.5 10h17M8.5 3v4M15.5 3v4" /></svg>
+            </span>
+            <span>
+              <span class="d-small d-muted block">Rather talk?</span>
+              <a href={call.href} data-event={call.event} target={call.external ? '_blank' : undefined} rel={call.external ? 'noopener noreferrer' : undefined} class="d-ui dbrief-link">{call.label}{call.external && <span class="sr-only"> (opens in a new tab)</span>}</a>
+            </span>
+          </div>
+        )}
+        <div class="dbrief-mail">
+          <span class="dbrief-mail-paw" aria-hidden="true"><Paw class="w-[55%]" /></span>
+          <span>
+            <span class="d-small d-muted block">Rather email?</span>
+            <a href={`mailto:${agency.contact.email}`} class="d-ui dbrief-link">{agency.contact.email}</a>
+          </span>
+        </div>
       </div>
     </aside>
 
@@ -201,7 +216,10 @@ const steps = [
   .dbrief-steps { display: grid; gap: 1.25rem; margin: 2.25rem 0 0; padding: 1.75rem 0 0; list-style: none; border-top: 1px solid var(--hairline); }
   .dbrief-steps li { display: grid; grid-template-columns: 2rem 1fr; gap: 0.9rem; align-items: start; }
   .dbrief-step-n { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--orange); color: var(--night); font-weight: 800; font-size: 0.875rem; }
-  .dbrief-mail { display: flex; align-items: center; gap: 0.9rem; margin-top: 2rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: var(--cream); }
+  .dbrief-contact { margin-top: 2rem; border-radius: var(--radius-md); background: var(--cream); }
+  .dbrief-mail { display: flex; align-items: center; gap: 0.9rem; padding: 1rem 1.25rem; }
+  .dbrief-mail + .dbrief-mail { border-top: 1px solid var(--hairline); }
+  .dbrief-mail-paw svg { width: 50%; height: 50%; }
   .dbrief-mail-paw { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: 999px; background: var(--orange); color: #fff; }
   .dbrief-link { color: var(--night); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; overflow-wrap: anywhere; }
   .dbrief-link:hover { color: var(--orange-text); }
