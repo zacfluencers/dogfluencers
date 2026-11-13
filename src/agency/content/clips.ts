@@ -23,5 +23,11 @@ export const clips = {
   beagle: loop('beagle', 'An older tricolour beagle standing on a tiled kitchen floor.'),
   ownerUnbox: loop('owner-unbox', 'A dog owner carrying a delivery box of dog food into her kitchen.'),
   goldenToy: loop('golden-toy', 'A golden retriever grinning as an owner strokes its head.'),
+  // Owner and dog together, cut from Omni creator videos supplied 13 November 2026.
+  fernGarden: loop('fern-garden', 'A woman kneeling on a sunny lawn, greeting her brindle Staffy beside a bag of dog food.'),
+  fernWall: loop('fern-wall', 'A woman in sunglasses sitting on a garden wall, her brindle Staffy panting happily at her feet.'),
+  eviePark: loop('evie-park', 'A woman crouching in a park with her arm around her black and white collie.'),
+  evieTreat: loop('evie-treat', 'A woman holding out a tub of supplements to her black and white collie.'),
+  evieCuddle: loop('evie-cuddle', 'A smiling woman sitting with her black and white collie, who leans in for a kiss.'),
   ownerCollie: { src: '/video/full/owner-collie.mp4#t=0.5', poster: '/video/owner-collie.jpg', alt: 'A smiling woman in a sunny park holding out a paste syringe to her black and white collie.' } as VideoRef,
 } satisfies Record<string, VideoRef>;
