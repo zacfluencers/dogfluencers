@@ -7,6 +7,7 @@ import StructuredData from '../system/components/seo/StructuredData.astro';
 // Dogfluencers' own header and footer, in place of the system defaults.
 import Header from '../agency/components/Header.astro';
 import Footer from '../agency/components/Footer.astro';
+import CallStrip from '../agency/components/CallStrip.astro';
 import Motion from '../system/components/global/Motion.astro';
 import DogMotion from '../agency/components/DogMotion.astro';
 import ThemeScript from '../system/components/global/ThemeScript.astro';
@@ -21,6 +22,9 @@ interface Props {
   includeSiteSchema?: boolean;
 }
 const { seo, ogType = 'website', schemas = [], includeSiteSchema = false } = Astro.props;
+
+const strip = agency.ctaStrip;
+const showStrip = strip && !strip.hideOn?.some((path) => Astro.url.pathname.startsWith(path));
 
 const siteSchemas = includeSiteSchema
   ? [organizationSchema(agency), websiteSchema(agency)]
@@ -53,6 +57,7 @@ const siteSchemas = includeSiteSchema
       <slot />
     </main>
     <Footer />
+    {showStrip && <CallStrip lead={strip.lead} link={strip.link} />}
 
     <script>
       /**

@@ -113,6 +113,11 @@ export interface AgencyConfig {
    */
   accountLinks?: (Link & { shortLabel?: string })[];
   /**
+   * One always-in-reach action fixed along the bottom of the screen (e.g.
+   * booking a call). `hideOn` lists path prefixes where it's left out.
+   */
+  ctaStrip?: { lead?: string; link: Link; hideOn?: string[] };
+  /**
    * Sister agencies in the same group, shown as a set of logos on the About
    * page. Logos sit in /public and may be any single colour on a transparent
    * ground: they're repainted in --ink. `href` links each one when set.

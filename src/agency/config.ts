@@ -141,6 +141,19 @@ const config: AgencyConfig = {
     { name: 'Foodiefluencers', logo: { src: '/agency/group/foodiefluencers.png', alt: 'Foodiefluencers', width: 252, height: 103 } },
   ],
 
+  // Jonathan's calendar, for brands: kept off creator-facing pages so
+  // creators don't book sales calls.
+  ctaStrip: {
+    lead: 'Prefer to talk it through?',
+    link: {
+      label: 'Book a call with Jonathan',
+      href: 'https://calendly.com/jonathanlundy/30min',
+      external: true,
+      event: 'book_call_click',
+    },
+    hideOn: ['/for-creators/', '/creators/', '/join/', '/creator/', '/admin/', '/auth/'],
+  },
+
   accountLinks: [{ label: 'Creator login', shortLabel: 'Log in', href: '/creator/login/' }],
 
   legalLinks: [
