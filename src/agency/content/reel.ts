@@ -12,6 +12,10 @@
 import type { ReelClip } from '../../system/types/content';
 
 export const heroReel: ReelClip[] = [
+  // Omni creators with their dogs (13 November 2026), then the earlier loops.
+  { id: 'reel-georgia-hug', video: { src: '/video/georgia-hug.mp4', poster: '/video/georgia-hug.jpg', alt: 'A smiling woman hugging her golden retriever at home.' }, status: 'approved' },
+  { id: 'reel-natasha-garden', video: { src: '/video/natasha-garden.mp4', poster: '/video/natasha-garden.jpg', alt: 'A woman in a garden holding her dappled dachshund close.' }, status: 'approved' },
+  { id: 'reel-hannah-sofa', video: { src: '/video/hannah-sofa.mp4', poster: '/video/hannah-sofa.jpg', alt: 'A woman on her sofa holding up a bag of dog food beside her two dogs.' }, status: 'approved' },
   { id: 'reel-golden-beach', video: { src: '/video/golden-beach.mp4', poster: '/video/golden-beach.jpg', alt: 'A wet golden retriever sitting on a sunny beach, mouth open in a grin.' }, status: 'approved' },
   { id: 'reel-spaniel', video: { src: '/video/spaniel-look.mp4', poster: '/video/spaniel-look.jpg', alt: 'A chocolate spaniel on a lawn looking up into the camera.' }, status: 'approved' },
   { id: 'reel-lurcher', video: { src: '/video/lurcher-pup.mp4', poster: '/video/lurcher-pup.jpg', alt: 'A black and white lurcher puppy lying on a carpet, looking up.' }, status: 'approved' },

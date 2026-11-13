@@ -117,7 +117,7 @@ export const services: Service[] = [
     packagesNote:
       'Every video is fully managed and comes hook-first, edited and platform-ready, with a product demonstration, ' +
       'benefits-led messaging and a call to action. Your team supplies the product; we handle the rest. Prices exclude VAT.',
-    video: clips.goldenLick,
+    video: clips.georgiaKitchen,
     featured: true,
     status: 'approved',
   },
@@ -146,7 +146,7 @@ export const services: Service[] = [
       { number: '05', title: 'Approve and post', description: 'Reviewed, then published to schedule.' },
       { number: '06', title: 'Report', description: 'What ran, and how it performed.' },
     ],
-    video: clips.colliePacks,
+    video: clips.evieTreat,
     status: 'approved',
   },
   {
@@ -164,7 +164,7 @@ export const services: Service[] = [
       { title: 'Always-on options', description: 'Continuous creator activity after launch, not a one-off burst.' },
       { title: 'Custom reporting', description: 'Measures built around how your team already reports.' },
     ],
-    video: clips.goldensPair,
+    video: clips.natashaSofa,
     status: 'approved',
   },
 ];

@@ -130,7 +130,10 @@ Every paw is the logo paw (`components/ui/Paw.astro`).
 ### Video and motion
 
 - Short loops in `public/video/` (720×1280 H.264, `+faststart`, poster `.jpg`);
-  full work videos with audio in `public/video/full/`. Sources live outside the
+  full work videos with audio in `public/video/full/`. Owner-and-dog loops cut from the Omni creator
+  videos (Georgia, Natasha, Evie, Fern, Hannah) lead the homepage hero and most
+  mastheads; no page shows the same clip twice (service videos also appear on
+  the homepage and For Brands). Sources live outside the
   repo in `~/ShipStudio/dog-raw`. Loops are listed in `src/agency/content/clips.ts`.
 - `Media.astro` shows the poster over the video until it is actually playing (no
   flash), plays only while half on screen, preloads ahead of arrival. Wrap a
