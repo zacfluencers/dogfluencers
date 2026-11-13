@@ -30,8 +30,9 @@ const logo = (slug: string, name: string, width: number, height: number) => ({
 });
 
 export const brands: Brand[] = [
+  // New Omni artwork supplied 13 November 2026; Omni leads the strip.
+  { name: 'Omni', slug: 'omni', logo: logo('omni', 'Omni', 1549, 333), status: 'approved' },
   { name: 'Harringtons', slug: 'harringtons', logo: logo('harringtons', 'Harringtons', 715, 239), logoScale: 1.2, status: 'approved' },
-  { name: 'Omni', slug: 'omni', logo: logo('omni', 'Omni', 544, 187), status: 'approved' },
   { name: 'Buddy & Lola', slug: 'buddy-and-lola', logo: logo('buddy-and-lola', 'Buddy & Lola', 650, 326), logoScale: 1.35, status: 'approved' },
   { name: 'Bunty', slug: 'bunty', logo: logo('bunty', 'Bunty', 601, 275), status: 'approved' },
   { name: 'Total Pet', slug: 'total-pet', logo: logo('total-pet', 'Total Pet', 599, 121), status: 'approved' },
