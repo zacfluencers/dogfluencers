@@ -129,6 +129,11 @@ Every paw is the logo paw (`components/ui/Paw.astro`).
 
 ### Video and motion
 
+- **Every video must be tagged BT.709 (standard colour).** iPhone sources are
+  often HDR (HLG); a clip that keeps that tag plays brighter than the rest in
+  browsers. Don't tone-map (it washes the picture out): relabel the stream with
+  the `h264_metadata` bitstream filter, as in `scripts/check-video-colour.sh`,
+  and run that script after adding any video.
 - Short loops in `public/video/` (720×1280 H.264, `+faststart`, poster `.jpg`);
   full work videos with audio in `public/video/full/`. Owner-and-dog loops cut from the Omni creator
   videos (Georgia, Natasha, Evie, Fern, Hannah) lead the homepage hero and most

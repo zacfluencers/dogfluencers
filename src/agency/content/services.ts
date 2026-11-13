@@ -164,7 +164,7 @@ export const services: Service[] = [
       { title: 'Always-on options', description: 'Continuous creator activity after launch, not a one-off burst.' },
       { title: 'Custom reporting', description: 'Measures built around how your team already reports.' },
     ],
-    video: clips.natashaSofa,
+    video: clips.omniRange,
     status: 'approved',
   },
 ];

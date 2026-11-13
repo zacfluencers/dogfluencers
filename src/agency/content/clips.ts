@@ -38,5 +38,9 @@ export const clips = {
   natashaSofa: loop('natasha-sofa', 'A woman on a cream sofa cuddling her dappled dachshund.'),
   hannahSofa: loop('hannah-sofa', 'A woman on her sofa holding up a bag of dog food beside her two dogs.'),
   fernOut: loop('fern-out', 'A woman at her car in a pet shop car park, her brindle Staffy on the lead beside her.'),
+  // Product-led (13 November 2026): for launches, where the product is the star.
+  omniRange: loop('omni-range', 'Hands lifting Omni Calm, Joints and Skin food bags out of a delivery box.'),
+  omniTins: loop('omni-tins', 'A row of Omni wet food tins on a kitchen counter, one picked up to show its label.'),
+  omniDental: loop('omni-dental', 'A close-up of an Omni dual-texture dental stick, pulling back to its pack.'),
   ownerCollie: { src: '/video/full/owner-collie.mp4#t=0.5', poster: '/video/owner-collie.jpg', alt: 'A smiling woman in a sunny park holding out a paste syringe to her black and white collie.' } as VideoRef,
 } satisfies Record<string, VideoRef>;
