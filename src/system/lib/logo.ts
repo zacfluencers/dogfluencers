@@ -6,7 +6,7 @@
  * every pixel that isn't transparent, as fractions of the file, so LogoCloud
  * can crop the padding away and size each mark by its real shape.
  */
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import sharp from 'sharp';
 
@@ -25,9 +25,19 @@ const ALPHA_THRESHOLD = 24;
 
 const cache = new Map<string, Promise<LogoBox | undefined>>();
 
-export function measureLogo(src: string): Promise<LogoBox | undefined> {
-  if (!cache.has(src)) cache.set(src, measure(src).catch(() => undefined));
-  return cache.get(src)!;
+/**
+ * Cached per file version: a local file is keyed by its modified time, so a
+ * logo replaced under the same name is measured again (the dev server keeps
+ * this cache for its whole life, and a stale box squashes the new artwork).
+ */
+export async function measureLogo(src: string): Promise<LogoBox | undefined> {
+  let key = src;
+  if (!/^https?:\/\//.test(src)) {
+    const info = await stat(join(process.cwd(), 'public', src)).catch(() => undefined);
+    if (info) key = `${src}@${info.mtimeMs}`;
+  }
+  if (!cache.has(key)) cache.set(key, measure(src).catch(() => undefined));
+  return cache.get(key)!;
 }
 
 async function load(src: string): Promise<Buffer> {
