@@ -30,12 +30,19 @@ export function resolveSeo(
 
   const socialImage = page?.socialImage?.src ?? agency.seo.socialImage?.src;
 
+  // Share previews fetch the image from wherever the site is live. On Vercel
+  // that's the project's production domain (the vercel.app address before a
+  // custom domain is added, the custom domain after), so links shared before
+  // launch still show the image. Elsewhere, the canonical site URL.
+  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const assetOrigin = productionHost ? `https://${productionHost}` : agency.site.url;
+
   return {
     title,
     description: page?.description?.trim() || agency.seo.description,
     canonical,
     noIndex: page?.noIndex ?? false,
-    socialImage: socialImage ? new URL(socialImage, agency.site.url).href : undefined,
+    socialImage: socialImage ? new URL(socialImage, assetOrigin).href : undefined,
   };
 }
 

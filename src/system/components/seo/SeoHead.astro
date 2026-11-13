@@ -10,6 +10,8 @@ interface Props {
 }
 const { agency, seo, ogType = 'website' } = Astro.props;
 const resolved = resolveSeo(agency, seo, Astro.url);
+// Size and description of the share image, so previews render without a fetch.
+const image = seo?.socialImage ?? agency.seo.socialImage;
 ---
 
 <title>{resolved.title}</title>
@@ -24,8 +26,12 @@ const resolved = resolveSeo(agency, seo, Astro.url);
 <meta property="og:url" content={resolved.canonical} />
 <meta property="og:locale" content={agency.site.locale.replace('-', '_')} />
 {resolved.socialImage && <meta property="og:image" content={resolved.socialImage} />}
+{resolved.socialImage && image?.width && <meta property="og:image:width" content={String(image.width)} />}
+{resolved.socialImage && image?.height && <meta property="og:image:height" content={String(image.height)} />}
+{resolved.socialImage && image?.alt && <meta property="og:image:alt" content={image.alt} />}
 
 <meta name="twitter:card" content={resolved.socialImage ? 'summary_large_image' : 'summary'} />
 <meta name="twitter:title" content={resolved.title} />
 <meta name="twitter:description" content={resolved.description} />
 {resolved.socialImage && <meta name="twitter:image" content={resolved.socialImage} />}
+{resolved.socialImage && image?.alt && <meta name="twitter:image:alt" content={image.alt} />}

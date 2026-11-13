@@ -172,7 +172,7 @@ const config: AgencyConfig = {
     title: 'Dogfluencers | Dog influencer marketing agency',
     socialImage: {
       src: '/og.jpg',
-      alt: 'Connecting brands with top dogs. Dogfluencers.',
+      alt: 'The Dogfluencers logo, with its paw, on the brand orange.',
       width: 1200,
       height: 630,
     },
