@@ -1,11 +1,14 @@
 ---
 /**
  * Case studies as rounded hairline cards: service chip, title, brand,
- * summary and up to three verified figures.
+ * summary and up to three verified figures. A case study with a hero image
+ * shows it beside the text (stacked on phones). Two campaigns sit in two
+ * columns, so a short list never leaves a gap.
  */
 import type { Campaign, Link } from '../../../system/types/content';
 import SectionHead from './SectionHead.astro';
 import Chip from '../ui/Chip.astro';
+import Photo from '../ui/Photo.astro';
 
 interface Props {
   eyebrow?: string;
@@ -22,10 +25,12 @@ const { eyebrow, heading, description, campaigns, link, band = 'paper' } = Astro
   <section class:list={['band', `band-${band}`]}>
     <div class="wrap">
       <SectionHead eyebrow={eyebrow} heading={heading} description={description} link={link} />
-      <ul class="dcamp" data-reveal-group>
+      <ul class:list={['dcamp', campaigns.length <= 2 && 'dcamp-pair']} data-reveal-group>
         {campaigns.map((c) => (
           <li>
-            <a href={`/campaigns/${c.slug}/`} class="dcamp-card">
+            <a href={`/campaigns/${c.slug}/`} class:list={['dcamp-card', c.heroImage && 'has-image']}>
+              {c.heroImage && <Photo src={c.heroImage.src} alt={c.heroImage.alt} ratio="4 / 5" radius="md" class="dcamp-photo" />}
+              <div class="dcamp-body">
               {c.campaignType && <Chip>{c.campaignType}</Chip>}
               <h3 class="d-h3 mt-6">{c.title}</h3>
               {c.brand && <p class="d-ui d-muted mt-2">{c.brand}</p>}
@@ -37,6 +42,7 @@ const { eyebrow, heading, description, campaigns, link, band = 'paper' } = Astro
                   ))}
                 </dl>
               )}
+              </div>
             </a>
           </li>
         ))}
@@ -60,7 +66,17 @@ const { eyebrow, heading, description, campaigns, link, band = 'paper' } = Astro
   }
   :global(.band-cream) .dcamp-card { background: var(--paper); }
   .dcamp-card:hover { translate: 0 -3px; box-shadow: 0 14px 30px -18px rgb(26 20 18 / 0.35); }
+  .dcamp-body { display: flex; flex-direction: column; align-items: flex-start; flex: 1; min-width: 0; }
+  .dcamp-card.has-image { gap: 1.5rem; }
+  .dcamp-card :global(.dcamp-photo) { width: 100%; max-width: 16rem; }
+  @media (min-width: 40rem) {
+    .dcamp-card.has-image { flex-direction: row; align-items: stretch; }
+    .dcamp-card :global(.dcamp-photo) { flex: none; width: 42%; max-width: none; align-self: flex-start; }
+  }
   .dcamp-metrics { display: flex; flex-wrap: wrap; gap: 1.5rem 2rem; margin: auto 0 0; padding-top: 1.75rem; }
   .dcamp-metrics dd { margin: 0.25rem 0 0; }
-  @media (min-width: 64rem) { .dcamp { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) {
+    .dcamp { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .dcamp-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 </style>

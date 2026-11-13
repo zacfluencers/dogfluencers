@@ -9,11 +9,18 @@ import type { Brand, Campaign, Statistic, Testimonial } from '../../system/types
  * happy to be listed before launch. Logos are the site's own files,
  * converted to one colour on transparent.
  *
- * Everything else is `placeholder`: it renders in review mode and is stripped
+ * Testimonials are still `placeholder`: it renders in review mode and is stripped
  * from production builds. Metrics read "TBC" rather than plausible figures,
  * and testimonial quotes describe what belongs there instead of
  * impersonating a client.
  */
+
+/**
+ * A creator's full video for a case study, with its sound. `start` is where
+ * the muted preview opens (a media fragment, matching its poster), so a card
+ * leads with owner and dog; sound plays the piece from the beginning.
+ */
+const film = (file: string, alt: string, start = 0) => ({ src: `/video/full/${file}.mp4${start ? `#t=${start}` : ''}`, poster: `/video/${file}.jpg`, alt });
 
 const logo = (slug: string, name: string, width: number, height: number) => ({
   src: `/agency/brands/${slug}.png`,
@@ -34,10 +41,10 @@ export const brands: Brand[] = [
 export const statistics: Statistic[] = [
   // From the creator CRM on 12 November 2026: 1,824 dogs across 1,337 owners.
   { label: 'Dogs in the network', value: '1,800+', context: 'With more than 1,300 owners.', status: 'approved' },
-  // TODO(confirm): verified totals. Shown as TBC while the live site is in review mode.
-  { label: 'Products gifted', value: 'TBC', status: 'placeholder' },
-  { label: 'Pieces of content made', value: 'TBC', status: 'placeholder' },
-  { label: 'Brands worked with', value: 'TBC', status: 'placeholder' },
+  // Supplied by the team on 13 November 2026.
+  { label: 'Campaigns run', value: '200+', status: 'approved' },
+  { label: 'Creators gifted', value: '10,000+', status: 'approved' },
+  { label: 'Pieces of content made', value: '10,000+', status: 'approved' },
 ];
 
 export const testimonials: Testimonial[] = [
@@ -46,7 +53,6 @@ export const testimonials: Testimonial[] = [
     person: 'Client name',
     role: 'Role',
     company: 'Company',
-    campaign: 'case-study-one',
     featured: true,
     status: 'placeholder',
   },
@@ -59,52 +65,62 @@ export const testimonials: Testimonial[] = [
   },
 ];
 
+/**
+ * Case studies. Figures are the ones the team supplied on 13 November 2026;
+ * the copy around them describes only what the campaign content shows.
+ * TODO(confirm): wording with the client, and each brand's OK to be named.
+ */
 export const campaigns: Campaign[] = [
   {
-    title: 'Case study title',
-    slug: 'case-study-one',
-    brand: 'Brand 01',
+    title: 'A calmer firework season',
+    slug: 'adaptil-firework-season',
+    brand: 'Adaptil',
     campaignType: 'Mass Gifting',
-    summary: 'One or two sentences on what the gifting drop set out to do. Replace with a real case study.',
-    objective: 'What the brand needed. Replace with the real brief.',
-    solution: 'How the drop was built and run. Replace with the real approach.',
-    results: 'What happened, in terms that can be evidenced. Replace with real, verified outcomes.',
+    summary: 'We gifted Adaptil to 100 dog owners ahead of firework season, and they showed their followers how they help their dogs through it.',
+    objective: 'Put Adaptil in front of dog owners at the moment they need it most: the weeks before fireworks start, when owners are planning how to keep a nervous dog calm at home.',
+    solution: 'We chose 100 owners from the network whose dogs fit the brief and sent each one Adaptil to use in their own routine. Owners filmed what they do for firework season, from their checklists and essentials to unboxings, in their own words.',
+    results: 'The 100 owners mentioned Adaptil 104 times, to a combined following of more than 746,000, and we collected 20 pieces of creator content for the brand to use.',
     metrics: [
-      { label: 'Dogs', value: 'TBC', context: 'Verified figure required' },
-      { label: 'Stories and posts', value: 'TBC', context: 'Verified figure required' },
-      { label: 'Products gifted', value: 'TBC', context: 'Verified figure required' },
+      { label: 'Owners gifted', value: '100' },
+      { label: 'Brand mentions', value: '104' },
+      { label: 'Combined reach', value: '746,000+', context: 'Followers across the gifted accounts.' },
+      { label: 'Pieces of content', value: '20', context: 'Collected for the brand to use.' },
+    ],
+    heroImage: { src: '/images/campaigns/adaptil-cover.jpg', alt: 'A woman cuddling her cocker spaniel, cheek to cheek.' },
+    // Full creator videos from the campaign, as posted. TODO(confirm): usage rights.
+    videos: [
+      film('adaptil-1', 'A woman on a sofa with her Staffy settled on a blanket beside her, getting ready for fireworks.', 25),
+      film('adaptil-2', 'A woman closing the curtains, then cuddling her cocker spaniel on the sofa.', 6.9),
+      film('adaptil-3', 'A woman relaxing on a sofa with her two spaniels as fireworks season starts.', 24.4),
+      film('adaptil-4', 'A dachshund owner setting up a firework night checklist, with Adaptil chews and a cosy bed.', 18.5),
     ],
     featured: true,
-    status: 'placeholder',
+    status: 'approved',
   },
   {
-    title: 'Case study title',
-    slug: 'case-study-two',
-    brand: 'Brand 02',
-    campaignType: 'UGC and Ad Content',
-    summary: 'One or two sentences on the brief and the content produced. Replace with a real case study.',
-    objective: 'What the brand needed. Replace with the real brief.',
-    solution: 'How the content was briefed and filmed. Replace with the real approach.',
-    results: 'Assets delivered and how they performed. Replace with real, verified outcomes.',
+    title: 'Omni in 100 homes',
+    slug: 'omni-gifting',
+    brand: 'Omni',
+    campaignType: 'Mass Gifting',
+    summary: 'We gifted Omni to 100 dog owners across its range, from dental sticks and treats to wet and dry food, and owners showed their dogs trying it.',
+    objective: 'Get Omni\'s range into real homes and in front of the people who choose their dog\'s food, with honest first reactions from owners and their dogs.',
+    solution: 'We matched 100 owners from the network to the product that suited their dog: dental sticks, treats, wet food, or dry food for calm, joints or skin. Each owner shared their dog trying it, from unboxings to taste tests.',
+    results: 'The 100 owners mentioned Omni 91 times, to a combined following of more than 575,000, and we collected 20 pieces of creator content for the brand to use.',
     metrics: [
-      { label: 'Assets delivered', value: 'TBC', context: 'Verified figure required' },
-      { label: 'Creators', value: 'TBC', context: 'Verified figure required' },
+      { label: 'Owners gifted', value: '100' },
+      { label: 'Brand mentions', value: '91' },
+      { label: 'Combined reach', value: '575,000+', context: 'Followers across the gifted accounts.' },
+      { label: 'Pieces of content', value: '20', context: 'Collected for the brand to use.' },
     ],
-    status: 'placeholder',
-  },
-  {
-    title: 'Case study title',
-    slug: 'case-study-three',
-    brand: 'Brand 03',
-    campaignType: 'Creator Campaigns',
-    summary: 'One or two sentences on the campaign and the dogs involved. Replace with a real case study.',
-    objective: 'What the brand needed. Replace with the real brief.',
-    solution: 'How the dogs were selected and briefed. Replace with the real approach.',
-    results: 'Campaign delivery and performance. Replace with real, verified outcomes.',
-    metrics: [
-      { label: 'Creators', value: 'TBC', context: 'Verified figure required' },
-      { label: 'Posts published', value: 'TBC', context: 'Verified figure required' },
+    heroImage: { src: '/video/omni-2.jpg', alt: 'A woman on a cream sofa with her black spaniel in her arms and a red spaniel at her side.' },
+    // Full creator videos from the campaign, as posted. TODO(confirm): usage rights.
+    videos: [
+      film('omni-1', 'A smiling owner holding up a bag of Omni Calm food, her red cockapoo waiting in front of her.', 9.7),
+      film('omni-2', 'A woman on her sofa with two spaniels, trying Omni Calm dry food.', 7.5),
+      film('omni-3', 'An owner crouching in her kitchen to give her black cockapoo an Omni treat.', 13),
+      film('omni-4', 'Two owners opening tins of Omni wet food for their bull terrier, Barkley.', 3.9),
     ],
-    status: 'placeholder',
+    featured: true,
+    status: 'approved',
   },
 ];

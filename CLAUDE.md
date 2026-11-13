@@ -40,8 +40,12 @@ testimonials or awards. If content is missing, use `<ContentRequired>`
 (review-mode only) rather than filling the gap.
 
 Today: the work posts (Poppy's Picnic, Zesty Paws) were approved on 12 November
-2026, and "Dogs in the network" shows 1,800+ from the CRM (1,824 dogs, 1,337
-owners). The other three stats (TBC) and the case studies are placeholders. The six partner
+2026. The stats are approved: "Dogs in the network" 1,800+ from the CRM, and 200+
+campaigns, 10,000+ creators gifted and 10,000+ pieces of content, supplied by the
+team on 13 November. Two real case studies (13 November): Adaptil firework season
+and Omni, both Mass Gifting, with the team's figures and four full creator videos
+each (`public/video/full/adaptil-*`, `omni-*`; sources in
+`~/ShipStudio/dog-raw/campaigns/`). Testimonials are still placeholders. The six partner
 brands in the logo strip are approved with a TODO to confirm. Usage rights for
 the creator videos and photos are to be confirmed. Search for `TODO(confirm)`.
 
@@ -114,6 +118,11 @@ Every paw is the logo paw (`components/ui/Paw.astro`).
   drops of up to 1,000 dogs, content in 12 days. The old blog posts (seven
   days, 100 dogs) and the terms' gift-drop definition (up to 100) are left for
   the client to decide.
+- Case study and work videos are always the creator's **full** edit with sound,
+  never cut down; only hero and masthead loops are short cuts. Covers and
+  posters avoid burnt-in captions (crop above them from the source).
+- `CallStrip`: a night strip fixed to the bottom with "Book a call with
+  Jonathan" (Calendly), hidden on creator pages (`ctaStrip.hideOn`).
 - `WorkPosts`: full creator videos with an optional sound button, no text under
   them. `Bento`, `Steps`, `Feature`, `ListSplit`, `Categories`, `CampaignCards`,
   `Pricing`, `StatRow`, `Faq`, `CtaBand`.

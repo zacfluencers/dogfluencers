@@ -98,10 +98,10 @@ const config: AgencyConfig = {
     {
       heading: 'Services',
       links: [
-        { label: 'Mass Gifting', href: '/services/mass-gifting/', description: 'Product to up to 1,000 dogs at once' },
-        { label: 'UGC and Ad Content', href: '/services/ugc/', description: 'Content you own, in 12 days' },
-        { label: 'Creator Campaigns', href: '/services/creator-campaigns/', description: 'Paid posts from loyal dog accounts' },
-        { label: 'Product Launches', href: '/services/product-launches/', description: 'Gifting, UGC and paid, around one date' },
+        { label: 'Mass Gifting', href: '/services/mass-gifting/' },
+        { label: 'UGC and Ad Content', href: '/services/ugc/' },
+        { label: 'Creator Campaigns', href: '/services/creator-campaigns/' },
+        { label: 'Product Launches', href: '/services/product-launches/' },
       ],
     },
     {
