@@ -1,14 +1,13 @@
 ---
 /**
- * The team CRM's frame: the lockup, one line of navigation and the theme
- * switch, with the full width given to the data. Same type, tokens and
- * geometry as the public site; no marketing header, footer or motion.
+ * The team CRM's frame, in Dogfluencers' own style: the logo, a "Team CRM"
+ * chip, one line of navigation and a night pill to log out, with the full
+ * width given to the data. Always light, like the public site: there is no
+ * dark mode, and a stale "dark" choice saved by an earlier theme switch is
+ * cleared before first paint.
  */
 import '../styles/global.css';
 import { agency } from '../agency/config';
-import ThemeScript from '../system/components/global/ThemeScript.astro';
-import ThemeToggle from '../system/components/global/ThemeToggle.astro';
-import Wordmark from '../system/components/global/Wordmark.astro';
 
 interface Props {
   title: string;
@@ -23,48 +22,102 @@ const onCreators = Astro.url.pathname.startsWith('/admin/creators/');
 <html lang={agency.site.locale}>
   <head>
     <meta charset="UTF-8" />
-    <ThemeScript />
+    <script is:inline>
+      // An earlier light/dark switch may have saved "dark": forget it.
+      try { localStorage.removeItem('theme'); } catch (e) {}
+      document.documentElement.removeAttribute('data-theme');
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#fffaf3" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{`${title} | ${agency.name} CRM`}</title>
   </head>
-  <body>
-    <header class="border-b border-[var(--hairline)]">
-      <div class="flex h-16 items-center gap-4 px-[var(--gutter)] sm:gap-8">
-        <a href={signedIn ? '/admin/creators/' : '/'} class="shrink-0" aria-label={signedIn ? `${agency.name} CRM` : `${agency.name} home`}>
-          <Wordmark logo={agency.logo} name={agency.name} />
+  <body class="dadmin">
+    <header class="dadmin-head">
+      <div class="dadmin-bar">
+        <a href={signedIn ? '/admin/creators/' : '/'} class="dadmin-logo" aria-label={signedIn ? `${agency.name} CRM` : `${agency.name} home`}>
+          <img src={agency.logo.src} alt={agency.logo.alt} width={agency.logo.width} height={agency.logo.height} />
         </a>
-        <p class="type-eyebrow muted hidden sm:block">Team CRM</p>
-        <nav class="ml-auto flex items-center gap-5 sm:gap-6" aria-label="CRM">
+        <span class="dadmin-chip d-ui">Team CRM</span>
+        <nav class="dadmin-nav" aria-label="CRM">
           {
             signedIn && (
               <>
-                <a
-                  href="/admin/creators/"
-                  aria-current={onCreators ? 'page' : undefined}
-                  class:list={['type-eyebrow link-underline hidden sm:inline', onCreators && 'text-[var(--accent)]']}
-                >Creators</a>
-                <a href="/" class="type-eyebrow link-underline hidden sm:inline">View site</a>
-                {/* A flex form, so the button sits on the same line as the links
-                    rather than on the form's own (taller) text line. */}
+                <a href="/admin/creators/" aria-current={onCreators ? 'page' : undefined} class="dadmin-link d-ui">Creators</a>
+                <a href="/" class="dadmin-link d-ui hide-sm">View site</a>
                 <form method="post" action="/auth/logout/" class="flex">
                   <input type="hidden" name="next" value="/admin/login/" />
-                  <button type="submit" class="type-eyebrow link-underline whitespace-nowrap">Log out</button>
+                  <button type="submit" class="dadmin-out d-ui">Log out</button>
                 </form>
               </>
             )
           }
-          {!signedIn && <a href="/" class="type-eyebrow link-underline whitespace-nowrap">Back to site</a>}
-          <ThemeToggle />
+          {!signedIn && <a href="/" class="dadmin-link d-ui">Back to site</a>}
         </nav>
       </div>
     </header>
-    <main id="main" class="px-[var(--gutter)] py-10">
+    <main id="main" class="dadmin-main">
       <slot />
     </main>
   </body>
 </html>
+
+<style>
+  .dadmin { background: var(--paper); color: var(--night); }
+  .dadmin-head {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgb(255 250 243 / 0.92);
+    border-bottom: 1px solid var(--hairline);
+    backdrop-filter: saturate(1.4) blur(12px);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  }
+  .dadmin-bar { display: flex; align-items: center; gap: 1rem; height: 4.5rem; padding: 0 var(--gutter); }
+  .dadmin-logo img { display: block; width: clamp(8rem, 11vw, 9.5rem); height: auto; }
+  .dadmin-chip {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: var(--cream);
+    color: var(--night);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .dadmin-nav { display: flex; align-items: center; gap: 0.35rem; margin-left: auto; }
+  .dadmin-link {
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    color: var(--night);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 200ms ease;
+  }
+  .dadmin-link:hover { background: var(--cream-soft); }
+  .dadmin-link[aria-current='page'] { background: var(--cream); }
+  .dadmin-out {
+    margin-left: 0.4rem;
+    padding: 0.6rem 1.1rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--night);
+    color: var(--cream);
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+  .dadmin-out:hover { background: var(--orange); color: var(--night); }
+  .dadmin-link:focus-visible, .dadmin-out:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .dadmin-main { padding: 2.5rem var(--gutter) 4rem; }
+  @media (max-width: 39.99rem) {
+    .dadmin-chip, .hide-sm { display: none; }
+    .dadmin-bar { height: 4rem; }
+  }
+</style>
