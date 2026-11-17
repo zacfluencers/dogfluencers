@@ -175,6 +175,31 @@
       "source": "/account/",
       "destination": "/creator/profile/",
       "permanent": true
+    },
+    {
+      "source": "/welcome-to-dogfluencers/",
+      "destination": "/for-creators/",
+      "permanent": true
+    },
+    {
+      "source": "/coming-soon/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/thank-you/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/category/news/",
+      "destination": "/insights/",
+      "permanent": true
+    },
+    {
+      "source": "/category/:path*",
+      "destination": "/insights/",
+      "permanent": true
     }
   ]
 }
