@@ -151,15 +151,22 @@ async function ensureTags(api: ReturnType<typeof client>, all: string[]) {
   return removed;
 }
 
+/** How a creator joins an audience they're not yet in: never re-subscribed after an opt-out. */
+export function newMemberStatus(c: Pick<Creator, 'email_marketing'>): 'subscribed' | 'unsubscribed' {
+  return c.email_marketing === 'unsubscribed' || c.email_marketing === 'cleaned' ? 'unsubscribed' : 'subscribed';
+}
+
 type PushOutcome = { done: true; status?: EmailMarketing } | { done: false; error: string };
 
 async function pushOne(api: ReturnType<typeof client>, c: Creator, all: string[], config: CrmConfig, audienceTag?: string): Promise<PushOutcome> {
   const id = hash(c.email);
   const put = await api(`/members/${id}`, {
     method: 'PUT',
-    // status_if_new only applies to someone Mailchimp has never seen: an
-    // existing member keeps whatever status they chose.
-    body: { email_address: c.email, status_if_new: 'subscribed', merge_fields: mergeFieldsFor(c) },
+    // status_if_new only applies to someone this audience has never seen: an
+    // existing member keeps whatever status they chose. Someone the CRM knows
+    // unsubscribed (or bounced) elsewhere joins as unsubscribed, so an
+    // opt-out carries over when the sync moves to another audience.
+    body: { email_address: c.email, status_if_new: newMemberStatus(c), merge_fields: mergeFieldsFor(c) },
   });
   if (!put.ok) {
     const title = String(put.data?.title ?? '');
