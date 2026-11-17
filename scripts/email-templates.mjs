@@ -41,6 +41,15 @@ const button = (label, href, attrs = '') => `
   </td>
 </tr></table>`;
 
+/** Round cream icons in every footer: Instagram, the website, email (scripts/email-icons.mjs). */
+const socialIcon = (name, href, alt) =>
+  `<td style="padding:0 10px 0 0"><a href="${href}" style="text-decoration:none"><img src="${SITE}/email/icon-${name}.png" width="32" height="32" alt="${alt}" style="width:32px;height:32px"></a></td>`;
+const socialRow = `          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px"><tr>
+            ${socialIcon('instagram', 'https://www.instagram.com/dogfluencers.agency/', 'Instagram')}
+            ${socialIcon('web', `${SITE}/`, 'dogfluencers.agency')}
+            ${socialIcon('email', 'mailto:support@dogfluencers.agency', 'Email us')}
+          </tr></table>`;
+
 function shell({ title, preheader, body, footer }) {
   return `<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -75,7 +84,8 @@ ${body}
     <tr><td style="padding-top:16px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${c.night}" style="background:${c.night};border-radius:24px">
         <tr><td class="px" style="padding:30px 40px">
-          <img src="${SITE}/logo-white.png" width="150" alt="Dogfluencers" style="width:150px;height:auto;margin:0 0 16px">
+          <img src="${SITE}/logo-white.png" width="150" alt="Dogfluencers" style="width:150px;height:auto;margin:0 0 18px">
+${socialRow}
 ${footer}
         </td></tr>
       </table>
@@ -152,7 +162,7 @@ const mailchimp = shell({
       </table>`,
   footer: [
     `          <p style="margin:0 0 8px;font-family:${display};font-stretch:condensed;font-size:18px;font-weight:800;text-transform:uppercase;color:${c.cream}">Stay connected</p>`,
-    footLine(`You&#8217;re getting this because you joined the Dogfluencers creator network. ${footLink('Instagram', 'https://www.instagram.com/dogfluencers.agency/')}`),
+    footLine(`You&#8217;re getting this because you joined the Dogfluencers creator network.`),
     footLine('Dogfluencers is run by Fluencers Group LTD. *|LIST:ADDRESSLINE|*'),
     footLine(`${footLink('Update your email preferences', '*|UPDATE_PROFILE|*')} &nbsp;&middot;&nbsp; ${footLink('Unsubscribe', '*|UNSUB|*')}`),
     `          *|IF:REWARDS|* <div style="margin-top:12px">*|REWARDS|*</div> *|END:IF|*`,
