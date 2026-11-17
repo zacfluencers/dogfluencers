@@ -47,7 +47,7 @@ const socialIcon = (name, href, alt) =>
 const socialRow = `          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px"><tr>
             ${socialIcon('instagram', 'https://www.instagram.com/dogfluencers.agency/', 'Instagram')}
             ${socialIcon('web', `${SITE}/`, 'dogfluencers.agency')}
-            ${socialIcon('email', 'mailto:support@dogfluencers.agency', 'Email us')}
+            ${socialIcon('email', 'mailto:jonathan@fluencersgroup.com', 'Email Jonathan')}
           </tr></table>`;
 
 function shell({ title, preheader, body, footer }) {
