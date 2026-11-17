@@ -98,6 +98,8 @@ ${footer}
 `;
 }
 
+/** The group's registered address, fixed in every email (as on the group's other creator networks). */
+const ADDRESS = 'Dogfluencers is run by Fluencers Group LTD, A6 Kingfisher House, Kingsway, Team Valley Trading Estate, Gateshead, Tyne &amp; Wear, NE11 0JQ.';
 const footLine = (html) => `          <p style="margin:0 0 8px;font-family:${font};font-size:13px;line-height:1.6;color:${c.creamMuted}">${html}</p>`;
 const footLink = (label, href) => `<a href="${href}" style="color:${c.cream};text-decoration:underline">${label}</a>`;
 
@@ -163,7 +165,7 @@ const mailchimp = shell({
   footer: [
     `          <p style="margin:0 0 8px;font-family:${display};font-stretch:condensed;font-size:18px;font-weight:800;text-transform:uppercase;color:${c.cream}">Stay connected</p>`,
     footLine(`You&#8217;re getting this because you joined the Dogfluencers creator network.`),
-    footLine('Dogfluencers is run by Fluencers Group LTD. *|LIST:ADDRESSLINE|*'),
+    footLine(ADDRESS),
     footLine(`${footLink('Update your email preferences', '*|UPDATE_PROFILE|*')} &nbsp;&middot;&nbsp; ${footLink('Unsubscribe', '*|UNSUB|*')}`),
     `          *|IF:REWARDS|* <div style="margin-top:12px">*|REWARDS|*</div> *|END:IF|*`,
   ].join('\n'),
@@ -189,6 +191,7 @@ const supa = ({ subject, note, preheader, eyebrowText, title, lines, label, type
       </table>`,
     footer: [
       footLine('Dogfluencers connects pet brands with dogs and the owners behind them.'),
+      footLine(ADDRESS),
       footLine(`Questions? ${footLink('support@dogfluencers.agency', 'mailto:support@dogfluencers.agency')} &nbsp;&middot;&nbsp; ${footLink('dogfluencers.agency', `${SITE}/`)}`),
     ].join('\n'),
   });
