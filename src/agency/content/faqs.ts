@@ -106,7 +106,7 @@ export const faqs: Faq[] = [
   {
     question: 'How do I update my details, or leave?',
     answer:
-      'Log in to update your profile at any time. To leave, email support@dogfluencers.agency and we will remove you.',
+      'Log in to update your profile at any time. To leave, email jonathan@fluencersgroup.com and we will remove you.',
     category: 'Creators',
     order: 13,
     status: 'approved',

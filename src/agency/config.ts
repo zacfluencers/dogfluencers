@@ -37,7 +37,7 @@ const config: AgencyConfig = {
 
   contact: {
     // The address the current site publishes.
-    email: 'support@dogfluencers.agency',
+    email: 'jonathan@fluencersgroup.com',
     enquiries: {
       // TODO(confirm): the inbox enquiries should go to.
       to: 'jonathan@fluencersgroup.com',
