@@ -1,0 +1,67 @@
+---
+/**
+ * A confirmation page in one vertical column: the paw badge, a label, the
+ * heading, the message, an optional cream note and the buttons, in reading
+ * order on every screen. For "check your inbox" and "enquiry sent" pages,
+ * where the masthead's two-column split left the message floating.
+ */
+import MarkedText from '../../../system/components/global/MarkedText.astro';
+import Paw from '../ui/Paw.astro';
+import Button from '../ui/Button.astro';
+import type { Link } from '../../../system/types/content';
+
+interface Props {
+  eyebrow: string;
+  heading: string;
+  body: string;
+  /** A short tip in a cream card, e.g. checking the spam folder. */
+  note?: string;
+  primary: Link;
+  secondary?: Link;
+}
+const { eyebrow, heading, body, note, primary, secondary } = Astro.props;
+---
+
+<section class="band band-paper dconfirm-band">
+  <div class="wrap">
+    <div class="dconfirm" data-reveal-group>
+      <span class="dconfirm-badge" aria-hidden="true"><Paw class="w-[52%]" /></span>
+      <p class="d-ui dconfirm-eyebrow">{eyebrow}</p>
+      <h1 class="d-h1"><MarkedText text={heading} /></h1>
+      <p class="d-lead d-muted dconfirm-body">{body}</p>
+      {note && <p class="d-small dconfirm-note">{note}</p>}
+      <div class="dconfirm-actions">
+        <Button href={primary.href} size="large" arrow>{primary.label}</Button>
+        {secondary && <Button href={secondary.href} size="large" variant="outline">{secondary.label}</Button>}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .dconfirm-band { padding-block: clamp(3.5rem, 9vw, 7rem); }
+  .dconfirm { max-width: 38rem; }
+  .dconfirm-badge {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 999px;
+    background: var(--orange);
+    color: var(--cream);
+  }
+  .dconfirm-eyebrow { margin: 1.75rem 0 0.75rem; font-weight: 700; color: var(--orange-text); }
+  .dconfirm-body { margin: 1.25rem 0 0; }
+  .dconfirm-note {
+    margin: 1.75rem 0 0;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    background: var(--cream);
+    color: var(--night);
+  }
+  .dconfirm-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+  @media (max-width: 39.99rem) {
+    .dconfirm-actions { flex-direction: column; align-items: stretch; }
+    .dconfirm-actions :global(.dbtn) { width: 100%; }
+  }
+</style>

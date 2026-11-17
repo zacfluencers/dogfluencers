@@ -1,14 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageHead from '../../agency/components/sections/PageHead.astro';
+import Confirmation from '../../agency/components/sections/Confirmation.astro';
 ---
 
 <BaseLayout seo={{ title: 'Enquiry sent', noIndex: true }}>
-  <PageHead
+  <Confirmation
+    eyebrow="Enquiry sent"
     heading="Thank *you.*"
-    description="Your enquiry is with us. We will read the brief and come back to you shortly."
-    primaryCta={{ label: 'Back to home', href: '/' }}
-    secondaryCta={{ label: 'See the work', href: '/campaigns/' }}
+    body="Your brief is with us. We'll read it and come back to you with the dogs, the plan and the numbers, by email."
+    primary={{ label: 'Back to home', href: '/' }}
+    secondary={{ label: 'See the work', href: '/campaigns/' }}
   />
-  <div class="pb-[var(--band-y)]"></div>
 </BaseLayout>
