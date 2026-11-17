@@ -197,6 +197,8 @@ export interface Creator {
   application_status: ApplicationStatus;
   admin_notes: string | null;
   /** Mailchimp's subscription status, null until first synced. Team only. */
+  /** When a signup confirmed their email; null until then (imports: from their login). */
+  email_confirmed_at?: string | null;
   email_marketing?: 'subscribed' | 'unsubscribed' | 'cleaned' | null;
   email_marketing_at?: string | null;
   mailchimp_synced_at?: string | null;

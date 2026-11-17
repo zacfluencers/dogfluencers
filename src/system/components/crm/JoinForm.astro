@@ -18,8 +18,10 @@ interface Props {
   errors?: FieldErrors;
   message?: string;
   loginHref: string;
+  /** A signed start time (system/lib/formguard.ts), checked on submit. */
+  formToken?: string;
 }
-const { config, values = {}, errors = {}, message, loginHref } = Astro.props;
+const { config, values = {}, errors = {}, message, loginHref, formToken } = Astro.props;
 
 const steps = buildSchemas(config).steps.map(({ id, title, blurb, names, prefix }) => ({ id, title, blurb, names, prefix }));
 // A server error opens the form on the first step that has one.
@@ -28,6 +30,7 @@ const start = errorStep >= 0 ? errorStep : 0;
 ---
 
 <form method="post" novalidate class="join" data-join data-start={start} data-crm={JSON.stringify(config)}>
+  {formToken && <input type="hidden" name="form_started" value={formToken} />}
   <div class="join-progress" aria-hidden="true" hidden data-progress>
     <p class="type-eyebrow muted" data-progress-label>Step 1 of {steps.length}: {steps[0].title}</p>
     <div class="join-bars">

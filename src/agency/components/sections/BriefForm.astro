@@ -199,6 +199,7 @@ const steps = [
       <div class="absolute -left-[9999px]" aria-hidden="true">
         <label for={HONEYPOT_FIELD}>Leave this empty</label>
         <input id={HONEYPOT_FIELD} name={HONEYPOT_FIELD} type="text" tabindex="-1" autocomplete="off" />
+        <input type="hidden" name="form_started" data-form-started />
       </div>
 
       <div class="dbrief-foot">
@@ -335,6 +336,14 @@ const steps = [
   const form = document.querySelector<HTMLFormElement>('form[data-brief]');
   if (form) {
     const endpoint = form.dataset.endpoint;
+    // A signed start time for the bot check (the page is built in advance).
+    const tokenInput = form.querySelector<HTMLInputElement>('[data-form-started]');
+    if (tokenInput) {
+      fetch('/api/form-token/', { headers: { Accept: 'application/json' } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (d?.token) tokenInput.value = d.token; })
+        .catch(() => {});
+    }
     const status = form.querySelector<HTMLElement>('#form-status')!;
     const alertBox = form.querySelector<HTMLElement>('[data-alert]')!;
     const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');

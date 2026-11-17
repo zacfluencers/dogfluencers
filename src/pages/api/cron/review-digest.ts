@@ -11,7 +11,7 @@ import type { APIRoute } from 'astro';
 import { agency } from '../../../agency/config';
 import { crm } from '../../../agency/crm';
 import { buildDigest, sendDigest, ukHour } from '../../../system/crm/digest';
-import { isCrmConfigured } from '../../../system/crm/supabase';
+import { isCrmConfigured, serviceClient } from '../../../system/crm/supabase';
 
 export const prerender = false;
 
@@ -30,7 +30,17 @@ export const GET: APIRoute = async ({ request, url }) => {
 
   const dry = url.searchParams.get('dry') === '1';
   const testTo = url.searchParams.get('to');
-  if (!dry && !testTo && ukHour() !== 9) return Response.json({ sent: false, skipped: 'not 9am in the UK' });
+  // Daily housekeeping, before the hour check so it runs whichever UTC run
+  // this is: delete signups that never confirmed their email within a week
+  // (likely bots), and their logins.
+  let purged = 0;
+  if (!dry && !testTo) {
+    const { data, error } = await serviceClient().rpc('purge_unconfirmed_signups', { p_days: 7 });
+    if (error) console.error('purge unconfirmed signups failed', error.code, error.message);
+    else purged = Number(data ?? 0);
+  }
+
+  if (!dry && !testTo && ukHour() !== 9) return Response.json({ sent: false, skipped: 'not 9am in the UK', purged });
 
   const digest = await buildDigest(agency.site.url, agency.name, crm.emailTheme);
   if (dry) return Response.json({ sent: false, dry: true, enabled, ...digest });

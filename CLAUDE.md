@@ -215,6 +215,18 @@ right", and saving the profile confirms them (the key is dropped).
 - Creator and team logins are linked from the header and footer; login pages
   link onward (join, claim, contact).
 
+**Spam protection** (17 November 2026): both forms have a honeypot and a signed
+start time (`src/system/lib/formguard.ts`, signed with `FORM_SECRET` or
+`CRON_SECRET`). The join page embeds it; the brief form, built in advance,
+fetches it from `/api/form-token/`. Missing, forged or instant (under 4s join,
+3s brief) submissions are treated like the honeypot: the bot sees success,
+nothing is saved or sent (the brief form asks a person to refresh if its token
+never loaded). Applications are saved before email confirmation, so
+`creators.email_confirmed_at` (copied from the login by a trigger) keeps
+unconfirmed signups out of the team's list, the morning email and Mailchimp,
+and `purge_unconfirmed_signups()` deletes them after 7 days (run daily by the
+morning email's cron).
+
 Security: passwords only in Supabase Auth; Row Level Security limits a creator to
 their own row; admins are rows in `public.admins`, added only with
 `scripts/add-admin.ts`; team reads and writes go through `admin_*` functions that

@@ -57,18 +57,21 @@ export async function buildDigest(origin: string, agencyName: string, theme: Ema
   const from = start.toISOString();
   const to = end.toISOString();
 
-  // Applications only: creators imported from the old site never count as new.
+  // Applications only, with a confirmed email: creators imported from the old
+  // site never count as new, and an unconfirmed signup may be a bot.
   const [fresh, freshCount, waiting] = await Promise.all([
     db
       .from('creators')
       .select('id, first_name, last_name, town, instagram_followers, tiktok_followers, youtube_followers')
       .eq('source', 'signup')
+      .not('email_confirmed_at', 'is', null)
       .gte('created_at', from)
       .lt('created_at', to)
       .order('created_at', { ascending: true })
       .limit(LIST_LIMIT),
-    db.from('creators').select('id', { count: 'exact', head: true }).eq('source', 'signup').gte('created_at', from).lt('created_at', to),
-    db.from('creators').select('id', { count: 'exact', head: true }).eq('application_status', 'new'),
+    db.from('creators').select('id', { count: 'exact', head: true }).eq('source', 'signup').not('email_confirmed_at', 'is', null).gte('created_at', from).lt('created_at', to),
+    // Still New, leaving out signups that never confirmed their email (likely bots).
+    db.from('creators').select('id', { count: 'exact', head: true }).eq('application_status', 'new').or('source.neq.signup,email_confirmed_at.not.is.null'),
   ]);
   if (fresh.error) throw fresh.error;
   if (freshCount.error) throw freshCount.error;

@@ -18,7 +18,13 @@ import Container from '../../system/components/global/Container.astro';
 import JoinForm from '../../system/components/crm/JoinForm.astro';
 import CrmUnavailable from '../../system/components/crm/CrmUnavailable.astro';
 
+import { FORM_TOKEN_FIELD, checkFormToken, issueFormToken } from '../../system/lib/formguard';
+
 export const prerender = false;
+
+// Bot check, after the honeypot: the form carries a signed start time.
+const env = (name: string) => (import.meta.env[name] as string | undefined) || process.env[name];
+const formSecret = env('FORM_SECRET') || env('CRON_SECRET');
 
 let values: Record<string, string | string[]> = {};
 let errors: FieldErrors = {};
@@ -26,8 +32,15 @@ let message: string | undefined;
 
 if (Astro.request.method === 'POST' && isCrmConfigured()) {
   const form = await Astro.request.formData();
+  const check = formSecret ? checkFormToken(form.get(FORM_TOKEN_FIELD), formSecret, { minMs: 4000 }) : 'ok';
+  // Posted without loading the form, or faster than a person could fill it:
+  // treat it like the honeypot, so the bot sees success and nothing is saved.
+  if (check === 'missing' || check === 'forged' || check === 'too_fast') return Astro.redirect('/join/thanks/?kind=confirm', 303);
   const supabase = Astro.locals.session?.supabase ?? visitorClient(Astro.request, Astro.cookies);
-  const result = await registerCreator(supabase, form, Astro.url.origin, crm);
+  const result =
+    check === 'expired'
+      ? ({ ok: false, message: 'This form was open for a long time, so please check your answers and send it again.' } as const)
+      : await registerCreator(supabase, form, Astro.url.origin, crm);
   if (result.ok) {
     if (result.kind === 'signed_in') return Astro.redirect('/creator/profile/?welcome=1', 303);
     return Astro.redirect(`/join/thanks/?kind=${result.kind}`, 303);
@@ -35,7 +48,7 @@ if (Astro.request.method === 'POST' && isCrmConfigured()) {
   // Keep every answer except the password.
   const { password: _password, ...rest } = formToInput(form, crm) as Record<string, string | string[]>;
   values = rest;
-  errors = result.fieldErrors ?? {};
+  errors = ('fieldErrors' in result && result.fieldErrors) || {};
   message = result.message;
   Astro.response.status = 422;
 } else if (Astro.request.method === 'POST') {
@@ -83,7 +96,7 @@ const points = [
                     <CrmUnavailable message="Applications are opening soon." />
                   </div>
                 )}
-                <JoinForm config={crm} values={values} errors={errors} message={message} loginHref="/creator/login/" />
+                <JoinForm config={crm} values={values} errors={errors} message={message} loginHref="/creator/login/" formToken={formSecret ? issueFormToken(formSecret) : undefined} />
               </>
             ) : (
               <CrmUnavailable message="Applications are opening soon." email={agency.contact.email} />
