@@ -16,21 +16,15 @@ const font = "'Open Sans', Arial, Helvetica, sans-serif";
 const display = "'Arial Narrow', 'Open Sans Condensed', 'Helvetica Neue', Arial, sans-serif";
 
 /**
- * The site's mark: a rounded orange bar along the heading's whole bottom row,
- * behind the lower part of the letters. Email can't measure where a line
- * wraps, so the marked words always start the bottom row on their own (a
- * break before them), and the bar is a pill-shaped block pulled up under
- * them. Clients paint block backgrounds beneath text, so the letters stay on
- * top. Where negative margins are stripped (Outlook.com) the pill sits just
- * under the row; classic Outlook shows a square bar.
+ * Headlines are plain condensed capitals with a short rounded orange line
+ * under them (the client preferred this to highlighting words). The line is
+ * its own table, so it renders in every client, Outlook included, and sits
+ * outside Mailchimp's editable headline so it can't be deleted by accident.
+ * A *starred* word in a title is just shown plain.
  */
-const mark = (words, breakBefore = true) =>
-  `${breakBefore ? '<br>' : ''}<span style="display:inline-block;vertical-align:top;white-space:nowrap"><span style="display:block">${words}</span>` +
-  `<span style="display:block;height:0.34em;margin:-0.5em -0.14em 0;background-color:${c.orange};border-radius:999px;line-height:0;mso-line-height-rule:exactly">&nbsp;</span></span>`;
-
-/** "Reset your *password*": the starred words become the marked bottom row. */
 const heading = (text, attrs = '') =>
-  `<h1 ${attrs} style="margin:0 0 18px;font-family:${display};font-stretch:condensed;font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase;color:${c.night}">${text.replace(/\s*\*(.+?)\*/g, (_, words, at) => mark(words, at > 0))}</h1>`;
+  `<h1 ${attrs} style="margin:0 0 14px;font-family:${display};font-stretch:condensed;font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase;color:${c.night}">${text.replace(/\*(.+?)\*/g, '$1')}</h1>`;
+const divider = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px"><tr><td width="48" height="5" bgcolor="${c.orange}" style="width:48px;height:5px;line-height:5px;font-size:5px;background:${c.orange};border-radius:999px">&nbsp;</td></tr></table>`;
 const p = (text, attrs = '') => `<p ${attrs} style="margin:0 0 18px;font-family:${font};font-size:16px;line-height:1.65;color:${c.night}">${text}</p>`;
 const small = (text) => `<p style="margin:0;font-family:${font};font-size:13px;line-height:1.6;color:${c.muted}">${text}</p>`;
 const eyebrow = (text, attrs = '') => `<p ${attrs} style="margin:0 0 10px;font-family:${font};font-size:13px;font-weight:700;color:${c.orangeText}">${text}</p>`;
@@ -138,7 +132,8 @@ const mailchimp = shell({
         <!-- 1. Campaign header -->
         <tr><td class="px" style="padding:36px 40px 8px">
           ${eyebrow('Gifting campaign')}
-          <div mc:edit="headline">${heading('New gifting campaign: *[Brand name]*', 'class="h1"')}</div>
+          <div mc:edit="headline">${heading('New gifting campaign:<br>[Brand name]', 'class="h1"')}</div>
+          ${divider}
           <div mc:edit="intro">${p('Hi *|FNAME|*, a new gifting campaign is going out to dogs in the Dogfluencers network. Here&#8217;s everything you need to know.')}</div>
         </td></tr>
         <!-- 2. Campaign details -->
@@ -184,6 +179,7 @@ const supa = ({ subject, note, preheader, eyebrowText, title, lines, label, type
         <tr><td class="px" style="padding:40px 40px 32px">
           ${eyebrow(eyebrowText)}
           ${heading(title, 'class="h1"')}
+          ${divider}
           ${lines.map((l) => p(l)).join('\n          ')}
           ${button(label, `{{ .SiteURL }}/auth/confirm/?token_hash={{ .TokenHash }}&amp;type=${type}&amp;next=${next}`)}
           ${small(after)}
