@@ -192,7 +192,7 @@ const supa = ({ subject, note, preheader, eyebrowText, title, lines, label, type
     footer: [
       footLine('Dogfluencers connects pet brands with dogs and the owners behind them.'),
       footLine(ADDRESS),
-      footLine(`Questions? ${footLink('support@dogfluencers.agency', 'mailto:support@dogfluencers.agency')} &nbsp;&middot;&nbsp; ${footLink('dogfluencers.agency', `${SITE}/`)}`),
+      footLine(`Questions? ${footLink('jonathan@fluencersgroup.com', 'mailto:jonathan@fluencersgroup.com')} &nbsp;&middot;&nbsp; ${footLink('dogfluencers.agency', `${SITE}/`)}`),
     ].join('\n'),
   });
 
