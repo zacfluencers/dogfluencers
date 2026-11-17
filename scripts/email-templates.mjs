@@ -24,13 +24,13 @@ const display = "'Arial Narrow', 'Open Sans Condensed', 'Helvetica Neue', Arial,
  * top. Where negative margins are stripped (Outlook.com) the pill sits just
  * under the row; classic Outlook shows a square bar.
  */
-const mark = (words) =>
-  `<br><span style="display:inline-block;vertical-align:top;white-space:nowrap"><span style="display:block">${words}</span>` +
+const mark = (words, breakBefore = true) =>
+  `${breakBefore ? '<br>' : ''}<span style="display:inline-block;vertical-align:top;white-space:nowrap"><span style="display:block">${words}</span>` +
   `<span style="display:block;height:0.34em;margin:-0.5em -0.14em 0;background-color:${c.orange};border-radius:999px;line-height:0;mso-line-height-rule:exactly">&nbsp;</span></span>`;
 
 /** "Reset your *password*": the starred words become the marked bottom row. */
 const heading = (text, attrs = '') =>
-  `<h1 ${attrs} style="margin:0 0 18px;font-family:${display};font-stretch:condensed;font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase;color:${c.night}">${text.replace(/\s*\*(.+?)\*/g, (_, words) => mark(words))}</h1>`;
+  `<h1 ${attrs} style="margin:0 0 18px;font-family:${display};font-stretch:condensed;font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase;color:${c.night}">${text.replace(/\s*\*(.+?)\*/g, (_, words, at) => mark(words, at > 0))}</h1>`;
 const p = (text, attrs = '') => `<p ${attrs} style="margin:0 0 18px;font-family:${font};font-size:16px;line-height:1.65;color:${c.night}">${text}</p>`;
 const small = (text) => `<p style="margin:0;font-family:${font};font-size:13px;line-height:1.6;color:${c.muted}">${text}</p>`;
 const eyebrow = (text, attrs = '') => `<p ${attrs} style="margin:0 0 10px;font-family:${font};font-size:13px;font-weight:700;color:${c.orangeText}">${text}</p>`;
@@ -202,7 +202,7 @@ const files = {
     note: 'Supabase > Authentication > Emails > Invite user. Sent when a creator from the old website asks to claim their profile.',
     preheader: 'Choose a password to see and update your dog&#8217;s profile.',
     eyebrowText: 'Welcome back',
-    title: 'Set up your *login*',
+    title: '*Set up your login*',
     lines: ['You joined our creator network through our old website, and your details are safe with us. Choose a password to log in, then check your and your dog&#8217;s details are still right: brands are matched against them.'],
     label: 'Set up my login',
     type: 'invite',
