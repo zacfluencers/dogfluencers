@@ -52,8 +52,6 @@ everything still open is first.
 - [ ] **Video weight**: `public/video` is now 131 MB (111 MB of it full-length work and
       case study videos, which only load as you scroll to them). Check the homepage on a
       mobile connection; re-encode the heaviest full videos if it feels slow.
-- [ ] **`dogfluencers.vercel.app`** still serves the site. Harmless (every page names
-      dogfluencers.agency as canonical); redirect it to the domain if wanted.
 - [ ] **Upgrade the Vercel CLI** (`npm i -g vercel@latest`; this machine has 54.14).
 - [ ] **Cloudflare Turnstile** on the forms, only if spam gets past the current checks.
 
@@ -66,7 +64,7 @@ everything still open is first.
   pieces of content); Adaptil and Omni case studies with full videos; the work section
   mixes Omni, Adaptil, Zesty Paws and Poppy's Picnic; transparent pricing; Mass Gifting
   renamed Influencer Gifting (old address redirects); Omni's new logo first.
-- **Domain**: dogfluencers.agency and www on Vercel; DNS on Vercel DNS with every old
+- **Domain**: dogfluencers.agency and www on Vercel; `dogfluencers.vercel.app` redirects to it (except `/api/`); DNS on Vercel DNS with every old
   record (Google Workspace MX, SPF, verification, DKIM) recreated first.
 - **CRM**: Supabase (eu-west-1); 1,337 creators and 1,824 dogs imported; four admins
   (Zac, Nicola, Jonathan, Alison); always light, in Dogfluencers' style; the owner
