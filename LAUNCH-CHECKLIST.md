@@ -52,8 +52,11 @@ what stands between that and dogfluencers.agency going live.
 - [ ] Send a test enquiry from `/contact/`; check the no-JS path lands on `/contact/thanks/`.
 - [ ] `CRM_EMAIL_ALLOWLIST` on while testing; remove from production at launch.
 - [ ] Morning applications email: `CRM_DIGEST_ENABLED=true` in production after launch.
-- [ ] Mailchimp (optional at launch): `MAILCHIMP_API_KEY`, `MAILCHIMP_AUDIENCE_ID`,
-      check the agency tag says "Dogfluencers", then `MAILCHIMP_SYNC_ENABLED=true`.
+- [x] Mailchimp (17 Nov): the existing Dogfluencers audience (its own account).
+      1,148 creators already subscribed, 116 unsubscribed and 31 cleaned keep
+      their status; 41 new are added subscribed. Hourly sync on in Production,
+      tagged "Dogfluencers". Moving to a group audience later: change the key and
+      audience ID, clear `mailchimp_synced_at`, and opt-outs carry over.
 - [ ] `scripts/announce-new-site.ts`: check its wording for Dogfluencers before use.
       **Never send to all creators without the client's go-ahead.**
 
