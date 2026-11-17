@@ -220,7 +220,26 @@ export const crm: CrmConfig = {
     button: '#1a1412',
     buttonInk: '#f9ead0',
     font: "'Open Sans', Arial, Helvetica, sans-serif",
-    headingFont: "'Open Sans Condensed', 'Arial Narrow', Arial, sans-serif",
+    headingFont: "'Arial Narrow', 'Open Sans Condensed', 'Helvetica Neue', Arial, sans-serif",
+    // Matches the Mailchimp and Supabase emails (scripts/email-templates.mjs).
+    rule: '#f53d0c',
+    logo: { src: 'https://dogfluencers.agency/logo.png', alt: 'Dogfluencers', width: 190 },
+    footer: {
+      background: '#1a1412',
+      ink: '#f9ead0',
+      muted: '#c9b99f',
+      logo: { src: 'https://dogfluencers.agency/logo-white.png', alt: 'Dogfluencers', width: 150 },
+      icons: [
+        { src: 'https://dogfluencers.agency/email/icon-instagram.png', href: 'https://www.instagram.com/dogfluencers.agency/', alt: 'Instagram' },
+        { src: 'https://dogfluencers.agency/email/icon-web.png', href: 'https://dogfluencers.agency/', alt: 'dogfluencers.agency' },
+        { src: 'https://dogfluencers.agency/email/icon-email.png', href: 'mailto:jonathan@fluencersgroup.com', alt: 'Email Jonathan' },
+      ],
+      lines: [
+        'Dogfluencers connects pet brands with dogs and the owners behind them.',
+        'Questions? <a href="mailto:jonathan@fluencersgroup.com" style="color:#f9ead0;text-decoration:underline">jonathan@fluencersgroup.com</a>',
+        'Dogfluencers is run by Fluencers Group LTD, A6 Kingfisher House, Kingsway, Team Valley Trading Estate, Gateshead, Tyne &amp; Wear, NE11 0JQ.',
+      ],
+    },
   },
 
   // TODO(confirm): wording to be agreed with the client before it's switched on.

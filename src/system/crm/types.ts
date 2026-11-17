@@ -87,6 +87,19 @@ export interface EmailTheme {
   font: string;
   /** A display face for headings, with fallbacks. */
   headingFont?: string;
+  /** The line under each heading, e.g. the brand's accent. Omit for none. */
+  rule?: string;
+  /** Logo above the card (a hosted PNG: email clients block SVG). */
+  logo?: { src: string; alt: string; width: number };
+  /** A dark footer under the card. `lines` are trusted HTML from the agency config. */
+  footer?: {
+    background: string;
+    ink: string;
+    muted: string;
+    logo?: { src: string; alt: string; width: number };
+    icons?: { src: string; href: string; alt: string }[];
+    lines: string[];
+  };
 }
 
 /**
