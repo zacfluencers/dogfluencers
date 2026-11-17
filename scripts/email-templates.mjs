@@ -15,9 +15,18 @@ const c = { paper: '#fffaf3', card: '#ffffff', night: '#1a1412', cream: '#f9ead0
 const font = "'Open Sans', Arial, Helvetica, sans-serif";
 const display = "'Arial Narrow', 'Open Sans Condensed', 'Helvetica Neue', Arial, sans-serif";
 
+/**
+ * The site's mark: an orange bar behind the lower third of the word, not a
+ * block behind all of it. Email can't draw a pseudo-element, so it's a
+ * background stripe (clear above, orange low down). Clients that ignore
+ * gradients (classic Outlook) show the word plain, which reads fine.
+ */
+const mark = (word) =>
+  `<span style="background-image:linear-gradient(to bottom, transparent 48%, ${c.orange} 48%, ${c.orange} 78%, transparent 78%);background-repeat:no-repeat;padding:0 0.12em;margin:0 -0.04em">${word}</span>`;
+
 /** "Confirm your *email*": the starred word gets the orange mark. */
 const heading = (text, attrs = '') =>
-  `<h1 ${attrs} style="margin:0 0 18px;font-family:${display};font-stretch:condensed;font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase;color:${c.night}">${text.replace(/\*(.+?)\*/g, `<span style="background-color:${c.orange};color:${c.night};padding:0 6px;border-radius:8px">$1</span>`)}</h1>`;
+  `<h1 ${attrs} style="margin:0 0 18px;font-family:${display};font-stretch:condensed;font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase;color:${c.night}">${text.replace(/\*(.+?)\*/g, (_, word) => mark(word))}</h1>`;
 const p = (text, attrs = '') => `<p ${attrs} style="margin:0 0 18px;font-family:${font};font-size:16px;line-height:1.65;color:${c.night}">${text}</p>`;
 const small = (text) => `<p style="margin:0;font-family:${font};font-size:13px;line-height:1.6;color:${c.muted}">${text}</p>`;
 const eyebrow = (text, attrs = '') => `<p ${attrs} style="margin:0 0 10px;font-family:${font};font-size:13px;font-weight:700;color:${c.orangeText}">${text}</p>`;
@@ -95,7 +104,7 @@ const mailchimp = shell({
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td class="px" style="padding:36px 40px 12px">
           ${eyebrow('New opportunity', 'mc:edit="eyebrow"')}
-          <div mc:edit="headline">${heading('A new brand wants <span style="background-color:' + c.orange + ';color:' + c.night + ';padding:0 6px;border-radius:8px">dogs</span>', 'class="h1"')}</div>
+          <div mc:edit="headline">${heading('A new brand wants *dogs*', 'class="h1"')}</div>
           <div mc:edit="intro">
             ${p('Hi *|FNAME|*,')}
             ${p('Here&#8217;s a new gifting opportunity for dogs in the Dogfluencers network. Have a read, and apply if it suits you and your dog.')}
