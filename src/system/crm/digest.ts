@@ -41,7 +41,7 @@ export function ukYesterday(now = new Date()) {
 export const ukHour = (now = new Date()) =>
   Number(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: 'numeric', hourCycle: 'h23' }).format(now));
 
-interface NewCreator {
+export interface NewCreator {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -78,7 +78,20 @@ export async function buildDigest(origin: string, agencyName: string, theme: Ema
   const total = freshCount.count ?? creators.length;
   const pending = waiting.count ?? 0;
   const send = total > 0 || (isMonday && pending > 0);
+  return { send, ...renderDigest({ creators, total, pending, label }, origin, agencyName, theme), total, pending };
+}
 
+/**
+ * Lays out the morning email from its facts: yesterday's applicants, how many
+ * there were and how many are still New. Separate from the lookup, so a sample
+ * can be rendered with the same code (scripts/preview-emails.ts).
+ */
+export function renderDigest(
+  { creators, total, pending, label }: { creators: NewCreator[]; total: number; pending: number; label: string },
+  origin: string,
+  agencyName: string,
+  theme: EmailTheme,
+) {
   const crm = `${origin}/admin/creators/`;
   const name = (c: NewCreator) => [c.first_name, c.last_name].filter(Boolean).join(' ') || 'No name given';
   const reach = (c: NewCreator) =>
@@ -115,7 +128,7 @@ export async function buildDigest(origin: string, agencyName: string, theme: Ema
     `${emailHeading(t, subject)}
     ${creators
       .map(
-        (c) => `<p style="margin:0;padding:14px 0;border-top:1px solid ${t.muted}33;font-size:16px;line-height:1.5"><a href="${esc(`${crm}${c.id}/`)}" style="color:${t.ink};font-weight:700">${esc(name(c))}</a>${c.town ? `, ${esc(c.town)}` : ''}<br><span style="color:${t.muted};font-size:14px">${esc(reach(c))}</span></p>`,
+        (c) => `<p style="margin:0;padding:14px 0;border-top:1px solid #eee4d6;font-size:16px;line-height:1.5"><a href="${esc(`${crm}${c.id}/`)}" style="color:${t.ink};font-weight:700">${esc(name(c))}</a>${c.town ? `, ${esc(c.town)}` : ''}<br><span style="color:${t.muted};font-size:14px">${esc(reach(c))}</span></p>`,
       )
       .join('')}
     ${more ? `<p style="margin:16px 0 0;color:${t.muted}">And ${more} more in the CRM.</p>` : ''}
@@ -123,7 +136,7 @@ export async function buildDigest(origin: string, agencyName: string, theme: Ema
     ${emailButton(t, `${crm}?status=new`, 'Open the CRM')}`,
   );
 
-  return { send, subject, text, html, total, pending };
+  return { subject, text, html };
 }
 
 export async function sendDigest(config: CrmConfig, apiKey: string, email: { subject: string; text: string; html: string }, to = config.digest.to) {
