@@ -36,8 +36,8 @@ what stands between that and dogfluencers.agency going live.
       `~/ShipStudio/dog-private/import-out/import-report.json` have their original answers in team notes.
 - [ ] Paste the three Dogfluencers email templates in `supabase/templates/` into
       Supabase > Authentication > Emails (subjects are in each file's first line).
-- [ ] Supabase > Authentication > URL Configuration: Site URL and Redirect URLs.
-- [ ] Supabase custom SMTP through Resend, so login emails aren't rate limited.
+- [x] Supabase > Authentication > URL Configuration (17 Nov).
+- [x] Supabase custom SMTP through Resend (17 Nov), sending-only key.
 - [ ] Test the whole flow with `example.com` / team addresses only: apply at `/join/`,
       log in, edit profile, claim an imported profile at `/creator/claim/`, work the
       list at `/admin/creators/`, CSV export.
@@ -111,7 +111,7 @@ Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
 - [x] **Remove `PUBLIC_SHOW_PLACEHOLDERS` from Production** (removed 17 Nov; previews keep it).
 - [x] dogfluencers.agency and www on Vercel (17 Nov): DNS moved to Vercel DNS with every
       old record (Google Workspace MX, SPF, verification, DKIM) recreated first.
-- [ ] Update Supabase Site URL and Redirect URLs to the real domain.
+- [x] Supabase Site URL and Redirect URLs on the real domain (17 Nov).
 - [ ] Remove `CRM_EMAIL_ALLOWLIST` from production; set `CRM_DIGEST_ENABLED=true`.
 - [ ] Smoke test live: enquiry, application, login, admin.
 - [ ] Only then, with the client's go-ahead: the new-site email to imported creators.
