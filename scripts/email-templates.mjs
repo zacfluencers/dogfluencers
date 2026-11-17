@@ -16,15 +16,15 @@ const font = "'Open Sans', Arial, Helvetica, sans-serif";
 const display = "'Arial Narrow', 'Open Sans Condensed', 'Helvetica Neue', Arial, sans-serif";
 
 /**
- * Headlines are plain condensed capitals with a short rounded orange line
- * under them (the client preferred this to highlighting words). The line is
+ * Headlines are plain condensed capitals with a rounded orange line, the
+ * full width of the text column, under them (the client preferred this to highlighting words). The line is
  * its own table, so it renders in every client, Outlook included, and sits
  * outside Mailchimp's editable headline so it can't be deleted by accident.
  * A *starred* word in a title is just shown plain.
  */
 const heading = (text, attrs = '') =>
   `<h1 ${attrs} style="margin:0 0 14px;font-family:${display};font-stretch:condensed;font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase;color:${c.night}">${text.replace(/\*(.+?)\*/g, '$1')}</h1>`;
-const divider = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px"><tr><td width="48" height="5" bgcolor="${c.orange}" style="width:48px;height:5px;line-height:5px;font-size:5px;background:${c.orange};border-radius:999px">&nbsp;</td></tr></table>`;
+const divider = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 22px"><tr><td height="5" bgcolor="${c.orange}" style="height:5px;line-height:5px;font-size:5px;background:${c.orange};border-radius:999px">&nbsp;</td></tr></table>`;
 const p = (text, attrs = '') => `<p ${attrs} style="margin:0 0 18px;font-family:${font};font-size:16px;line-height:1.65;color:${c.night}">${text}</p>`;
 const small = (text) => `<p style="margin:0;font-family:${font};font-size:13px;line-height:1.6;color:${c.muted}">${text}</p>`;
 const eyebrow = (text, attrs = '') => `<p ${attrs} style="margin:0 0 10px;font-family:${font};font-size:13px;font-weight:700;color:${c.orangeText}">${text}</p>`;
