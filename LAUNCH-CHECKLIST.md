@@ -98,8 +98,7 @@ Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
       hero stickers, menu, forms.
 - [ ] Look at a production build with placeholders stripped: whole sections disappear
       (work, stats, case studies). Check each page still flows and bands still alternate.
-- [ ] Old WordPress URLs: list every page and post on the live site and add redirects
-      in `vercel.json` for any that change (the blog posts are done).
+- [x] Old WordPress URLs: every page, post and category in the old sitemap redirects (17 Nov).
 - [ ] Legal pages (privacy, cookies, terms) reflect the new CRM and data held.
 - [ ] Favicon, social share image, page titles and descriptions per page.
 - [ ] Performance: ~39 MB of video in `public/`; check the homepage on a mobile connection.
@@ -107,7 +106,7 @@ Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
 
 ## 7. Go live
 
-- [ ] **Remove `PUBLIC_SHOW_PLACEHOLDERS` from Production** (on since 12 Nov for client feedback), so launch strips unconfirmed content.
+- [x] **Remove `PUBLIC_SHOW_PLACEHOLDERS` from Production** (removed 17 Nov; previews keep it).
 - [ ] Add dogfluencers.agency and www to the Vercel project; point DNS (apex A to
       Vercel, www CNAME), keeping MX, SPF and Resend records.
 - [ ] Update Supabase Site URL and Redirect URLs to the real domain.

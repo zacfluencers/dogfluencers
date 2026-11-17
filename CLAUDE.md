@@ -246,13 +246,14 @@ recipient is `contact.enquiries` in `src/agency/config.ts` (to confirm).
 ## Deployment
 
 GitHub `zacfluencers/dogfluencers` (private) → Vercel project `dogfluencers`
-(connected 12 November 2026). Push to `main` deploys production at
-`dogfluencers.vercel.app`, public by the client's choice before launch; any other
-branch gets a preview. **Until launch, `PUBLIC_SHOW_PLACEHOLDERS=true` is set on
-Production as well as Preview**, at the client's request (12 November 2026), so
-the whole site, placeholders included, is live for feedback. **Remove it from
-Production before dogfluencers.agency points here**, so launch strips whatever is
-still unconfirmed. dogfluencers.agency still points at the old WordPress site.
+(connected 12 November 2026). Push to `main` deploys production; any other branch
+gets a preview. **Review mode is off in Production** (`PUBLIC_SHOW_PLACEHOLDERS`
+removed 17 November 2026 for launch), so production strips anything still
+`placeholder` (today, the testimonials). Preview builds keep it on. Never set
+it on Production again.
+
+Launch, 17 November 2026: dogfluencers.agency moves from the old WordPress site to
+this project. Every old WordPress page and post redirects in `vercel.json`.
 
 `LAUNCH-CHECKLIST.md` lists everything before go-live.
 
