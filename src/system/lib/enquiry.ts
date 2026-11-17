@@ -5,6 +5,9 @@
  * API key; nothing here knows which agency it is serving.
  */
 import type { AgencyConfig } from '../types/agency';
+import type { EmailTheme } from '../crm/types';
+import { emailButton, emailHeading, emailLayout } from '../crm/emails';
+import { esc } from '../crm/table';
 
 /** Field names, labels and limits, in the order they appear in the email. */
 const FIELDS = [
@@ -36,6 +39,8 @@ export async function handleEnquiry(
   form: FormData,
   agency: AgencyConfig,
   apiKey: string | undefined,
+  /** The agency's email look; without it the email is plain text only. */
+  theme?: EmailTheme,
 ): Promise<EnquiryResult> {
   // Pretend success so a bot learns nothing.
   if (String(form.get(HONEYPOT_FIELD) ?? '').trim()) return { ok: true, spam: true };
@@ -59,6 +64,9 @@ export async function handleEnquiry(
     .map((field) => `${field.label}:\n${values[field.name]}`)
     .join('\n\n');
 
+  const subject = `New enquiry: ${values.company} (${values.name})`;
+  const html = theme ? enquiryHtml(theme, agency.name, values) : undefined;
+
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -66,8 +74,9 @@ export async function handleEnquiry(
       from: target.from,
       to: [target.to],
       reply_to: values.email,
-      subject: `New enquiry: ${values.company} (${values.name})`,
+      subject,
       text: `New enquiry from the ${agency.name} website.\n\n${text}\n`,
+      ...(html ? { html } : {}),
     }),
   });
 
@@ -76,4 +85,26 @@ export async function handleEnquiry(
     return { ok: false, status: 502, error: 'The enquiry could not be sent.' };
   }
   return { ok: true };
+}
+
+/** The team's copy of an enquiry: every answer in a two-column list, and a reply button. */
+export function enquiryHtml(theme: EmailTheme, agencyName: string, values: Record<string, string>): string {
+  const rows = FIELDS.filter((field) => values[field.name])
+    .map((field) => {
+      const long = field.name === 'objective' || field.name === 'notes' || field.name === 'audience';
+      const value = esc(values[field.name]).replace(/\n/g, '<br>');
+      return `<tr>
+        <td style="padding:11px 14px 11px 0;border-top:1px solid #eee4d6;font-size:14px;line-height:1.5;color:${theme.muted};width:34%;vertical-align:top">${esc(field.label)}</td>
+        <td style="padding:11px 0;border-top:1px solid #eee4d6;font-size:${long ? 15 : 14}px;line-height:1.6;font-weight:${long ? 400 : 600};color:${theme.ink};vertical-align:top">${value}</td>
+      </tr>`;
+    })
+    .join('');
+  return emailLayout(
+    theme,
+    agencyName,
+    `${emailHeading(theme, 'New enquiry')}
+    <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:${theme.ink}"><strong>${esc(values.company)}</strong> sent a brief through the ${esc(agencyName)} website.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-family:${theme.font}">${rows}</table>
+    ${emailButton(theme, `mailto:${values.email}?subject=${encodeURIComponent(`Re: your ${agencyName} enquiry`)}`, `Reply to ${values.name.split(' ')[0]}`)}`,
+  );
 }

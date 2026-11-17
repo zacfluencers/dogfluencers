@@ -7,6 +7,7 @@
 import type { APIRoute } from 'astro';
 import { agency } from '../../agency/config';
 import { handleEnquiry } from '../../system/lib/enquiry';
+import { crm } from '../../agency/crm';
 
 export const prerender = false;
 
@@ -20,7 +21,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return wantsJson ? Response.json({ error: 'Invalid submission.' }, { status: 400 }) : redirect('/contact/?error=1#enquiry', 303);
   }
 
-  const result = await handleEnquiry(form, agency, import.meta.env.RESEND_API_KEY);
+  const result = await handleEnquiry(form, agency, import.meta.env.RESEND_API_KEY, crm.emailTheme);
 
   if (wantsJson) {
     return result.ok ? Response.json({ ok: true }) : Response.json({ error: result.error }, { status: result.status });

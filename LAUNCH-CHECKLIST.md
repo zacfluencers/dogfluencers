@@ -48,9 +48,9 @@ what stands between that and dogfluencers.agency going live.
 - [x] `RESEND_API_KEY` in Vercel (17 Nov).
 - [ ] Confirm the enquiry inbox: currently `jonathan@fluencersgroup.com`
       (`src/agency/config.ts`, `contact.enquiries`).
-- [ ] Send a test enquiry from `/contact/`; check the no-JS path lands on `/contact/thanks/`.
+- [x] Test enquiry and welcome email sent to the team (17 Nov); the enquiry email is now branded HTML.
 - [x] `CRM_EMAIL_ALLOWLIST` removed from Production (17 Nov, client go-ahead); Preview keeps it.
-- [ ] Morning applications email: `CRM_DIGEST_ENABLED=true` in production after launch.
+- [x] Morning applications email on in Production (17 Nov): 9am UK, to the enquiries inbox, only when there are new applications.
 - [x] Mailchimp (17 Nov): the existing Dogfluencers audience (its own account).
       1,148 creators already subscribed, 116 unsubscribed and 31 cleaned keep
       their status; 41 new are added subscribed. Hourly sync on in Production,
@@ -112,6 +112,6 @@ Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
 - [x] dogfluencers.agency and www on Vercel (17 Nov): DNS moved to Vercel DNS with every
       old record (Google Workspace MX, SPF, verification, DKIM) recreated first.
 - [x] Supabase Site URL and Redirect URLs on the real domain (17 Nov).
-- [x] `CRM_EMAIL_ALLOWLIST` off in Production (17 Nov). [ ] `CRM_DIGEST_ENABLED=true` still to do.
+- [x] `CRM_EMAIL_ALLOWLIST` off in Production (17 Nov). Morning email on (17 Nov).
 - [ ] Smoke test live: enquiry, application, login, admin.
 - [ ] Only then, with the client's go-ahead: the new-site email to imported creators.
