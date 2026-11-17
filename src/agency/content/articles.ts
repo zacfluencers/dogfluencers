@@ -564,7 +564,7 @@ export const articles: Article[] = [
       },
       {
         type: "paragraph",
-        text: "Through our mass gifting programme, you’ll instantly reach a combined follower count in the millions. We deliver content in just seven days, and our diverse range of profiles ensures a perfect fit for any product, no matter your niche."
+        text: "Through our influencer gifting programme, you’ll instantly reach a combined follower count in the millions. We deliver content in just seven days, and our diverse range of profiles ensures a perfect fit for any product, no matter your niche."
       },
       {
         type: "paragraph",
@@ -1054,7 +1054,7 @@ export const articles: Article[] = [
       },
       {
         type: "paragraph",
-        text: "Join us at Dogfluencers as we continue to explore the world of dog influencers, celebrate iconic canine characters like Dogpool, and help your brand connect with millions of dog lovers around the world. With our tailored influencer collaborations and mass gifting programs, we’re here to help you make your brand go viral, one paw at a time.",
+        text: "Join us at Dogfluencers as we continue to explore the world of dog influencers, celebrate iconic canine characters like Dogpool, and help your brand connect with millions of dog lovers around the world. With our tailored influencer collaborations and influencer gifting programs, we’re here to help you make your brand go viral, one paw at a time.",
         spans: [
           {
             text: "Join us at "
@@ -1064,7 +1064,7 @@ export const articles: Article[] = [
             href: "/"
           },
           {
-            text: " as we continue to explore the world of dog influencers, celebrate iconic canine characters like Dogpool, and help your brand connect with millions of dog lovers around the world. With our tailored influencer collaborations and mass gifting programs, we’re here to help you make your brand go viral, one paw at a time."
+            text: " as we continue to explore the world of dog influencers, celebrate iconic canine characters like Dogpool, and help your brand connect with millions of dog lovers around the world. With our tailored influencer collaborations and influencer gifting programs, we’re here to help you make your brand go viral, one paw at a time."
           }
         ]
       },
@@ -1831,7 +1831,7 @@ export const articles: Article[] = [
       },
       {
         type: "paragraph",
-        text: "Welcome to Dogfluencers, where the world’s most dedicated dog owners and Instagram profiles unite to create a canine-loving community like no other. Our network isn’t just about dogs; it’s about the people who love them and the brands that cater to their needs. With our groundbreaking 100 Dogfluencers mass gifting program, we’re here to help you access millions of followers instantly. Let’s take a look at some of the top designer dog apparel brands that will elevate your dog’s style game.",
+        text: "Welcome to Dogfluencers, where the world’s most dedicated dog owners and Instagram profiles unite to create a canine-loving community like no other. Our network isn’t just about dogs; it’s about the people who love them and the brands that cater to their needs. With our groundbreaking 100 Dogfluencers influencer gifting program, we’re here to help you access millions of followers instantly. Let’s take a look at some of the top designer dog apparel brands that will elevate your dog’s style game.",
         spans: [
           {
             text: "Welcome to "
@@ -1841,7 +1841,7 @@ export const articles: Article[] = [
             href: "/"
           },
           {
-            text: ", where the world’s most dedicated dog owners and Instagram profiles unite to create a canine-loving community like no other. Our network isn’t just about dogs; it’s about the people who love them and the brands that cater to their needs. With our groundbreaking 100 Dogfluencers mass gifting program, we’re here to help you access millions of followers instantly. Let’s take a look at some of the top designer dog apparel brands that will elevate your dog’s style game."
+            text: ", where the world’s most dedicated dog owners and Instagram profiles unite to create a canine-loving community like no other. Our network isn’t just about dogs; it’s about the people who love them and the brands that cater to their needs. With our groundbreaking 100 Dogfluencers influencer gifting program, we’re here to help you access millions of followers instantly. Let’s take a look at some of the top designer dog apparel brands that will elevate your dog’s style game."
           }
         ]
       },
@@ -2390,7 +2390,7 @@ export const articles: Article[] = [
       },
       {
         type: "paragraph",
-        text: "With our groundbreaking 100 Dogfluencers mass gifting program, we connect brands with millions of followers instantly, guaranteeing content delivery in just 7 days. Join us on this journey to make your brand go viral, one paw at a time."
+        text: "With our groundbreaking 100 Dogfluencers influencer gifting program, we connect brands with millions of followers instantly, guaranteeing content delivery in just 7 days. Join us on this journey to make your brand go viral, one paw at a time."
       },
       {
         type: "paragraph",
@@ -2734,7 +2734,7 @@ export const articles: Article[] = [
       },
       {
         type: "paragraph",
-        text: "With our 100 Dogfluencers mass gifting program, we make it easy for your brand to gain visibility and connect with millions of followers instantly. Whether you’re launching a new product or looking to enhance your brand’s presence, Dogfluencers is here to help you make your mark in the dog-loving world, one paw at a time. Join us today and let’s make your brand go viral!"
+        text: "With our 100 Dogfluencers influencer gifting program, we make it easy for your brand to gain visibility and connect with millions of followers instantly. Whether you’re launching a new product or looking to enhance your brand’s presence, Dogfluencers is here to help you make your mark in the dog-loving world, one paw at a time. Join us today and let’s make your brand go viral!"
       }
     ]
   },
@@ -4489,7 +4489,7 @@ export const articles: Article[] = [
       },
       {
         type: "paragraph",
-        text: "At Dogfluencers, we connect your brand with over 100 Dogfluencers, instantly expanding your reach to millions of followers. Our innovative mass gifting program ensures your product gets the exposure it deserves across multiple profiles within just 7 days, generating buzz and excitement around your product launch or campaign."
+        text: "At Dogfluencers, we connect your brand with over 100 Dogfluencers, instantly expanding your reach to millions of followers. Our innovative influencer gifting program ensures your product gets the exposure it deserves across multiple profiles within just 7 days, generating buzz and excitement around your product launch or campaign."
       },
       {
         type: "heading",

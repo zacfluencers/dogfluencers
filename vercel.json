@@ -17,6 +17,11 @@
   ],
   "redirects": [
     {
+      "source": "/services/mass-gifting/",
+      "destination": "/services/influencer-gifting/",
+      "permanent": true
+    },
+    {
       "source": "/your-complete-guide-to-ugc-for-pet-food-brands/",
       "destination": "/insights/your-complete-guide-to-ugc-for-pet-food-brands/",
       "permanent": true

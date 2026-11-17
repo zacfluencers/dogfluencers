@@ -43,7 +43,7 @@ Today: the work posts (Poppy's Picnic, Zesty Paws) were approved on 12 November
 2026. The stats are approved: "Dogs in the network" 1,800+ from the CRM, and 200+
 campaigns, 10,000+ creators gifted and 10,000+ pieces of content, supplied by the
 team on 13 November. Two real case studies (13 November): Adaptil firework season
-and Omni, both Mass Gifting, with the team's figures and four full creator videos
+and Omni, both Influencer Gifting, with the team's figures and four full creator videos
 each (`public/video/full/adaptil-*`, `omni-*`; sources in
 `~/ShipStudio/dog-raw/campaigns/`). Testimonials are still placeholders. The six partner
 brands in the logo strip are approved with a TODO to confirm. Usage rights for
@@ -109,7 +109,7 @@ Every paw is the logo paw (`components/ui/Paw.astro`).
   requirement pills, CTA), on For Creators, For Brands and each service page.
   On phones the figures become compact rows.
 - `ServiceRows` (/services/): sticky pill nav plus one rounded panel per service.
-- `Pricing`: transparent packages on the Mass Gifting and UGC pages, as one
+- `Pricing`: transparent packages on the Influencer Gifting and UGC pages, as one
   white panel split by hairlines (Stripe-like), each column with a scale bar
   (its leading figure against the biggest package), price + VAT, ticked
   inclusions with bold figures and its own button. Prices match the group's

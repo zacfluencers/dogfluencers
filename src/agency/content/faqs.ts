@@ -115,7 +115,7 @@ export const faqs: Faq[] = [
 
 /** Service-page FAQs, keyed by service slug. */
 export const serviceFaqs: Record<string, Faq[]> = {
-  'mass-gifting': faqs.filter((faq) => ['Services', 'Logistics', 'Reporting'].includes(faq.category ?? '')),
+  'influencer-gifting': faqs.filter((faq) => ['Services', 'Logistics', 'Reporting'].includes(faq.category ?? '')),
   ugc: faqs.filter((faq) => ['Content', 'Services'].includes(faq.category ?? '')),
   'creator-campaigns': faqs.filter((faq) => ['Services', 'Content', 'Reporting'].includes(faq.category ?? '')),
   'product-launches': faqs.filter((faq) => ['Services', 'Content', 'Reporting'].includes(faq.category ?? '')),

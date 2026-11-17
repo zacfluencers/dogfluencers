@@ -14,8 +14,8 @@ import { clips } from './clips';
  */
 export const services: Service[] = [
   {
-    title: 'Mass Gifting',
-    slug: 'mass-gifting',
+    title: 'Influencer Gifting',
+    slug: 'influencer-gifting',
     shortDescription:
       'Your product sent to up to 1,000 hand-picked dogs at once, and the stories, unboxings and taste tests that follow.',
     description:

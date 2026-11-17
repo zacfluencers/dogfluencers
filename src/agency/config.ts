@@ -57,7 +57,7 @@ const config: AgencyConfig = {
     oneLine: 'A specialist creator marketing agency for pet brands.',
     long:
       'Dogfluencers connects pet brands with the dogs, and the owners behind them, who shape what ' +
-      'other owners buy. We run mass gifting, UGC and ad content, and creator campaigns, across food, ' +
+      'other owners buy. We run influencer gifting, UGC and ad content, and creator campaigns, across food, ' +
       'treats, health, accessories and everything else that ends up in a dog’s life.',
     heroHeadline: 'The fastest way to get your pet product *seen.*',
     heroDescription:
@@ -74,14 +74,14 @@ const config: AgencyConfig = {
     },
   },
 
-  enabledServices: ['mass-gifting', 'ugc', 'creator-campaigns', 'product-launches'],
+  enabledServices: ['influencer-gifting', 'ugc', 'creator-campaigns', 'product-launches'],
 
   navigation: [
     {
       label: 'Services',
       href: '/services/',
       children: [
-        { label: 'Mass Gifting', href: '/services/mass-gifting/', description: 'Product to up to 1,000 dogs at once' },
+        { label: 'Influencer Gifting', href: '/services/influencer-gifting/', description: 'Product to up to 1,000 dogs at once' },
         { label: 'UGC and Ad Content', href: '/services/ugc/', description: 'Content you own, in 12 days' },
         { label: 'Creator Campaigns', href: '/services/creator-campaigns/', description: 'Paid posts from loyal dog accounts' },
         { label: 'Product Launches', href: '/services/product-launches/', description: 'Gifting, UGC and paid, around one date' },
@@ -98,7 +98,7 @@ const config: AgencyConfig = {
     {
       heading: 'Services',
       links: [
-        { label: 'Mass Gifting', href: '/services/mass-gifting/' },
+        { label: 'Influencer Gifting', href: '/services/influencer-gifting/' },
         { label: 'UGC and Ad Content', href: '/services/ugc/' },
         { label: 'Creator Campaigns', href: '/services/creator-campaigns/' },
         { label: 'Product Launches', href: '/services/product-launches/' },
@@ -177,7 +177,7 @@ const config: AgencyConfig = {
       height: 630,
     },
     description:
-      'Dog influencer marketing for pet brands: mass gifting to up to 1,000 dogs at a time, UGC and ad ' +
+      'Dog influencer marketing for pet brands: influencer gifting to up to 1,000 dogs at a time, UGC and ad ' +
       'content delivered in 12 days, and creator campaigns with real dog owners.',
     primaryKeywords: [
       'dog influencer agency',

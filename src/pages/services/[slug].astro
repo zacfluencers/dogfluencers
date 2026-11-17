@@ -30,13 +30,13 @@ const [campaigns, work] = await Promise.all([content.campaigns(), content.work()
 
 // The service's own clip leads, then two that are not on its index row.
 const extra: Record<string, [typeof clips.beagle, typeof clips.beagle]> = {
-  'mass-gifting': [clips.georgiaKneel, clips.spanielsLick],
+  'influencer-gifting': [clips.georgiaKneel, clips.spanielsLick],
   ugc: [clips.hannahSofa, clips.colliePark],
   'creator-campaigns': [clips.ownerUnbox, clips.natashaGarden],
   'product-launches': [clips.omniTins, clips.omniDental],
 };
 const cards: Record<string, { title: string; body: string }> = {
-  'mass-gifting': { title: 'Up to 1,000 dogs', body: 'In a single drop' },
+  'influencer-gifting': { title: 'Up to 1,000 dogs', body: 'In a single drop' },
   ugc: { title: 'Content in 12 days', body: 'With unlimited edits' },
   'creator-campaigns': { title: 'Paid posts', body: 'From creators you approve' },
   'product-launches': { title: 'All in one', body: 'Gifting, UGC and paid' },
@@ -64,7 +64,7 @@ const band = (name: string) => (bands.indexOf(name) % 2 === 0 ? 'cream' : 'paper
 // Written per service: building it from the title read badly
 // ("Start a creator campaigns campaign").
 const ctaHeadings: Record<string, string> = {
-  'mass-gifting': 'Start a gifting *drop.*',
+  'influencer-gifting': 'Start a gifting *drop.*',
   ugc: 'Get your content *made.*',
   'creator-campaigns': 'Start a creator *campaign.*',
   'product-launches': 'Plan your *product launch.*',
@@ -74,7 +74,7 @@ const ctaHeadings: Record<string, string> = {
 // process copy, nothing new claimed.
 type DealContent = { heading: string; description: string; stats: { value: string; label: string }[]; footLabel: string; requirements: string[] };
 const deals: Record<string, DealContent> = {
-  'mass-gifting': {
+  'influencer-gifting': {
     heading: 'One drop, up to a thousand *dogs.*',
     description: 'Every dog matched to what you make, and every owner opted in before anything ships.',
     stats: [
