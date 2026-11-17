@@ -44,9 +44,8 @@ what stands between that and dogfluencers.agency going live.
 
 ## 3. Email: Resend and the forms
 
-- [ ] Verify `send.dogfluencers.agency` in Resend (DNS records at the registrar).
-      Don't touch existing MX or SPF records.
-- [ ] `RESEND_API_KEY` in Vercel.
+- [x] `send.dogfluencers.agency` in Resend (17 Nov): DKIM and sending records in Vercel DNS.
+- [x] `RESEND_API_KEY` in Vercel (17 Nov).
 - [ ] Confirm the enquiry inbox: currently `jonathan@fluencersgroup.com`
       (`src/agency/config.ts`, `contact.enquiries`).
 - [ ] Send a test enquiry from `/contact/`; check the no-JS path lands on `/contact/thanks/`.
@@ -110,8 +109,8 @@ Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
 ## 7. Go live
 
 - [x] **Remove `PUBLIC_SHOW_PLACEHOLDERS` from Production** (removed 17 Nov; previews keep it).
-- [ ] Add dogfluencers.agency and www to the Vercel project; point DNS (apex A to
-      Vercel, www CNAME), keeping MX, SPF and Resend records.
+- [x] dogfluencers.agency and www on Vercel (17 Nov): DNS moved to Vercel DNS with every
+      old record (Google Workspace MX, SPF, verification, DKIM) recreated first.
 - [ ] Update Supabase Site URL and Redirect URLs to the real domain.
 - [ ] Remove `CRM_EMAIL_ALLOWLIST` from production; set `CRM_DIGEST_ENABLED=true`.
 - [ ] Smoke test live: enquiry, application, login, admin.

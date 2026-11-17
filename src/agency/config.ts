@@ -41,7 +41,7 @@ const config: AgencyConfig = {
     enquiries: {
       // TODO(confirm): the inbox enquiries should go to.
       to: 'jonathan@fluencersgroup.com',
-      // TODO(setup): verify send.dogfluencers.agency in Resend before launch.
+      // send.dogfluencers.agency is set up in Resend (records in Vercel DNS, 17 Nov 2026).
       from: 'Dogfluencers <enquiries@send.dogfluencers.agency>',
     },
   },
