@@ -179,17 +179,9 @@ export const crm: CrmConfig = {
     },
   ],
 
-  // Your own sizes, for the rare drop that includes something for the owner.
-  clothingSizes: [
-    { value: 'XS', label: 'XS (UK 4 to 6)' },
-    { value: 'S', label: 'S (UK 8)' },
-    { value: 'M', label: 'M (UK 10 to 12)' },
-    { value: 'L', label: 'L (UK 14)' },
-    { value: 'XL', label: 'XL (UK 16)' },
-    { value: '2XL', label: '2XL (UK 18)' },
-    { value: '3XL', label: '3XL (UK 20)' },
-    { value: '4XL+', label: '4XL+ (UK 22 and up)' },
-  ],
+  // No owner sizes or diet: gifting is for the dogs (each dog's diet and
+  // allergies are asked in the dogs step). Leaving out clothingSizes drops
+  // the "Sizes and diet" step from the join form, profile, team page and export.
 
   countries: [
     { value: 'United Kingdom', label: 'United Kingdom' },

@@ -59,11 +59,15 @@ export function csvColumns(config: CrmConfig, items: Record<string, number> = {}
     { header: 'Gender', value: (c) => labelFor(GENDERS, c.gender) },
     { header: 'Date of birth', value: (c) => c.date_of_birth },
     ...agency,
-    { header: 'Top size', value: (c) => c.clothing_size },
-    { header: 'Bottoms size', value: (c) => c.trouser_size },
-    { header: 'Shoe size', value: (c) => c.shoe_size },
-    { header: 'Dietary requirements', value: (c) => c.dietary_requirements },
-    { header: 'Allergies', value: (c) => c.allergies },
+    ...(config.clothingSizes?.length
+      ? ([
+          { header: 'Top size', value: (c) => c.clothing_size },
+          { header: 'Bottoms size', value: (c) => c.trouser_size },
+          { header: 'Shoe size', value: (c) => c.shoe_size },
+          { header: 'Dietary requirements', value: (c) => c.dietary_requirements },
+          { header: 'Allergies', value: (c) => c.allergies },
+        ] as Column[])
+      : []),
     { header: 'Instagram', value: (c) => c.instagram_url },
     { header: 'Instagram followers', value: (c) => c.instagram_followers },
     { header: 'TikTok', value: (c) => c.tiktok_url },

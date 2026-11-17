@@ -188,6 +188,9 @@ columns, and Mailchimp tags every dog's size, age band and diet. Ages are worked
 out from each dog's date of birth on the day (`type: 'date'` with `bands`), so
 they never go stale. Other agency questions: account type, content, professional
 background (vet, behaviourist, nutritionist...), skills, favourite and avoided brands.
+The engine's owner "Sizes and diet" step (clothing, shoe, owner diet and
+allergies) is switched off for Dogfluencers by leaving out `clothingSizes`:
+gifting is for the dogs, whose diet and allergies are asked per dog.
 
 **Estimated answers.** An imported dog's size is estimated from its breed, and
 a date of birth worked out from an age or a lone year is estimated too. These

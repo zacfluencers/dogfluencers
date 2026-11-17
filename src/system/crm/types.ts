@@ -122,8 +122,13 @@ export interface WelcomeEmail {
 export interface CrmConfig {
   /** Agency questions, shown as their own steps after "About you". */
   steps: ProfileStep[];
-  /** Tops and bottoms share one scale. Labels carry the local size. */
-  clothingSizes: Option[];
+  /**
+   * The owner's own sizes and diet ("Sizes and diet": top, bottoms, shoe,
+   * dietary requirements, allergies). Tops and bottoms share one scale; labels
+   * carry the local size. Omit for an agency whose gifting never includes
+   * anything for the creator themselves, and the step disappears everywhere.
+   */
+  clothingSizes?: Option[];
   /** Countries offered for the address. The first is the default. */
   countries: Option[];
   /** Currency symbol for the creator's rate. */

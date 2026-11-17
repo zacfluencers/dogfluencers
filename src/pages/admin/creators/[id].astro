@@ -111,16 +111,19 @@ const groups: { title: string; items: Item[] }[] = [
       };
     });
   }),
-  {
-    title: 'Sizes and diet',
-    items: [
-      { label: 'Top size', value: c.clothing_size ? labelFor(crm.clothingSizes, c.clothing_size) : null },
-      { label: 'Bottoms size', value: c.trouser_size ? labelFor(crm.clothingSizes, c.trouser_size) : null },
-      { label: 'Shoe size', value: c.shoe_size },
-      { label: 'Dietary requirements', value: c.dietary_requirements },
-      { label: 'Allergies', value: c.allergies, wide: true },
-    ],
-  },
+  // The owner's own sizes and diet, only for agencies that ask for them.
+  ...(crm.clothingSizes?.length
+    ? [{
+        title: 'Sizes and diet',
+        items: [
+          { label: 'Top size', value: c.clothing_size ? labelFor(crm.clothingSizes, c.clothing_size) : null },
+          { label: 'Bottoms size', value: c.trouser_size ? labelFor(crm.clothingSizes, c.trouser_size) : null },
+          { label: 'Shoe size', value: c.shoe_size },
+          { label: 'Dietary requirements', value: c.dietary_requirements },
+          { label: 'Allergies', value: c.allergies, wide: true },
+        ],
+      }]
+    : []),
   {
     title: 'Socials and rate',
     items: [

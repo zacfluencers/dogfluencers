@@ -400,14 +400,18 @@ export function buildSchemas(config: CrmConfig) {
     }),
   };
 
-  const sizes = config.clothingSizes.map((s) => s.value);
-  const sizesShape: Shape = {
-    clothing_size: oneOf(sizes, 'Choose a size', false),
-    trouser_size: oneOf(sizes, 'Choose a size', false),
-    shoe_size: optionalText(20),
-    dietary_requirements: optionalText(500),
-    allergies: optionalText(500),
-  };
+  // The owner's own sizes and diet: only for agencies that ask (see CrmConfig).
+  const sizes = config.clothingSizes?.map((s) => s.value) ?? [];
+  const hasSizes = sizes.length > 0;
+  const sizesShape: Shape = hasSizes
+    ? {
+        clothing_size: oneOf(sizes, 'Choose a size', false),
+        trouser_size: oneOf(sizes, 'Choose a size', false),
+        shoe_size: optionalText(20),
+        dietary_requirements: optionalText(500),
+        allergies: optionalText(500),
+      }
+    : {};
 
   const socialsShape: Shape = {
     instagram_url: socialUrl('instagram', 'Instagram'),
@@ -451,7 +455,7 @@ export function buildSchemas(config: CrmConfig) {
     step('account', 'Your account', 'So you can log in and update your details later.', { ...nameShape, email, password }),
     step('about', 'About you', 'Where to send products, and how to reach you.', aboutShape, checkPostcode),
     ...config.steps.map(agencyStep),
-    step('sizes', 'Sizes and diet', 'So anything we send fits. All optional.', sizesShape),
+    ...(hasSizes ? [step('sizes', 'Sizes and diet', 'So anything we send fits. All optional.', sizesShape)] : []),
     step('socials', 'Your socials', 'Add at least one account. Handles or profile links both work.', { ...socialsShape, ...consentShape }, checkSocials),
   ];
 

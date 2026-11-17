@@ -173,8 +173,8 @@ const estimated = (index: number | string) => {
   step === 'sizes' && (
     <div class="grid gap-6">
       <div class="grid gap-6 sm:grid-cols-2">
-        <FormField name="clothing_size" label="Top size" type="select" options={config.clothingSizes} empty="Choose a size" value={v('clothing_size')} error={e('clothing_size')} />
-        <FormField name="trouser_size" label="Bottoms size" type="select" options={config.clothingSizes} empty="Choose a size" value={v('trouser_size')} error={e('trouser_size')} />
+        <FormField name="clothing_size" label="Top size" type="select" options={config.clothingSizes ?? []} empty="Choose a size" value={v('clothing_size')} error={e('clothing_size')} />
+        <FormField name="trouser_size" label="Bottoms size" type="select" options={config.clothingSizes ?? []} empty="Choose a size" value={v('trouser_size')} error={e('trouser_size')} />
       </div>
       <FormField name="shoe_size" label="Shoe size" placeholder="UK 5" max={20} value={v('shoe_size')} error={e('shoe_size')} />
       <FormField name="dietary_requirements" label="Dietary requirements" placeholder="Vegan, halal, gluten free" value={v('dietary_requirements')} error={e('dietary_requirements')} hint="For food and supplement brands. Leave blank if none." />
