@@ -233,8 +233,10 @@ the report, with their original answers in team notes. The export and the
 script's output are personal data: they live in `~/ShipStudio/dog-private/`,
 never in the repo.
 
-**Testing guard:** with `CRM_EMAIL_ALLOWLIST` set, the site emails only those
-domains. Tests use `example.com` addresses. **Never email creators in bulk
+**Testing guard:** with `CRM_EMAIL_ALLOWLIST` set, the site emails (and accepts
+applications from) only those domains. It's off in Production since launch (17
+November 2026, client go-ahead) and stays on in Preview. Tests use `example.com`
+addresses. **Never email creators in bulk
 without the client's permission** (`scripts/announce-new-site.ts`).
 
 ## Email

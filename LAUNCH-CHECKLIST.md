@@ -49,7 +49,7 @@ what stands between that and dogfluencers.agency going live.
 - [ ] Confirm the enquiry inbox: currently `jonathan@fluencersgroup.com`
       (`src/agency/config.ts`, `contact.enquiries`).
 - [ ] Send a test enquiry from `/contact/`; check the no-JS path lands on `/contact/thanks/`.
-- [ ] `CRM_EMAIL_ALLOWLIST` on while testing; remove from production at launch.
+- [x] `CRM_EMAIL_ALLOWLIST` removed from Production (17 Nov, client go-ahead); Preview keeps it.
 - [ ] Morning applications email: `CRM_DIGEST_ENABLED=true` in production after launch.
 - [x] Mailchimp (17 Nov): the existing Dogfluencers audience (its own account).
       1,148 creators already subscribed, 116 unsubscribed and 31 cleaned keep
@@ -112,6 +112,6 @@ Anything unconfirmed stays hidden in production (`status: 'placeholder'`).
 - [x] dogfluencers.agency and www on Vercel (17 Nov): DNS moved to Vercel DNS with every
       old record (Google Workspace MX, SPF, verification, DKIM) recreated first.
 - [x] Supabase Site URL and Redirect URLs on the real domain (17 Nov).
-- [ ] Remove `CRM_EMAIL_ALLOWLIST` from production; set `CRM_DIGEST_ENABLED=true`.
+- [x] `CRM_EMAIL_ALLOWLIST` off in Production (17 Nov). [ ] `CRM_DIGEST_ENABLED=true` still to do.
 - [ ] Smoke test live: enquiry, application, login, admin.
 - [ ] Only then, with the client's go-ahead: the new-site email to imported creators.
