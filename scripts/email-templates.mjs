@@ -166,6 +166,43 @@ const mailchimp = shell({
   ].join('\n'),
 });
 
+/* -------------------------------------------------- Mailchimp: new website */
+// The one-off announcement to creators from the old website: their profile
+// has moved, claim it, check the dog details the import filled in. Only sent
+// with the client's go-ahead, to subscribed members of the "Dogfluencers" tag.
+const steps = (items) => `<ol style="margin:0 0 14px;padding:0 0 0 22px;font-family:${font};font-size:16px;line-height:1.65;color:${c.night}">${items.map((i) => `<li style="margin:0 0 6px">${i}</li>`).join('')}</ol>`;
+const newSite = shell({
+  title: '*|MC:SUBJECT|*',
+  preheader: '*|MC_PREVIEW_TEXT|*',
+  body: `
+      <img mc:edit="hero_image" src="${SITE}/email/hero-owner-dog.jpg" width="600" alt="A dog owner crouching in a park with her black and white collie" style="width:100%;max-width:600px;height:auto;border-radius:24px 24px 0 0">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr><td class="px" style="padding:36px 40px 8px">
+          ${eyebrow('Our new website')}
+          <div mc:edit="headline">${heading('Your profile has moved', 'class="h1"')}</div>
+          ${divider}
+          <div mc:edit="intro">
+            ${p('*|IF:FNAME|*Hi *|FNAME|*,*|ELSE:|*Hi there,*|END:IF|*')}
+            ${p('Dogfluencers has a brand new website, and your profile has come with you. Your details and your dog&#8217;s are already there, so there&#8217;s nothing to fill in again.')}
+          </div>
+        </td></tr>
+        <!-- Claim -->${section('Claim your profile', steps([`Go to ${link('dogfluencers.agency/creator/claim', `${SITE}/creator/claim/`)}`, 'Enter the email you joined with', 'We&#8217;ll email you a link to choose a password']) + button('Claim my profile', `${SITE}/creator/claim/`), { tint: true, key: 'n_claim' })}
+        <!-- Check -->${section('Check your dog&#8217;s details', p('We brought your dog&#8217;s details across from the old website. Where we only had an age or a year, or worked out a size from the breed, we&#8217;ve filled it in for you and marked it, so please check it&#8217;s right. Brands are matched against these details, so the more accurate they are, the better the gifting we can match you with.'), { key: 'n_check' })}
+        <!-- New dog -->${section('New dog in the family?', p('You can add every dog in your household to your profile, up to six, each with their own breed, size, age and diet.'), { key: 'n_dogs' })}
+        <!-- Same -->${section('What stays the same', p(`Gifting carries on as normal, and joining is still free, with no commission. Read our ${link('gifting guidelines', `${SITE}/for-creators/gifting-guidelines/`)} for how it all works.`), { key: 'n_same' })}
+        <tr><td class="px" style="padding:4px 40px 36px">
+          <div mc:edit="signoff">${p('Thanks for being part of the pack,<br><strong>The Dogfluencers team</strong>')}</div>
+        </td></tr>
+      </table>`,
+  footer: [
+    `          <p style="margin:0 0 8px;font-family:${display};font-stretch:condensed;font-size:18px;font-weight:800;text-transform:uppercase;color:${c.cream}">Stay connected</p>`,
+    footLine(`You&#8217;re getting this because you joined the Dogfluencers creator network.`),
+    footLine(ADDRESS),
+    footLine(`${footLink('Update your email preferences', '*|UPDATE_PROFILE|*')} &nbsp;&middot;&nbsp; ${footLink('Unsubscribe', '*|UNSUB|*')}`),
+    `          *|IF:REWARDS|* <div style="margin-top:12px">*|REWARDS|*</div> *|END:IF|*`,
+  ].join('\n'),
+});
+
 /* ----------------------------------------------------------------- Supabase */
 // Go templates: {{ .SiteURL }} and {{ .TokenHash }}. Links go through
 // /auth/confirm/ so they work in any browser (no PKCE cookie needed).
@@ -194,6 +231,7 @@ const supa = ({ subject, note, preheader, eyebrowText, title, lines, label, type
 
 const files = {
   'email/mailchimp-gifting-campaign.html': mailchimp,
+  'email/mailchimp-new-website.html': newSite,
   'supabase/templates/confirm-signup.html': supa({
     subject: 'Confirm your email',
     note: 'Supabase > Authentication > Emails > Confirm signup.',
