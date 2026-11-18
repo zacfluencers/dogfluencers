@@ -167,7 +167,8 @@ const mailchimp = shell({
 });
 
 /* -------------------------------------------------- Mailchimp: new website */
-// The one-off announcement to creators from the old website: their profile
+// The one-off announcement to creators from the old website (a plain update,
+// no header image, at the client's request): their profile
 // has moved, claim it, check the dog details the import filled in. Only sent
 // with the client's go-ahead, to subscribed members of the "Dogfluencers" tag.
 const steps = (items) => `<ol style="margin:0 0 14px;padding:0 0 0 22px;font-family:${font};font-size:16px;line-height:1.65;color:${c.night}">${items.map((i) => `<li style="margin:0 0 6px">${i}</li>`).join('')}</ol>`;
@@ -175,9 +176,8 @@ const newSite = shell({
   title: '*|MC:SUBJECT|*',
   preheader: '*|MC_PREVIEW_TEXT|*',
   body: `
-      <img mc:edit="hero_image" src="${SITE}/email/hero-owner-dog.jpg" width="600" alt="A dog owner crouching in a park with her black and white collie" style="width:100%;max-width:600px;height:auto;border-radius:24px 24px 0 0">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr><td class="px" style="padding:36px 40px 8px">
+        <tr><td class="px" style="padding:40px 40px 8px">
           ${eyebrow('Our new website')}
           <div mc:edit="headline">${heading('Your profile has moved', 'class="h1"')}</div>
           ${divider}
