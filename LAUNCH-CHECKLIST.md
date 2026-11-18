@@ -8,10 +8,11 @@ everything still open is first.
 
 ### Needs the client
 
-- [ ] **The new-site email to the 1,337 imported creators**, inviting them to claim
-      their profile. Only with the client's explicit go-ahead. Check the wording of
-      `scripts/announce-new-site.ts` first, or send it as a Mailchimp campaign with the
-      "Dogfluencers | Gifting campaign" template's look.
+- [x] **The new-site email to imported creators**: scheduled in Mailchimp for
+      Thursday 19 November 2026, 9am UK, in 5 batches an hour apart (about 250 each),
+      to the subscribed members of the "Dogfluencers" tag. Template:
+      `email/mailchimp-new-website.html`. Before 9am: check the Resend plan covers the
+      claim emails it will trigger (the free plan stops at 100 a day).
 - [ ] **Usage rights** for every creator video and photo on the site (heroes, mastheads,
       work, case studies). All are marked `TODO(confirm)`.
 - [ ] **Adaptil and Omni** happy to be named in the case studies, with the figures shown.
