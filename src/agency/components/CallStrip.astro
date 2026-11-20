@@ -81,13 +81,26 @@ const { lead, link } = Astro.props;
   .dcall-btn:hover { background: var(--orange); }
   .dcall-btn:active { transform: scale(0.97); }
   .dcall-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
-  @media (max-width: 26rem) {
+  /* Phones: the lead line wrapped beside the pill and the pill sat tight to
+     the strip's edges. Drop the lead and give the button the full width,
+     taller and with room around it. */
+  @media (max-width: 39.99rem) {
+    .dcall-inner { padding-block: 0.75rem; }
     .dcall-lead { display: none; }
+    .dcall-btn {
+      flex: 1;
+      justify-content: center;
+      min-height: 3rem;
+      font-size: 0.9375rem;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .dcall-btn { transition: none; }
   }
   :global(:root) { --call-strip-h: 3.75rem; }
+  @media (max-width: 39.99rem) {
+    :global(:root) { --call-strip-h: 4.5rem; }
+  }
   :global(body:has([data-call-strip])) {
     padding-bottom: calc(var(--call-strip-h) + env(safe-area-inset-bottom));
   }
