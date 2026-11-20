@@ -7,7 +7,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { agency } from '../../agency/config';
 import { crm } from '../../agency/crm';
 import { ownProfile, updateOwnProfile } from '../../system/crm/server';
-import { buildSchemas, formToInput, recordToValues, type FieldErrors } from '../../system/crm/validation';
+import { buildSchemas, fieldAnchor, fieldLabel, formToInput, profileGaps, recordToValues, type FieldErrors } from '../../system/crm/validation';
 
 import PageHead from '../../agency/components/sections/PageHead.astro';
 import Section from '../../system/components/global/Section.astro';
@@ -38,6 +38,15 @@ if (Astro.request.method === 'POST' && profile) {
   message = result.message;
   Astro.response.status = 422;
 }
+
+// Imported profiles can lack questions the old site never asked (a dog's
+// size, the account type), and the save refuses until they're answered. Say
+// so up front, field by field, rather than only after a failed save.
+const gaps = profile && Astro.request.method !== 'POST' ? profileGaps(crm, values) : {};
+if (Object.keys(gaps).length) errors = gaps;
+// Every problem as a link to its field, so nothing is left to hunt for.
+const problems = Object.keys(errors).map((name) => ({ name, href: `#${fieldAnchor(name)}`, label: fieldLabel(crm, name, values), message: errors[name] }));
+const failedSave = Astro.request.method === 'POST' && problems.length > 0;
 
 const params = Astro.url.searchParams;
 if (params.has('saved')) saved = true;
@@ -74,7 +83,22 @@ const sections = buildSchemas(crm).steps.map(({ id, title }) => ({ id, title: id
             <form method="post" novalidate class="flex max-w-[46rem] flex-col">
               {saved && <p class="form-alert mb-10" role="status">Saved. Your profile is up to date.</p>}
               {passwordUpdated && <p class="form-alert mb-10" role="status">Your password has been changed.</p>}
-              {message && <p class="form-alert mb-10" role="alert">{message}</p>}
+              {(message || problems.length > 0) && (
+                <div class="form-alert mb-10 flex flex-col gap-3" role="alert" data-problems={failedSave ? 'jump' : undefined}>
+                  <p>
+                    {failedSave
+                      ? `Not saved yet: ${problems.length === 1 ? 'one answer needs' : `${problems.length} answers need`} another look.`
+                      : message ?? `A few questions are new since you joined. Please answer ${problems.length === 1 ? 'it' : 'them'}, then save:`}
+                  </p>
+                  {problems.length > 0 && (
+                    <ul class="flex flex-col gap-1.5">
+                      {problems.map((p) => (
+                        <li><a href={p.href} class="underline decoration-2 underline-offset-4">{p.label}</a><span class="font-normal">: {p.message}</span></li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               {sections.map((section, i) => (
                 <section id={section.id} class:list={['flex flex-col gap-8', i > 0 && 'mt-16 border-t border-[var(--hairline-strong)] pt-10']}>
@@ -112,3 +136,20 @@ const sections = buildSchemas(crm).steps.map(({ id, title }) => ({ id, title: id
     </Container>
   </Section>
 </BaseLayout>
+
+<script>
+  // After a refused save, go to the first answer that needs fixing. After
+  // the page's load, because pages reached by a link are sent to the top then.
+  if (document.querySelector('[data-problems="jump"]')) {
+    const jump = () => {
+      const first = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+      const wrap = first?.closest<HTMLElement>('[data-field]');
+      if (!first || !wrap) return;
+      wrap.scrollIntoView({ block: 'start', behavior: 'instant' });
+      (first.matches('fieldset') ? first.querySelector<HTMLElement>('input') : first)?.focus({ preventScroll: true });
+    };
+    const later = () => setTimeout(jump, 0);
+    if (document.readyState === 'complete') later();
+    else window.addEventListener('load', later, { once: true });
+  }
+</script>

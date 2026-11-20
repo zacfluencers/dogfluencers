@@ -51,7 +51,7 @@ const isGroup = type === 'multi' || type === 'radio';
 const text = `${label}${required ? ' *' : ''}`;
 ---
 
-<div class:list={['flex flex-col gap-2', className]} data-field={name}>
+<div class:list={['flex flex-col gap-2 scroll-mt-28', className]} data-field={name} id={`${id}-field`}>
   {
     isGroup ? (
       <fieldset class="flex flex-col gap-3" aria-describedby={describedBy} aria-invalid={invalid}>

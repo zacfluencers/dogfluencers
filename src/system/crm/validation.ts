@@ -553,3 +553,52 @@ export function recordToValues(c: Record<string, unknown> & { details?: Details 
   }
   return out;
 }
+
+/** Labels for the core fields, as the forms show them. */
+const CORE_LABELS: Record<string, string> = {
+  first_name: 'First name', last_name: 'Last name', email: 'Email', password: 'Password',
+  phone: 'Phone', date_of_birth: 'Date of birth', gender: 'Gender',
+  address_line_1: 'Address line 1', address_line_2: 'Address line 2', town: 'Town or city', county: 'County', postcode: 'Postcode', country: 'Country',
+  clothing_size: 'Top size', trouser_size: 'Bottoms size', shoe_size: 'Shoe size', dietary_requirements: 'Dietary requirements', allergies: 'Allergies',
+  instagram_url: 'Instagram', instagram_followers: 'Instagram followers', tiktok_url: 'TikTok', tiktok_followers: 'TikTok followers',
+  youtube_url: 'YouTube', youtube_followers: 'YouTube subscribers', rate_per_post: 'Rate per post',
+  join_gifting_network: 'Join the gifting network?', additional_notes: 'Anything else we should know', privacy_consent: 'Consent',
+};
+
+/** The anchor a field's wrapper carries (FormField), for "jump to" links. */
+export const fieldAnchor = (name: string) => `f-${name.replace(/[^a-z0-9_-]/gi, '-')}-field`;
+
+/**
+ * A field's label for a list of problems: "Size (Bonnie)" for a repeated
+ * item, named by its first summary field, or "Size (Dog 2)" if that's blank.
+ */
+export function fieldLabel(config: CrmConfig, name: string, values: Record<string, unknown> = {}): string {
+  const item = parseItemName(name);
+  if (item) {
+    const step = config.steps.find((s) => s.repeat?.key === item.group);
+    const label = step?.fields.find((f) => f.key === item.key)?.label ?? item.key;
+    const nameKey = step?.repeat?.summary[0];
+    const raw = nameKey ? values[itemName(item.group, item.index, nameKey)] : undefined;
+    const who = typeof raw === 'string' && raw.trim() ? raw.trim() : `${step?.repeat?.item ?? 'Item'} ${item.index + 1}`;
+    return `${label} (${who})`;
+  }
+  if (name.startsWith(DETAIL_PREFIX)) {
+    const key = name.slice(DETAIL_PREFIX.length);
+    const field = config.steps.flatMap((s) => s.fields).find((f) => f.key === key);
+    return field?.teamLabel && field.label.length > 40 ? field.teamLabel : field?.label ?? key;
+  }
+  return CORE_LABELS[name] ?? name;
+}
+
+/**
+ * What a stored profile still needs before it will save: each field that
+ * fails, with its message. Imported profiles often lack questions the old
+ * site never asked, and the creator should see them before pressing save.
+ */
+export function profileGaps(config: CrmConfig, values: Record<string, unknown>): FieldErrors {
+  const built = buildSchemas(config);
+  const input: Record<string, unknown> = { ...values };
+  for (const step of built.steps) for (const n of step.names) if (!(n in input)) input[n] = '';
+  const result = built.profile.safeParse(input);
+  return result.success ? {} : fieldErrorsFrom(result.error);
+}
