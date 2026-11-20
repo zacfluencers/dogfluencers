@@ -208,6 +208,12 @@ right", and saving the profile confirms them (the key is dropped).
   `crm.ts`, `sendWelcome`). A tick box, not automatic, so a wrong click sends
   nothing; shown only on the move into Approved, so it can't send twice. Rejected
   creators are never emailed automatically. Replies go to the team (`replyTo`).
+- **New Creator Showcase email** (20 November 2026): approving a creator with
+  10,000+ followers on any one platform emails the team (`showcase` in `crm.ts`,
+  today zac@gymfluencers.agency) their name, location, handles, follower counts,
+  dogs and a CRM link, for a showcase post on socials. Sent once, on the move into
+  Approved, whatever the welcome tick box; a mail problem never blocks the save.
+  Preview: `npx tsx scripts/preview-emails.ts` (`email/previews/showcase.html`).
 - CRM emails share one layout and sender (`src/system/crm/emails.ts`) in the
   agency's `emailTheme`, and every send to a creator goes through `mayEmail`.
 - Dropdowns draw their own chevron with side padding (`.form-select`), because

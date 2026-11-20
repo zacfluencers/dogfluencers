@@ -234,6 +234,14 @@ export const crm: CrmConfig = {
     },
   },
 
+  // Approving a creator with 10,000+ followers on any one platform emails the
+  // team their details for a New Creator Showcase post on socials.
+  showcase: {
+    to: ['zac@gymfluencers.agency'],
+    minFollowers: 10_000,
+    label: 'New Creator Showcase',
+  },
+
   // TODO(confirm): wording to be agreed with the client before it's switched on.
   // Facts match the For Creators page: offers by Instagram, paid within 20% of
   // the creator's rate, PayPal within about 48 hours, no commission.

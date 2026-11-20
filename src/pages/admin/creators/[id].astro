@@ -7,7 +7,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { crm } from '../../../agency/crm';
 import { isAdmin } from '../../../system/crm/supabase';
 import { getCreator } from '../../../system/crm/server';
-import { sendWelcome } from '../../../system/crm/emails';
+import { sendShowcase, sendWelcome } from '../../../system/crm/emails';
 import { agency } from '../../../agency/config';
 import { APPLICATION_STATUSES, GENDERS, labelFor } from '../../../system/crm/options';
 import { ageOn, formatPhone, socialHandle } from '../../../system/crm/validation';
@@ -44,8 +44,12 @@ if (Astro.request.method === 'POST') {
       saveError = error.code === '42501' ? 'You don\'t have permission to do that.' : 'Couldn\'t save. Please try again.';
     } else {
       let welcome = '';
-      if (form.get('send_welcome') === 'yes' && status === 'approved' && before && before.application_status !== 'approved') {
-        const env = (name: string) => (import.meta.env[name] as string | undefined) || process.env[name];
+      const env = (name: string) => (import.meta.env[name] as string | undefined) || process.env[name];
+      const justApproved = status === 'approved' && before && before.application_status !== 'approved';
+      // A big following: tell the team, for a showcase post on socials. Once,
+      // on the move into Approved, whether or not the welcome box is ticked.
+      if (justApproved) await sendShowcase(crm, agency.name, agency.site.url, env('RESEND_API_KEY'), before);
+      if (form.get('send_welcome') === 'yes' && justApproved) {
         const problem = await sendWelcome(crm, agency.name, agency.site.url, env('RESEND_API_KEY'), before);
         welcome = problem ? `&welcome_error=${encodeURIComponent(problem)}` : '&welcome=sent';
       }

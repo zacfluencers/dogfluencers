@@ -142,6 +142,22 @@ export interface CrmConfig {
   emailTheme: EmailTheme;
   /** Sent, if the team ticks the box, when a creator is moved to Approved. */
   welcome?: WelcomeEmail;
+  /** Tells the team when a creator with a big following is approved. */
+  showcase?: ShowcaseEmail;
+}
+
+/**
+ * An email to the team when a creator with a big following is approved, with
+ * what they need for a "new creator" post on the agency's socials: name,
+ * location, handles, follower counts, any repeated items (their pets) and a
+ * CRM link. Sent once, on the move into Approved, whatever the welcome box.
+ */
+export interface ShowcaseEmail {
+  to: string[];
+  /** Followers on any one platform that qualify: 10000. */
+  minFollowers: number;
+  /** What the post is called: "New Creator Showcase". Used in the subject. */
+  label: string;
 }
 
 export type ApplicationStatus = 'new' | 'reviewing' | 'approved' | 'rejected' | 'inactive';

@@ -5,9 +5,11 @@
  * Every send to a creator goes through `mayEmail`, so while CRM_EMAIL_ALLOWLIST
  * is set (testing) nobody outside it is emailed.
  */
-import type { CrmConfig, EmailTheme } from './types';
+import type { Creator, CrmConfig, EmailTheme, ProfileStep, RepeatDef } from './types';
 import { mayEmail } from './supabase';
-import { esc } from './table';
+import { esc, itemSummary } from './table';
+import { fmtNumber, fullName } from './format';
+import { itemsOf, socialHandle } from './validation';
 
 /**
  * A white card on the agency's ground, with the agency's logo above it (or
@@ -152,5 +154,82 @@ export async function sendWelcome(
   } catch (error) {
     console.error('welcome email failed', error);
     return 'The welcome email couldn’t be sent. Try again later.';
+  }
+}
+
+type Account = { platform: string; url: string; followers: number | null };
+
+const accountsOf = (c: Creator): Account[] =>
+  [
+    { platform: 'Instagram', url: c.instagram_url, followers: c.instagram_followers },
+    { platform: 'TikTok', url: c.tiktok_url, followers: c.tiktok_followers },
+    { platform: 'YouTube', url: c.youtube_url, followers: c.youtube_followers },
+  ].filter((a): a is Account => Boolean(a.url));
+
+/** Whether approving this creator should tell the team, for a showcase post. */
+export const isShowcaseCreator = (config: CrmConfig, c: Creator) =>
+  Boolean(config.showcase) && accountsOf(c).some((a) => (a.followers ?? 0) >= config.showcase!.minFollowers);
+
+/**
+ * Tells the team a creator with a big following has just been approved, with
+ * what a showcase post needs: where they are, their accounts and follower
+ * counts, their repeated items (pets) and a link to their CRM page.
+ */
+export function showcaseEmail(config: CrmConfig, brand: string, origin: string, c: Creator) {
+  const s = config.showcase!;
+  const t = config.emailTheme;
+  const name = fullName(c) || c.email;
+  const crmLink = `${origin}/admin/creators/${c.id}/`;
+  const where = [c.town, c.county].filter(Boolean).join(', ');
+  const accounts = accountsOf(c);
+  const biggest = accounts
+    .filter((a) => (a.followers ?? 0) >= s.minFollowers)
+    .map((a) => a.platform)
+    .join(' and ');
+  const min = s.minFollowers.toLocaleString('en-GB');
+  const lead = `They have ${min}+ followers on ${biggest}, so they could be a great fit for a ${s.label} post.${where ? ` Based in ${where}.` : ''}`;
+  const groups = config.steps
+    .filter((step): step is ProfileStep & { repeat: RepeatDef } => Boolean(step.repeat))
+    .map((step) => ({ label: step.repeat.tableLabel, items: itemsOf(c.details, step.repeat).map((item) => itemSummary(step, item)).filter(Boolean) }))
+    .filter((g) => g.items.length);
+
+  const label = (text: string, top = 28) =>
+    `<p style="margin:${top}px 0 0;font-size:13px;line-height:1.4;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:${t.accent}">${esc(text)}</p>`;
+  const row = (main: string, aside = '') =>
+    `<tr><td style="padding:12px 0;border-top:1px solid #efe4d6;font-size:16px;line-height:1.5;color:${t.ink}">${main}${aside ? `<span style="color:${t.muted}"> &middot; ${aside}</span>` : ''}</td></tr>`;
+  const table = (rows: string) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0">${rows}</table>`;
+
+  const html = emailLayout(
+    t,
+    brand,
+    `${label(s.label, 0)}
+    <div style="height:10px;line-height:10px;font-size:10px">&nbsp;</div>
+    ${emailHeading(t, `${name} just joined`)}
+    <p style="margin:0;font-size:16px;line-height:1.65;color:${t.ink}">${esc(lead)}</p>
+    ${label('Accounts')}
+    ${table(accounts.map((a) => row(`<span style="color:${t.muted}">${esc(a.platform)}</span>&nbsp; <a href="${esc(a.url)}" style="color:${t.ink};font-weight:700;text-decoration:none">${esc(socialHandle(a.url))}</a>`, a.followers === null ? '' : `${esc(fmtNumber(a.followers))} followers`)).join(''))}
+    ${groups.map((g) => `${label(g.label)}${table(g.items.map((item) => row(esc(item))).join(''))}`).join('')}
+    ${emailButton(t, crmLink, 'View in the CRM')}
+    <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:${t.muted}">Sent when a creator with ${min}+ followers on any platform is approved in the CRM.</p>`,
+  );
+
+  const text = [
+    `${s.label}: ${name} just joined`,
+    lead,
+    ['Accounts', ...accounts.map((a) => `${a.platform}: ${socialHandle(a.url)}${a.followers === null ? '' : ` (${fmtNumber(a.followers)} followers)`} ${a.url}`)].join('\n'),
+    ...groups.map((g) => [g.label, ...g.items].join('\n')),
+    `View in the CRM: ${crmLink}`,
+  ].join('\n\n');
+
+  return { subject: `${s.label}: ${name}`, html, text };
+}
+
+/** Sends the showcase email, if this creator qualifies. Never throws. */
+export async function sendShowcase(config: CrmConfig, brand: string, origin: string, apiKey: string | undefined, creator: Creator): Promise<void> {
+  if (!apiKey || !isShowcaseCreator(config, creator)) return;
+  try {
+    await sendEmail(apiKey, { from: config.digest.from, to: config.showcase!.to, ...showcaseEmail(config, brand, origin, creator) });
+  } catch (error) {
+    console.error('showcase email failed', error);
   }
 }
