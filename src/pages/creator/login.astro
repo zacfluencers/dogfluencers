@@ -24,6 +24,12 @@ const errors: Record<string, string> = {};
 let offerResend = false;
 let resent = false;
 
+// Already signed in (say, back from a public page whose header offered
+// "Log in"): go straight on rather than showing the form again.
+if (Astro.request.method === 'GET' && Astro.locals.session?.user) {
+  return Astro.redirect(next, 303);
+}
+
 if (Astro.request.method === 'POST' && isCrmConfigured()) {
   const form = await Astro.request.formData();
   email = String(form.get('email') ?? '');

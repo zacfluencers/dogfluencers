@@ -56,7 +56,7 @@ const account = agency.accountLinks?.[0];
     </nav>
 
     <div class="dhead-actions">
-      {account && <a class="dhead-login d-ui" href={account.href}>{account.shortLabel ?? account.label}</a>}
+      {account && <a class="dhead-login d-ui" href={account.href} data-account-link data-signed-in-label="My profile">{account.shortLabel ?? account.label}</a>}
       <Button href={agency.ctas.primary.href} event={agency.ctas.primary.event} class="dhead-cta">{agency.ctas.primary.label}</Button>
       <button type="button" class="dhead-toggle" aria-expanded="false" aria-controls="dmenu" data-dmenu-toggle>
         <span class="sr-only" data-dmenu-label>Open menu</span>
@@ -84,7 +84,7 @@ const account = agency.accountLinks?.[0];
       <div class="dmenu-foot">
         <Button href={agency.ctas.primary.href} event={agency.ctas.primary.event} size="large">{agency.ctas.primary.label}</Button>
         <Button href={agency.ctas.secondary.href} variant="outline" size="large">{agency.ctas.secondary.label}</Button>
-        {account && <Button href={account.href} variant="ghost">{account.label}</Button>}
+        {account && <Button href={account.href} variant="ghost" class="dmenu-account"><span data-account-link data-signed-in-label="My profile">{account.label}</span></Button>}
       </div>
     </nav>
   </div>
@@ -204,6 +204,18 @@ const account = agency.accountLinks?.[0];
 </style>
 
 <script>
+  // The marketing pages are built in advance, so they can't know who is
+  // signed in. A creator who opens one after logging in should still see
+  // they're logged in (not "Log in", which read as being logged out), so the
+  // link becomes "My profile" when the login cookie is present.
+  if (/(?:^|;\s*)sb-[^=]*-auth-token(?:\.\d+)?=/.test(document.cookie)) {
+    document.querySelectorAll<HTMLElement>('[data-account-link]').forEach((el) => {
+      el.textContent = el.dataset.signedInLabel ?? el.textContent;
+      const link = el.closest('a');
+      if (link) link.href = '/creator/profile/';
+    });
+  }
+
   const head = document.querySelector<HTMLElement>('[data-dhead]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-dmenu-toggle]');
   const menu = document.querySelector<HTMLElement>('[data-dmenu]');
